@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization; // WL Change
 using System.IO;
 using System.Linq;
 using Content.Shared.Humanoid.Markings;
@@ -45,7 +44,6 @@ namespace Content.Shared.Entry
         public override void PostInit()
         {
             base.PostInit();
-            IoCManager.Resolve<ILocalizationManager>().SetCulture(new CultureInfo("ru-RU")); //WL Change
             InitTileDefinitions();
             Dependencies.Resolve<MarkingManager>().Initialize();
 
