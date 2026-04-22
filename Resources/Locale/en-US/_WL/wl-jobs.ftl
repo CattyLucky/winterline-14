@@ -19,3 +19,6 @@ JobWLSettlementHead = Settlement Head
 JobWLMechanic = Mechanic
 JobWLHunter = Hunter
 JobWLGathererProcessor = Gatherer-Processor
+
+wl-settlement-title = WL Settlement
+wl-settlement-description = WL-only mode with all random events disabled for custom scenario development.

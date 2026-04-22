@@ -1,0 +1,11 @@
+# /// WL Change
+- type: entity
+  id: WLSettlementStation
+  parent:
+    - BaseStation
+    - BaseStationJobsSpawning
+    - BaseStationRecords
+    - BaseStationNanotrasen
+  categories: [ HideSpawnMenu ]
+  components:
+    - type: Transform

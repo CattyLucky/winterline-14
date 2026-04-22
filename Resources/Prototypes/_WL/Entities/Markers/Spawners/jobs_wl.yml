@@ -1,0 +1,51 @@
+# /// WL Change
+- type: entity
+  id: SpawnPointWLSettlementHead
+  parent: SpawnPointJobBase
+  name: wl settlement head
+  components:
+    - type: SpawnPoint
+      job_id: WLSettlementHead
+    - type: Sprite
+      layers:
+        - state: green
+        - state: hop
+
+# /// WL Change
+- type: entity
+  id: SpawnPointWLMechanic
+  parent: SpawnPointJobBase
+  name: wl mechanic
+  components:
+    - type: SpawnPoint
+      job_id: WLMechanic
+    - type: Sprite
+      layers:
+        - state: green
+        - state: engineer
+
+# /// WL Change
+- type: entity
+  id: SpawnPointWLHunter
+  parent: SpawnPointJobBase
+  name: wl hunter
+  components:
+    - type: SpawnPoint
+      job_id: WLHunter
+    - type: Sprite
+      layers:
+        - state: green
+        - state: salvagespecialist
+
+# /// WL Change
+- type: entity
+  id: SpawnPointWLGathererProcessor
+  parent: SpawnPointJobBase
+  name: wl gatherer processor
+  components:
+    - type: SpawnPoint
+      job_id: WLGathererProcessor
+    - type: Sprite
+      layers:
+        - state: green
+        - state: doctor

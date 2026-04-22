@@ -1,0 +1,11 @@
+# /// WL Change
+- type: gamePreset
+  id: WLSettlement
+  alias:
+    - wl
+    - wlsettlement
+  name: wl-settlement-title
+  description: wl-settlement-description
+  showInVote: true
+  supportedMaps: WLSettlementMapPool
+  rules: []

@@ -6,6 +6,8 @@
   playTimeTracker: JobWLSettlementHead
   weight: 20
   icon: JobIconHeadOfPersonnel
+  startingGear: null # /// WL Change
+  canBeAntag: false # /// WL Change
   supervisors: job-supervisors-nobody
   access:
   - Maintenance
@@ -13,6 +15,7 @@
   - External
   - Engineering
   - Medical
+  - Cryogenics # /// WL Change
 
 - type: job
   id: WLMechanic
@@ -22,11 +25,14 @@
   playTimeTracker: JobWLMechanic
   weight: 10
   icon: JobIconStationEngineer
+  startingGear: null # /// WL Change
+  canBeAntag: false # /// WL Change
   supervisors: job-supervisors-wl-settlement-head
   access:
   - Maintenance
   - Engineering
   - External
+  - Cryogenics # /// WL Change
 
 - type: job
   id: WLHunter
@@ -36,11 +42,14 @@
   playTimeTracker: JobWLHunter
   weight: 10
   icon: JobIconShaftMiner
+  startingGear: null # /// WL Change
+  canBeAntag: false # /// WL Change
   supervisors: job-supervisors-wl-settlement-head
   access:
   - Maintenance
   - Salvage
   - External
+  - Cryogenics # /// WL Change
 
 - type: job
   id: WLGathererProcessor
@@ -50,9 +59,12 @@
   playTimeTracker: JobWLGathererProcessor
   weight: 10
   icon: JobIconMedicalDoctor
+  startingGear: null # /// WL Change
+  canBeAntag: false # /// WL Change
   supervisors: job-supervisors-wl-settlement-head
   access:
   - Maintenance
   - Medical
   - Chemistry
   - Hydroponics
+  - Cryogenics # /// WL Change

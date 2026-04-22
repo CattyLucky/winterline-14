@@ -19,3 +19,6 @@ JobWLSettlementHead = Глава поселения
 JobWLMechanic = Механик
 JobWLHunter = Охотник
 JobWLGathererProcessor = Собиратель-обработчик
+
+wl-settlement-title = WL Поселение
+wl-settlement-description = Режим только WL с отключёнными случайными событиями для разработки своих сценариев.
