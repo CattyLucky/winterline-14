@@ -1,7 +1,8 @@
-﻿- type: job
+- type: job
   id: MedicalIntern
   name: job-name-intern
   description: job-description-intern
+  setPreference: false # /// WL Change
   playTimeTracker: JobMedicalIntern
   requirements:
     - !type:DepartmentTimeRequirement

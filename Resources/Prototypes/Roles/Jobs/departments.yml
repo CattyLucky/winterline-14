@@ -3,6 +3,7 @@
   name: department-Cargo
   description: department-Cargo-description
   color: "#A46106"
+  editorHidden: true # /// WL Change
   roles:
   - CargoTechnician
   - Quartermaster
@@ -13,6 +14,7 @@
   name: department-Civilian
   description: department-Civilian-description
   color: "#9FED58"
+  editorHidden: true # /// WL Change
   weight: -10
   roles:
   - Bartender
@@ -46,7 +48,7 @@
   - ERTSecurity
   - ERTEngineer
   - DeathSquad
-  editorHidden: true
+  editorHidden: true # /// WL Change
   weight: 120
 
 - type: department
@@ -54,6 +56,7 @@
   name: department-Command
   description: department-Command-description
   color: "#334E6D"
+  editorHidden: true # /// WL Change
   roles:
   - Captain
   - ChiefEngineer
@@ -79,6 +82,7 @@
   name: department-Engineering
   description: department-Engineering-description
   color: "#EFB341"
+  editorHidden: true # /// WL Change
   roles:
   - AtmosphericTechnician
   - ChiefEngineer
@@ -90,6 +94,7 @@
   name: department-Medical
   description: department-Medical-description
   color: "#52B4E9"
+  editorHidden: true # /// WL Change
   roles:
   - Chemist
   - ChiefMedicalOfficer
@@ -103,6 +108,7 @@
   name: department-Security
   description: department-Security-description
   color: "#DE3A3A"
+  editorHidden: true # /// WL Change
   weight: 20
   roles:
   - HeadOfSecurity
@@ -116,6 +122,7 @@
   name: department-Science
   description: department-Science-description
   color: "#D381C9"
+  editorHidden: true # /// WL Change
   roles:
   - ResearchDirector
   - Scientist
@@ -126,6 +133,7 @@
   name: department-Silicon
   description: department-Silicon-description
   color: "#D381C9"
+  editorHidden: true # /// WL Change
   roles:
   - Borg
   - StationAi
@@ -135,6 +143,7 @@
   name: department-Specific
   description: department-Specific-description
   color: "#9FED58"
+  editorHidden: true # /// WL Change
   weight: 10
   roles:
   - Reporter

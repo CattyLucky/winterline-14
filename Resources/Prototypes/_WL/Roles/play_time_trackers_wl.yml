@@ -1,0 +1,11 @@
+﻿- type: playTimeTracker
+  id: JobWLSettlementHead
+
+- type: playTimeTracker
+  id: JobWLMechanic
+
+- type: playTimeTracker
+  id: JobWLHunter
+
+- type: playTimeTracker
+  id: JobWLGathererProcessor

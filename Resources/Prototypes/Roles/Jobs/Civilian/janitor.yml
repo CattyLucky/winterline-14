@@ -2,6 +2,7 @@
   id: Janitor
   name: job-name-janitor
   description: job-description-janitor
+  setPreference: false # /// WL Change
   playTimeTracker: JobJanitor
   startingGear: JanitorGear
   icon: "JobIconJanitor"

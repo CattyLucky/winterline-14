@@ -1,0 +1,11 @@
+﻿- type: department
+  id: WLSettlement
+  name: department-WLSettlement
+  description: department-WLSettlement-description
+  color: "#6E9156"
+  weight: 500
+  roles:
+  - WLSettlementHead
+  - WLMechanic
+  - WLHunter
+  - WLGathererProcessor

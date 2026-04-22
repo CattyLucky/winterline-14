@@ -2,6 +2,7 @@
   id: SecurityOfficer
   name: job-name-security
   description: job-description-security
+  setPreference: false # /// WL Change
   playTimeTracker: JobSecurityOfficer
   requirements:
     - !type:DepartmentTimeRequirement
