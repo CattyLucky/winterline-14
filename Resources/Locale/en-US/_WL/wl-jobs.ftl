@@ -1,4 +1,4 @@
-﻿department-WLSettlement = Settlement
+department-WLSettlement = Settlement
 department-WLSettlement-description = A self-sufficient department focused on survival, repair, hunting, and processing.
 
 job-name-wl-settlement-head = Settlement Head

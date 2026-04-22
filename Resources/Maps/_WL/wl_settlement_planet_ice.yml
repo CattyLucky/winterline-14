@@ -1585,17 +1585,17 @@ entities:
             0: 14
         uniqueMixes:
         - volume: 2500
-          temperature: 293.15
+          temperature: 248.15 # /// WL Change
           moles:
             Oxygen: 21.824879
             Nitrogen: 82.10312
         - volume: 2500
-          temperature: 293.15
+          temperature: 248.15 # /// WL Change
           moles:
             Oxygen: 21.213781
             Nitrogen: 79.80423
         - volume: 2500
-          temperature: 293.15
+          temperature: 248.15 # /// WL Change
           moles: {}
         chunkSize: 4
     - type: RadiationGridResistance
@@ -1616,10 +1616,8 @@ entities:
     - type: Map
       mapPaused: True
     - type: GridTree
-    - type: FTLDestination
-      whitelist:
-        tags:
-        - Syndicate
+    # /// WL Change
+    # Removed syndicate-only FTL destination whitelist for WL planetary mode
     - type: Broadphase
     - type: OccluderTree
     - type: Parallax
@@ -1633,7 +1631,7 @@ entities:
         moles:
           Oxygen: 21.824879
           Nitrogen: 82.10312
-- proto: AirlockExternalGlassNukeopLocked
+- proto: AirlockExternalGlassLocked # /// WL Change
   entities:
   - uid: 49
     components:
@@ -1725,7 +1723,7 @@ entities:
     - type: Transform
       pos: -33.5,0.5
       parent: 104
-- proto: AirlockSyndicateNukeopGlassLocked
+- proto: AirlockExternalGlassLocked # /// WL Change
   entities:
   - uid: 48
     components:
@@ -1782,7 +1780,7 @@ entities:
     - type: Transform
       pos: 6.5,-9.5
       parent: 104
-- proto: AirlockSyndicateNukeopLocked
+- proto: AirlockExternalLocked # /// WL Change
   entities:
   - uid: 109
     components:
@@ -6589,7 +6587,7 @@ entities:
     - type: Transform
       pos: -1.5,-12.5
       parent: 104
-- proto: BedsheetSyndie
+- proto: BedsheetWhite # /// WL Change
   entities:
   - uid: 154
     components:
@@ -10236,7 +10234,7 @@ entities:
     - type: Transform
       pos: 24.5,-14.5
       parent: 104
-- proto: ClothingBackpackDuffelSyndicateFilledMedical
+- proto: ClothingBackpackDuffelMedical # /// WL Change
   entities:
   - uid: 2437
     components:
@@ -10314,7 +10312,7 @@ entities:
       rot: 1.5707963267948966 rad
       pos: 0.5,-14.5
       parent: 104
-- proto: ComputerNukieDelivery
+- proto: ComputerCargoOrders # /// WL Change
   entities:
   - uid: 1705
     components:
@@ -10431,7 +10429,7 @@ entities:
       parent: 104
     - type: Fixtures
       fixtures: {}
-- proto: FaxMachineSyndie
+- proto: FaxMachineCaptain # /// WL Change
   entities:
   - uid: 81
     components:
@@ -10943,7 +10941,7 @@ entities:
     - type: Transform
       pos: 11.5,-6.5
       parent: 104
-- proto: HandheldStationMapNukeops
+- proto: HandheldStationMap # /// WL Change
   entities:
   - uid: 1703
     components:
@@ -11072,7 +11070,7 @@ entities:
     - type: Transform
       pos: 10.5,2.5
       parent: 104
-- proto: LockerSyndicatePersonalFilled
+- proto: LockerSteel # /// WL Change
   entities:
   - uid: 178
     components:
@@ -11203,70 +11201,6 @@ entities:
     - type: Transform
       pos: 11.895346,-10.413807
       parent: 104
-- proto: NukeDiskFake
-  entities:
-  - uid: 282
-    components:
-    - type: Transform
-      pos: 12.149857,15.427643
-      parent: 104
-- proto: NukeOpsAmmoSpawner
-  entities:
-  - uid: 770
-    components:
-    - type: Transform
-      pos: 5.5,10.5
-      parent: 104
-- proto: NukeOpsGrenadeSpawner
-  entities:
-  - uid: 228
-    components:
-    - type: Transform
-      pos: 14.5,-17.5
-      parent: 104
-  - uid: 448
-    components:
-    - type: Transform
-      pos: 11.5,-16.5
-      parent: 104
-- proto: NukeOpsLootSpawner
-  entities:
-  - uid: 1704
-    components:
-    - type: Transform
-      pos: 0.5,-6.5
-      parent: 104
-  - uid: 1894
-    components:
-    - type: Transform
-      pos: 0.5,0.5
-      parent: 104
-- proto: NukeOpsMedkitBruteSpawner
-  entities:
-  - uid: 447
-    components:
-    - type: Transform
-      pos: 7.5,-10.5
-      parent: 104
-- proto: NukeOpsMedkitSpawner
-  entities:
-  - uid: 306
-    components:
-    - type: Transform
-      pos: 7.5,-11.5
-      parent: 104
-- proto: NukeOpsWeaponSpawner
-  entities:
-  - uid: 1388
-    components:
-    - type: Transform
-      pos: 5.5,11.5
-      parent: 104
-  - uid: 1694
-    components:
-    - type: Transform
-      pos: 5.5,12.5
-      parent: 104
 - proto: OperatingTable
   entities:
   - uid: 2435
@@ -11293,7 +11227,7 @@ entities:
     - type: Transform
       pos: 24.5,-16.5
       parent: 104
-- proto: PhoneInstrumentSyndicate
+- proto: PhoneInstrument # /// WL Change
   entities:
   - uid: 1684
     components:
@@ -11353,7 +11287,7 @@ entities:
     - type: Transform
       pos: -4.605839,20.481245
       parent: 104
-- proto: PlushieNuke
+- proto: PlushieHuman # /// WL Change
   entities:
   - uid: 163
     components:
@@ -11559,45 +11493,6 @@ entities:
     components:
     - type: Transform
       pos: -9.5,8.5
-      parent: 104
-    - type: Fixtures
-      fixtures: {}
-- proto: PosterContrabandSyndicatePistol
-  entities:
-  - uid: 1386
-    components:
-    - type: Transform
-      pos: 12.5,-9.5
-      parent: 104
-    - type: Fixtures
-      fixtures: {}
-- proto: PosterContrabandSyndicateRecruitment
-  entities:
-  - uid: 1242
-    components:
-    - type: Transform
-      pos: -15.5,7.5
-      parent: 104
-    - type: Fixtures
-      fixtures: {}
-  - uid: 1561
-    components:
-    - type: Transform
-      pos: 16.5,-11.5
-      parent: 104
-    - type: Fixtures
-      fixtures: {}
-  - uid: 2453
-    components:
-    - type: Transform
-      pos: -3.5,-5.5
-      parent: 104
-    - type: Fixtures
-      fixtures: {}
-  - uid: 2454
-    components:
-    - type: Transform
-      pos: 12.5,-15.5
       parent: 104
     - type: Fixtures
       fixtures: {}
@@ -13050,43 +12945,6 @@ entities:
     - type: Transform
       pos: 5.5,-1.5
       parent: 104
-- proto: SpawnPointNukies
-  entities:
-  - uid: 167
-    components:
-    - type: Transform
-      pos: 3.5,-5.5
-      parent: 104
-  - uid: 172
-    components:
-    - type: Transform
-      pos: 3.5,-7.5
-      parent: 104
-  - uid: 173
-    components:
-    - type: Transform
-      pos: 0.5,-5.5
-      parent: 104
-  - uid: 2477
-    components:
-    - type: Transform
-      pos: 4.5,-3.5
-      parent: 104
-  - uid: 2478
-    components:
-    - type: Transform
-      pos: 3.5,-1.5
-      parent: 104
-  - uid: 2479
-    components:
-    - type: Transform
-      pos: 2.5,-1.5
-      parent: 104
-  - uid: 2480
-    components:
-    - type: Transform
-      pos: 1.5,-2.5
-      parent: 104
 - proto: Spear
   entities:
   - uid: 3366
@@ -13348,21 +13206,21 @@ entities:
       - SurveillanceCameraEntertainment
       nameSet: True
       id: Weeh
-- proto: SyndicateMicrowave
+- proto: KitchenMicrowave # /// WL Change
   entities:
   - uid: 10
     components:
     - type: Transform
       pos: 13.5,-6.5
       parent: 104
-- proto: SyndicatePersonalAI
+- proto: PersonalAI # /// WL Change
   entities:
   - uid: 160
     components:
     - type: Transform
       pos: 1.4711013,-3.6405277
       parent: 104
-- proto: SyndieFlag
+- proto: NTFlag # /// WL Change
   entities:
   - uid: 819
     components:
@@ -13371,7 +13229,7 @@ entities:
       parent: 104
     - type: Fixtures
       fixtures: {}
-- proto: SyndieHandyFlag
+- proto: NTHandyFlag # /// WL Change
   entities:
   - uid: 1810
     components:
@@ -13763,7 +13621,7 @@ entities:
     - type: Transform
       pos: -2.4700382,-4.362167
       parent: 104
-- proto: ToolboxSyndicateFilled
+- proto: ToolboxMechanicalFilled # /// WL Change
   entities:
   - uid: 205
     components:
@@ -13777,7 +13635,7 @@ entities:
     - type: Transform
       pos: 2.3930676,-2.59717
       parent: 104
-- proto: ToyFigurineNukie
+- proto: ToyFigurineCaptain # /// WL Change
   entities:
   - uid: 14
     components:
@@ -13794,14 +13652,14 @@ entities:
     - type: Transform
       pos: 3.6429763,-2.6717777
       parent: 104
-- proto: ToyFigurineNukieCommander
+- proto: ToyFigurineHeadOfSecurity # /// WL Change
   entities:
   - uid: 2471
     components:
     - type: Transform
       pos: 3.1898513,-2.9530277
       parent: 104
-- proto: ToyFigurineNukieElite
+- proto: ToyFigurineSecurity # /// WL Change
   entities:
   - uid: 2467
     components:
@@ -13822,19 +13680,7 @@ entities:
     - type: Transform
       pos: 3.0179763,-2.3124027
       parent: 104
-- proto: ToyNuke
-  entities:
-  - uid: 26
-    components:
-    - type: Transform
-      pos: 4.4214306,-6.3946886
-      parent: 104
-  - uid: 284
-    components:
-    - type: Transform
-      pos: 12.453509,14.985125
-      parent: 104
-- proto: VendingMachineBoozeSyndicate
+- proto: VendingMachineBooze # /// WL Change
   entities:
   - uid: 1380
     components:
@@ -13848,7 +13694,7 @@ entities:
     - type: Transform
       pos: -10.5,7.5
       parent: 104
-- proto: VendingMachineChemicalsSyndicate
+- proto: VendingMachineChemicals # /// WL Change
   entities:
   - uid: 1335
     components:
@@ -13890,7 +13736,7 @@ entities:
     - type: Transform
       pos: 6.5,0.5
       parent: 104
-- proto: VendingMachineSyndieDrobe
+- proto: VendingMachineClothing # /// WL Change
   entities:
   - uid: 1299
     components:
@@ -15422,5 +15268,46 @@ entities:
     - type: Transform
       pos: 4.5,-7.5
       parent: 104
+- proto: WLWeatherControllerCycle # /// WL Change
+  entities:
+  - uid: 500009
+    components:
+    - type: Transform
+      pos: 0.5,0.5
+      parent: 104
+- proto: WLZoneResidentialMarker # /// WL Change
+  entities:
+  - uid: 500010
+    components:
+    - type: Transform
+      pos: 1.5,-9.5
+      parent: 104
+- proto: WLZoneWorkshopMarker # /// WL Change
+  entities:
+  - uid: 500011
+    components:
+    - type: Transform
+      pos: 7.5,-9.5
+      parent: 104
+- proto: WLZoneMedProcessingMarker # /// WL Change
+  entities:
+  - uid: 500012
+    components:
+    - type: Transform
+      pos: 9.5,-4.5
+      parent: 104
+- proto: WLZoneStorageMarker # /// WL Change
+  entities:
+  - uid: 500013
+    components:
+    - type: Transform
+      pos: -1.5,-9.5
+      parent: 104
+- proto: WLZoneOuterMarker # /// WL Change
+  entities:
+  - uid: 500014
+    components:
+    - type: Transform
+      pos: 12.5,2.5
+      parent: 104
 ...
-
