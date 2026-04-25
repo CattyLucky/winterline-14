@@ -7,5 +7,5 @@
   name: wl-settlement-title
   description: wl-settlement-description
   showInVote: true
-  supportedMaps: WLSettlementMapPool
+  supportedMaps: FrostlandMapPool
   rules: []
