@@ -1,0 +1,46 @@
+# /// WL Change
+# Square-zone preset for the Frostpunk/RimWorld-like survival map.
+# Distances are measured from the edge of the base AABB, not from the map center.
+- type: frozenWorldZonePreset
+  id: FrostRimDefaultZones
+  zones:
+  - id: BaseSafe
+    minDistance: 0
+    maxDistance: 40
+    spawnAttempts: 0
+
+  - id: NearField
+    minDistance: 40
+    maxDistance: 100
+    spawnAttempts: 60
+    spawns:
+    - prototype: WLZoneMarkerNear
+      weight: 1
+      minCount: 8
+      maxCount: 12
+      minSeparation: 20
+      clearanceRadius: 1.5
+
+  - id: WorkField
+    minDistance: 100
+    maxDistance: 180
+    spawnAttempts: 80
+    spawns:
+    - prototype: WLZoneMarkerWork
+      weight: 1
+      minCount: 8
+      maxCount: 12
+      minSeparation: 28
+      clearanceRadius: 1.5
+
+  - id: ExpeditionField
+    minDistance: 180
+    maxDistance: 300
+    spawnAttempts: 100
+    spawns:
+    - prototype: WLZoneMarkerExpedition
+      weight: 1
+      minCount: 8
+      maxCount: 12
+      minSeparation: 36
+      clearanceRadius: 1.5

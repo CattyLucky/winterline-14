@@ -1,0 +1,34 @@
+# /// WL Change
+- type: entity
+  id: WLZoneResidentialMarker
+  name: wl zone residential
+  parent: MarkerBase
+  categories: [ HideSpawnMenu ]
+
+# /// WL Change
+- type: entity
+  id: WLZoneWorkshopMarker
+  name: wl zone workshop
+  parent: MarkerBase
+  categories: [ HideSpawnMenu ]
+
+# /// WL Change
+- type: entity
+  id: WLZoneMedProcessingMarker
+  name: wl zone med processing
+  parent: MarkerBase
+  categories: [ HideSpawnMenu ]
+
+# /// WL Change
+- type: entity
+  id: WLZoneStorageMarker
+  name: wl zone storage
+  parent: MarkerBase
+  categories: [ HideSpawnMenu ]
+
+# /// WL Change
+- type: entity
+  id: WLZoneOuterMarker
+  name: wl zone outer
+  parent: MarkerBase
+  categories: [ HideSpawnMenu ]

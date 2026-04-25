@@ -1,11 +1,13 @@
-﻿- type: localizedDataset
+- type: localizedDataset
   id: NamesFirstMale
   values:
     prefix: names-first-male-dataset-
-    count: 666
+    # /// WL Change: synced expected localized dataset count for Winterline.
+    count: 986
 
 - type: localizedDataset
   id: NamesFirstFemale
   values:
     prefix: names-first-female-dataset-
-    count: 771
+    # /// WL Change: synced expected localized dataset count for Winterline.
+    count: 1145

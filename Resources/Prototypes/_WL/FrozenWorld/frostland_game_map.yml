@@ -1,0 +1,21 @@
+- type: gameMap
+  id: Frostland
+  mapName: 'Frostland'
+  mapPath: /Maps/_WL/FrozenWorld/base_frozen_colony.yml
+  minPlayers: 0
+  maxPlayers: 80
+  stations:
+    Frostland:
+      stationProto: FrostlandStation
+      components:
+      - type: StationJobs
+        availableJobs:
+          WLSettlementHead: [ 1, 1 ]
+          WLMechanic: [ 10, 10 ]
+          WLHunter: [ 10, 10 ]
+          WLGathererProcessor: [ 10, 10 ]
+
+- type: gameMapPool
+  id: FrostlandMapPool
+  maps:
+    - Frostland

@@ -1,0 +1,25 @@
+﻿- type: entity
+  parent: AppearanceHuman
+  id: AppearanceHumanWL
+  categories: [ HideSpawnMenu ]
+  name: human appearance wl
+  components:
+  - type: HumanoidProfile
+    species: HumanWL
+
+- type: entity
+  parent: MobHuman
+  id: MobHumanWL
+  name: Urist McHands
+  suffix: WL
+  components:
+  - type: HumanoidProfile
+    species: HumanWL
+
+- type: species
+  id: HumanWL
+  name: species-name-human
+  roundStart: true # /// WL Change
+  prototype: MobHumanWL
+  dollPrototype: AppearanceHumanWL
+  skinColoration: HumanToned

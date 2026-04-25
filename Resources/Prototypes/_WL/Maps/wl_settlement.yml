@@ -1,0 +1,28 @@
+# /// WL Change
+- type: gameMap
+  id: WLSettlementIce
+  mapName: 'WL Ice Planet Survival' # /// WL Change
+  mapPath: /Maps/_WL/wl_settlement_planet_ice.yml # /// WL Change
+  minPlayers: 0
+  maxPlayers: 120
+  stations:
+    WLSettlementIce:
+      stationProto: WLSettlementStation # /// WL Change
+      components:
+        - type: StationNameSetup
+          mapNameTemplate: '{0} WL Settlement {1}'
+          nameGenerator:
+            !type:NanotrasenNameGenerator
+            prefixCreator: '14'
+        - type: StationJobs
+          availableJobs:
+            WLSettlementHead: [ 1, 1 ]
+            WLMechanic: [ 10, 10 ] # /// WL Change
+            WLHunter: [ 10, 10 ] # /// WL Change
+            WLGathererProcessor: [ 10, 10 ] # /// WL Change
+
+# /// WL Change
+- type: gameMapPool
+  id: WLSettlementMapPool
+  maps:
+    - WLSettlementIce

@@ -1,0 +1,22 @@
+- type: entity
+  id: BaseStationFrozenWorld
+  abstract: true
+  components:
+  - type: StationFrozenWorld
+    profile: FrostRimDefault
+    enabled: true
+
+# Use this station prototype only for Frostland-like game maps.
+# It intentionally avoids StandardNanotrasenStation parents that pull in ordinary station systems
+# like cargo shuttles, centcomm, gateway, expeditions, salvage jobs, etc.
+- type: entity
+  id: FrostlandStation
+  parent:
+  - BaseStation
+  - BaseStationJobsSpawning
+  - BaseStationRecords
+  - BaseStationAlertLevels
+  - BaseStationFrozenWorld
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Transform

@@ -2,6 +2,7 @@
   id: SalvageSpecialist
   name: job-name-salvagespec
   description: job-description-salvagespec
+  setPreference: false # /// WL Change
   playTimeTracker: JobSalvageSpecialist
   requirements:
     - !type:DepartmentTimeRequirement

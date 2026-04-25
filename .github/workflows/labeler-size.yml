@@ -1,7 +1,16 @@
 name: "Labels: Size"
-on: pull_request_target
+on:
+  # /// WL Change: use pull_request_target so GITHUB_TOKEN can apply labels on PRs.
+  pull_request_target:
+    types: [opened, synchronize, reopened]
 jobs:
   size-label:
+    permissions:
+      contents: read
+      # /// WL Change: required for /issues/{n}/labels endpoint used by size-label-action.
+      issues: write
+      # /// WL Change: required to mutate pull request metadata from workflow.
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
       - name: size-label

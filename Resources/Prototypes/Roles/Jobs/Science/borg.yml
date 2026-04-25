@@ -4,6 +4,7 @@
   id: StationAi
   name: job-name-station-ai
   description: job-description-station-ai
+  setPreference: false # /// WL Change
   playTimeTracker: JobStationAi
   requirements:
   - !type:RoleTimeRequirement
@@ -21,6 +22,7 @@
   id: Borg
   name: job-name-borg
   description: job-description-borg
+  setPreference: false # /// WL Change
   playTimeTracker: JobBorg
   requirements:
     - !type:OverallPlaytimeRequirement

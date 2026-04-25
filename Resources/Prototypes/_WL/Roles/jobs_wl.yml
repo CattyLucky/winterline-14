@@ -1,0 +1,70 @@
+﻿- type: job
+  id: WLSettlementHead
+  name: job-name-wl-settlement-head
+  description: job-description-wl-settlement-head
+  setPreference: true 
+  playTimeTracker: JobWLSettlementHead
+  weight: 20
+  icon: JobIconHeadOfPersonnel
+  startingGear: null # /// WL Change
+  canBeAntag: false # /// WL Change
+  supervisors: job-supervisors-nobody
+  access:
+  - Maintenance
+  - Service
+  - External
+  - Engineering
+  - Medical
+  - Cryogenics # /// WL Change
+
+- type: job
+  id: WLMechanic
+  name: job-name-wl-mechanic
+  description: job-description-wl-mechanic
+  setPreference: true 
+  playTimeTracker: JobWLMechanic
+  weight: 10
+  icon: JobIconStationEngineer
+  startingGear: null # /// WL Change
+  canBeAntag: false # /// WL Change
+  supervisors: job-supervisors-wl-settlement-head
+  access:
+  - Maintenance
+  - Engineering
+  - External
+  - Cryogenics # /// WL Change
+
+- type: job
+  id: WLHunter
+  name: job-name-wl-hunter
+  description: job-description-wl-hunter
+  setPreference: true 
+  playTimeTracker: JobWLHunter
+  weight: 10
+  icon: JobIconShaftMiner
+  startingGear: null # /// WL Change
+  canBeAntag: false # /// WL Change
+  supervisors: job-supervisors-wl-settlement-head
+  access:
+  - Maintenance
+  - Salvage
+  - External
+  - Cryogenics # /// WL Change
+
+- type: job
+  id: WLGathererProcessor
+  name: job-name-wl-gatherer-processor
+  description: job-description-wl-gatherer-processor
+  setPreference: true
+  playTimeTracker: JobWLGathererProcessor
+  weight: 10
+  icon: JobIconMedicalDoctor
+  startingGear: null # /// WL Change
+  canBeAntag: false # /// WL Change
+  supervisors: job-supervisors-wl-settlement-head
+  access:
+  - Maintenance
+  - Medical
+  - Chemistry
+  - Hydroponics
+  - Cryogenics # /// WL Change
