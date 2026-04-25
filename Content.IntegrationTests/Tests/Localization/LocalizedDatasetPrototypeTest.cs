@@ -63,9 +63,13 @@ public sealed class LocalizedDatasetPrototypeTest : GameTest
                 continue;
 
             using var reader = resources.ContentFileReadText(file);
-            string? line;
-            while ((line = reader.ReadLine()) != null)
+            //WL change: keep CI compatible without nullable annotations in files without #nullable context.
+            while (true)
             {
+                var line = reader.ReadLine();
+                if (line == null)
+                    break;
+
                 var match = LocEntryRegex.Match(line);
                 if (!match.Success)
                     continue;
