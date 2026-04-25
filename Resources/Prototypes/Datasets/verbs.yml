@@ -3,4 +3,4 @@
   values:
     prefix: verbs-dataset-
     # /// WL Change: synced expected localized dataset count for Winterline.
-    count: 632
+    count: 991

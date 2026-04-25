@@ -1,4 +1,4 @@
-﻿- type: localizedDataset
+- type: localizedDataset
   id: NamesMilitaryFirstLeader
   values:
     prefix: names-military-leader-first-dataset-
@@ -10,7 +10,7 @@
   values:
     prefix: names-military-first-dataset-
     # /// WL Change: synced expected localized dataset count for Winterline.
-    count: 4
+    count: 5
 
 - type: localizedDataset
   id: NamesMilitaryLast

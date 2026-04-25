@@ -1,6 +1,6 @@
-﻿- type: localizedDataset
+- type: localizedDataset
   id: NamesDeathCommando
   values:
     prefix: names-death-commando-dataset-
     # /// WL Change: synced expected localized dataset count for Winterline.
-    count: 60
+    count: 158

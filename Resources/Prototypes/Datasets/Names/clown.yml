@@ -1,6 +1,6 @@
-﻿- type: localizedDataset
+- type: localizedDataset
   id: NamesClown
   values:
     prefix: names-clown-dataset-
     # /// WL Change: synced expected localized dataset count for Winterline.
-    count: 53
+    count: 75

@@ -1,6 +1,6 @@
-﻿- type: localizedDataset
+- type: localizedDataset
   id: Adjectives
   values:
     prefix: adjectives-dataset-
     # /// WL Change: synced expected localized dataset count for Winterline.
-    count: 397
+    count: 956
