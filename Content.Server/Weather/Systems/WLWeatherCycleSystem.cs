@@ -1,4 +1,5 @@
 using Content.Server.Weather.Components;
+using Robust.Shared.GameObjects;
 using Robust.Shared.Map;
 using Robust.Shared.Timing;
 
@@ -16,6 +17,8 @@ public sealed class WLWeatherCycleSystem : EntitySystem
     public override void Initialize()
     {
         SubscribeLocalEvent<WLWeatherCycleComponent, MapInitEvent>(OnMapInit);
+        // WL Change: cleanup active weather effect when controller is deleted/shutdown.
+        SubscribeLocalEvent<WLWeatherCycleComponent, ComponentShutdown>(OnShutdown);
     }
 
     private void OnMapInit(Entity<WLWeatherCycleComponent> ent, ref MapInitEvent args)
@@ -29,6 +32,12 @@ public sealed class WLWeatherCycleSystem : EntitySystem
             TryApplyWeather(ent.Owner, ent.Comp, ent.Comp.CurrentIndex);
 
         ent.Comp.NextSwitch = _timing.CurTime + ResolveStepDelay(ent.Comp, ent.Comp.CurrentIndex);
+    }
+
+    private void OnShutdown(Entity<WLWeatherCycleComponent> ent, ref ComponentShutdown args)
+    {
+        // WL Change: prevent leaked weather status effect entities after controller removal.
+        CleanupWeather(ent.Comp);
     }
 
     public override void Update(float frameTime)
@@ -66,7 +75,18 @@ public sealed class WLWeatherCycleSystem : EntitySystem
         if (mapId == MapId.Nullspace)
             return;
 
-        _weather.TrySetWeather(mapId, comp.Cycle[index], out _);
+        if (!_weather.TrySetWeather(mapId, comp.Cycle[index], out var weatherEnt))
+            return;
+
+        // WL Change: avoid orphan weather entities between cycle steps.
+        if (comp.ActiveWeatherEffect is { } previous &&
+            (!weatherEnt.HasValue || previous != weatherEnt.Value) &&
+            !TerminatingOrDeleted(previous))
+        {
+            QueueDel(previous);
+        }
+
+        comp.ActiveWeatherEffect = weatherEnt;
     }
 
     private static TimeSpan ResolveStepDelay(WLWeatherCycleComponent comp, int nextIndex)
@@ -82,5 +102,19 @@ public sealed class WLWeatherCycleSystem : EntitySystem
             return comp.StepDelay;
 
         return TimeSpan.FromMinutes(8);
+    }
+
+    private void CleanupWeather(WLWeatherCycleComponent comp)
+    {
+        if (comp.ActiveWeatherEffect is not { } weatherUid)
+            return;
+
+        // WL Change: clear reference first to avoid double-delete on repeated shutdown paths.
+        comp.ActiveWeatherEffect = null;
+
+        if (TerminatingOrDeleted(weatherUid))
+            return;
+
+        QueueDel(weatherUid);
     }
 }

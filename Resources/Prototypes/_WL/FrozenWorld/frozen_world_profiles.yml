@@ -2,10 +2,11 @@
   id: FrostRimDefault
   mapName: Frostland
   baseName: Frostland Colony Base
-  biome: Snow
+  biome: WLIceWasteland
   mapLightColor: '#D7EFFF'
   safeZonePadding: 8
   atmosphereTemperature: 243.15
+  zonePreset: FrostRimDefaultZones
   gasMoles:
   - 21.0
   - 79.0

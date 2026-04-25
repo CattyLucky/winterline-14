@@ -1,0 +1,190 @@
+# /// WL Change
+# Ice survival biome for Winterline / Frostland.
+# Visual biome only: no plasma, no direct economy resources.
+# Resource/worksite placement is handled by FrozenWorldZoneSystem.
+- type: biomeTemplate
+  id: WLIceWasteland
+  layers:
+    # Base fill. Keep this first so later tile/entity/decal layers can override it.
+    - !type:BiomeTileLayer
+      threshold: -1.0
+      tile: FloorSnow
+
+    # Large frozen lake / ice sheet shapes. Replaces old Snow plasma rivers.
+    - !type:BiomeTileLayer
+      tile: FloorIce
+      threshold: 0.78
+      noise:
+        seed: 4
+        noiseType: OpenSimplex2
+        frequency: 0.012
+        lacunarity: 1.75
+        fractalType: FBm
+        octaves: 2
+
+    # Smaller scattered ice patches.
+    - !type:BiomeTileLayer
+      tile: FloorIce
+      threshold: -0.86
+      noise:
+        seed: 5
+        noiseType: Cellular
+        frequency: 0.025
+        lacunarity: 2
+        fractalType: FBm
+        octaves: 4
+        cellularDistanceFunction: Euclidean
+        cellularReturnType: Distance2
+
+    # Sparse surface snow vegetation/details.
+    - !type:BiomeDecalLayer
+      allowedTiles:
+        - FloorSnow
+      divisions: 2
+      threshold: -0.50
+      noise:
+        seed: 10
+        noiseType: Cellular
+        frequency: 1
+      decals:
+        - grasssnowa1
+        - grasssnowa2
+        - grasssnowa3
+        - grasssnowb1
+        - grasssnowb2
+        - grasssnowb3
+        - grasssnowc1
+        - grasssnowc2
+        - grasssnowc3
+
+    # Wind-blown snow streaks / dense bland detail.
+    - !type:BiomeDecalLayer
+      allowedTiles:
+        - FloorSnow
+      divisions: 1
+      threshold: -0.38
+      noise:
+        seed: 11
+        noiseType: Cellular
+        frequency: 0.18
+        fractalType: FBm
+        octaves: 5
+        lacunarity: 2
+        cellularDistanceFunction: Euclidean
+        cellularReturnType: Distance2
+      decals:
+        - grasssnow
+        - grasssnow01
+        - grasssnow02
+        - grasssnow03
+        - grasssnow04
+        - grasssnow05
+        - grasssnow06
+        - grasssnow07
+        - grasssnow08
+        - grasssnow09
+        - grasssnow10
+        - grasssnow11
+        - grasssnow12
+        - grasssnow13
+
+    # Sparse frozen bushes. Slightly rarer than vanilla Snow.
+    - !type:BiomeDecalLayer
+      allowedTiles:
+        - FloorSnow
+      divisions: 1
+      threshold: 0.18
+      noise:
+        seed: 12
+        noiseType: Cellular
+        frequency: 0.75
+        fractalType: None
+        cellularDistanceFunction: Euclidean
+        cellularReturnType: Distance2
+      decals:
+        - bushsnowa1
+        - bushsnowa2
+        - bushsnowa3
+        - bushsnowb2
+        - bushsnowb3
+
+    # Tree clusters. Not every tree is a resource; worksites are spawned by zones later.
+    - !type:BiomeEntityLayer
+      threshold: 0.72
+      noise:
+        seed: 20
+        noiseType: OpenSimplex2
+        fractalType: FBm
+        frequency: 0.85
+        octaves: 3
+        lacunarity: 2
+      allowedTiles:
+        - FloorSnow
+      entities:
+        - FloraTreeSnow
+
+    # Occasional isolated trees to break up empty snow plains.
+    - !type:BiomeEntityLayer
+      threshold: 0.92
+      noise:
+        seed: 21
+        noiseType: OpenSimplex2
+        fractalType: FBm
+        frequency: 2.1
+        octaves: 2
+        lacunarity: 2
+      allowedTiles:
+        - FloorSnow
+      entities:
+        - FloraTreeSnow
+
+    # Rock formations. Lower density than original Snow so placement validation has room.
+    - !type:BiomeEntityLayer
+      allowedTiles:
+        - FloorSnow
+      threshold: -0.18
+      noise:
+        seed: 30
+        noiseType: Cellular
+        frequency: 0.035
+        lacunarity: 2
+        fractalType: FBm
+        octaves: 4
+        cellularDistanceFunction: Euclidean
+        cellularReturnType: Distance2
+      entities:
+        - WallRockSnow
+
+    # Small scattered solid rocks for visual detail.
+    - !type:BiomeEntityLayer
+      threshold: 0.965
+      noise:
+        seed: 31
+        noiseType: OpenSimplex2
+        frequency: 1.4
+        fractalType: FBm
+        octaves: 2
+        lacunarity: 2
+      allowedTiles:
+        - FloorSnow
+        - FloorIce
+      entities:
+        - FloraRockSolid
+
+    # Rare ice crystals, mostly on ice sheets. Visual only; not an economy resource yet.
+    - !type:BiomeEntityLayer
+      threshold: 0.985
+      noise:
+        seed: 40
+        noiseType: OpenSimplex2
+        frequency: 0.7
+        fractalType: PingPong
+      allowedTiles:
+        - FloorIce
+      entities:
+        - CrystalCyan
+        - CrystalBlue
+
+    # Future hook for biome loot systems if needed.
+    - !type:BiomeDummyLayer
+      id: Loot

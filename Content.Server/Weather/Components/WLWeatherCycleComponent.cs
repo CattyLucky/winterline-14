@@ -1,5 +1,6 @@
 using Content.Server.Weather.Systems;
 using Content.Shared.Prototypes;
+using Robust.Shared.GameObjects;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization.TypeSerializers.Implementations.Custom;
 
@@ -61,4 +62,11 @@ public sealed partial class WLWeatherCycleComponent : Component
     /// </summary>
     [DataField(customTypeSerializer: typeof(TimeOffsetSerializer)), AutoPausedField]
     public TimeSpan NextSwitch = TimeSpan.Zero;
+
+    /// <summary>
+    /// /// WL Change
+    /// Last spawned weather effect entity. Used for explicit cleanup on shutdown.
+    /// </summary>
+    // WL Change: tracked weather entity for explicit cleanup on component shutdown.
+    public EntityUid? ActiveWeatherEffect;
 }

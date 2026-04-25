@@ -15,4 +15,14 @@ public sealed partial class FrozenWorldComponent : Component
     public EntityUid? BaseGrid;
 
     public MapId MapId;
+
+    /// <summary>
+    /// Seed used for deterministic world-side generation.
+    /// </summary>
+    public int Seed;
+
+    /// <summary>
+    /// Prevents duplicate square-zone generation if setup is called more than once.
+    /// </summary>
+    public bool ZonesGenerated;
 }

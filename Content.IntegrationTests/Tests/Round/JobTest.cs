@@ -19,8 +19,12 @@ namespace Content.IntegrationTests.Tests.Round;
 [TestFixture]
 public sealed class JobTest : GameTest
 {
+    // WL Change: Winterline round-start jobs for integration tests.
+    private static readonly ProtoId<JobPrototype> WLSettlementHead = "WLSettlementHead";
+    private static readonly ProtoId<JobPrototype> WLMechanic = "WLMechanic";
+    private static readonly ProtoId<JobPrototype> WLHunter = "WLHunter";
+    // WL Change: keep vanilla IDs only for "must not be assigned" assertions.
     private static readonly ProtoId<JobPrototype> Passenger = "Passenger";
-    private static readonly ProtoId<JobPrototype> Engineer = "StationEngineer";
     private static readonly ProtoId<JobPrototype> Captain = "Captain";
 
     private static string _map = "JobTestMap";
@@ -39,10 +43,11 @@ public sealed class JobTest : GameTest
         - type: StationNameSetup
           mapNameTemplate: ""Empty""
         - type: StationJobs
+          # /// WL Change: JobTest map uses Winterline jobs instead of vanilla selectable jobs.
           availableJobs:
-            {Passenger}: [ -1, -1 ]
-            {Engineer}: [ -1, -1 ]
-            {Captain}: [ 1, 1 ]
+            {WLSettlementHead}: [ 1, 1 ]
+            {WLMechanic}: [ -1, -1 ]
+            {WLHunter}: [ -1, -1 ]
 ";
 
     public override PoolSettings PoolSettings => new()
@@ -52,7 +57,7 @@ public sealed class JobTest : GameTest
         InLobby = true
     };
 
-    private void AssertJob(TestPair pair, ProtoId<JobPrototype> job, NetUserId? user = null, bool isAntag = false)
+    private ProtoId<JobPrototype> AssertRoundJoinedAndGetJob(TestPair pair, NetUserId? user = null, bool isAntag = false)
     {
         var jobSys = pair.Server.System<SharedJobSystem>();
         var mindSys = pair.Server.System<MindSystem>();
@@ -68,13 +73,21 @@ public sealed class JobTest : GameTest
         Assert.That(pair.Server.EntMan.EntityExists(uid));
         var mind = mindSys.GetMind(uid!.Value);
         Assert.That(pair.Server.EntMan.EntityExists(mind));
-        Assert.That(jobSys.MindTryGetJobId(mind, out var actualJob));
-        Assert.That(actualJob, Is.EqualTo(job));
+        // WL Change: API returns nullable job id; assert non-null before returning.
+        Assert.That(jobSys.MindTryGetJobId(mind, out ProtoId<JobPrototype>? actualJob));
+        Assert.That(actualJob, Is.Not.Null);
         Assert.That(roleSys.MindIsAntagonist(mind), Is.EqualTo(isAntag));
+        return actualJob.Value;
+    }
+
+    private void AssertJob(TestPair pair, ProtoId<JobPrototype> job, NetUserId? user = null, bool isAntag = false)
+    {
+        var actualJob = AssertRoundJoinedAndGetJob(pair, user, isAntag);
+        Assert.That(actualJob, Is.EqualTo(job));
     }
 
     /// <summary>
-    /// Simple test that checks that starting the round spawns the player into the test map as a passenger.
+    /// Simple test that checks Winterline round-start assignment succeeds and does not pick disabled vanilla jobs.
     /// </summary>
     [Test]
     public async Task StartRoundTest()
@@ -89,13 +102,24 @@ public sealed class JobTest : GameTest
         Assert.That(pair.Client.AttachedEntity, Is.Null);
         Assert.That(ticker.PlayerGameStatuses[pair.Client.User!.Value], Is.EqualTo(PlayerGameStatus.NotReadyToPlay));
 
+        // WL Change: vanilla preferences disabled; choose WL jobs and verify assignment still succeeds.
+        await pair.SetJobPriorities(
+            (Passenger, JobPriority.Never),
+            (Captain, JobPriority.Never),
+            (WLSettlementHead, JobPriority.Never),
+            (WLMechanic, JobPriority.High),
+            (WLHunter, JobPriority.Medium));
+
         // Ready up and start the round
         ticker.ToggleReadyAll(true);
         Assert.That(ticker.PlayerGameStatuses[pair.Client.User!.Value], Is.EqualTo(PlayerGameStatus.ReadyToPlay));
         await pair.Server.WaitPost(() => ticker.StartRound());
         await pair.RunTicksSync(10);
 
-        AssertJob(pair, Passenger);
+        var actualJob = AssertRoundJoinedAndGetJob(pair);
+        Assert.That(actualJob, Is.EqualTo(WLMechanic));
+        Assert.That(actualJob, Is.Not.EqualTo(Passenger));
+        Assert.That(actualJob, Is.Not.EqualTo(Captain));
 
         await pair.Server.WaitPost(() => ticker.RestartRound());
     }
@@ -113,27 +137,37 @@ public sealed class JobTest : GameTest
         Assert.That(ticker.RunLevel, Is.EqualTo(GameRunLevel.PreRoundLobby));
         Assert.That(pair.Client.AttachedEntity, Is.Null);
 
-        await pair.SetJobPriorities((Passenger, JobPriority.Medium), (Engineer, JobPriority.High));
+        // WL Change: high vanilla preference must not override WL round-start job selection.
+        await pair.SetJobPriorities(
+            (Passenger, JobPriority.High),
+            (WLSettlementHead, JobPriority.Never),
+            (WLMechanic, JobPriority.Medium),
+            (WLHunter, JobPriority.Low));
         ticker.ToggleReadyAll(true);
         await pair.Server.WaitPost(() => ticker.StartRound());
         await pair.RunTicksSync(10);
 
-        AssertJob(pair, Engineer);
+        AssertJob(pair, WLMechanic);
 
         await pair.Server.WaitPost(() => ticker.RestartRound());
         Assert.That(ticker.RunLevel, Is.EqualTo(GameRunLevel.PreRoundLobby));
-        await pair.SetJobPriorities((Passenger, JobPriority.High), (Engineer, JobPriority.Medium));
+        // WL Change: alternate WL preference ordering should be respected.
+        await pair.SetJobPriorities(
+            (Passenger, JobPriority.High),
+            (WLSettlementHead, JobPriority.Never),
+            (WLHunter, JobPriority.Medium),
+            (WLMechanic, JobPriority.Low));
         ticker.ToggleReadyAll(true);
         await pair.Server.WaitPost(() => ticker.StartRound());
         await pair.RunTicksSync(10);
 
-        AssertJob(pair, Passenger);
+        AssertJob(pair, WLHunter);
 
         await pair.Server.WaitPost(() => ticker.RestartRound());
     }
 
     /// <summary>
-    /// Check high priority jobs (e.g., captain) are selected before other roles, even if it means a player does not
+    /// Check high weight jobs (e.g., settlement head) are selected before other roles, even if it means a player does not
     /// get their preferred job.
     /// </summary>
     [Test]
@@ -146,18 +180,22 @@ public sealed class JobTest : GameTest
         Assert.That(ticker.RunLevel, Is.EqualTo(GameRunLevel.PreRoundLobby));
         Assert.That(pair.Client.AttachedEntity, Is.Null);
 
-        var captain = pair.Server.ProtoMan.Index(Captain);
-        var engineer = pair.Server.ProtoMan.Index(Engineer);
-        var passenger = pair.Server.ProtoMan.Index(Passenger);
-        Assert.That(captain.Weight, Is.GreaterThan(engineer.Weight));
-        Assert.That(engineer.Weight, Is.EqualTo(passenger.Weight));
+        var head = pair.Server.ProtoMan.Index(WLSettlementHead);
+        var mechanic = pair.Server.ProtoMan.Index(WLMechanic);
+        var hunter = pair.Server.ProtoMan.Index(WLHunter);
+        Assert.That(head.Weight, Is.GreaterThan(mechanic.Weight));
+        Assert.That(mechanic.Weight, Is.EqualTo(hunter.Weight));
 
-        await pair.SetJobPriorities((Passenger, JobPriority.Medium), (Engineer, JobPriority.High), (Captain, JobPriority.Low));
+        // WL Change: keep WL head as low priority, but ensure weight-based selection still chooses it.
+        await pair.SetJobPriorities(
+            (WLMechanic, JobPriority.High),
+            (WLHunter, JobPriority.Medium),
+            (WLSettlementHead, JobPriority.Low));
         ticker.ToggleReadyAll(true);
         await pair.Server.WaitPost(() => ticker.StartRound());
         await pair.RunTicksSync(10);
 
-        AssertJob(pair, Captain);
+        AssertJob(pair, WLSettlementHead);
 
         await pair.Server.WaitPost(() => ticker.RestartRound());
     }
@@ -178,26 +216,35 @@ public sealed class JobTest : GameTest
         await pair.Server.AddDummySessions(5);
         await pair.RunTicksSync(5);
 
-        var engineers = pair.Server.PlayerMan.Sessions.Select(x => x.UserId).ToList();
-        var captain = engineers[3];
-        engineers.RemoveAt(3);
+        var mechanics = pair.Server.PlayerMan.Sessions.Select(x => x.UserId).ToList();
+        var head = mechanics[3];
+        mechanics.RemoveAt(3);
 
-        await pair.SetJobPriorities(captain, (Captain, JobPriority.High), (Engineer, JobPriority.Medium));
-        foreach (var engi in engineers)
+        // WL Change: one user explicitly prioritizes WL settlement head.
+        await pair.SetJobPriorities(
+            head,
+            (WLSettlementHead, JobPriority.High),
+            (WLMechanic, JobPriority.Medium),
+            (WLHunter, JobPriority.Low));
+        foreach (var mechanic in mechanics)
         {
-            await pair.SetJobPriorities(engi, (Captain, JobPriority.Medium), (Engineer, JobPriority.High));
+            await pair.SetJobPriorities(
+                mechanic,
+                (WLSettlementHead, JobPriority.Medium),
+                (WLMechanic, JobPriority.High),
+                (WLHunter, JobPriority.Low));
         }
 
         ticker.ToggleReadyAll(true);
         await pair.Server.WaitPost(() => ticker.StartRound());
         await pair.RunTicksSync(10);
 
-        AssertJob(pair, Captain, captain);
+        AssertJob(pair, WLSettlementHead, head);
         Assert.Multiple(() =>
         {
-            foreach (var engi in engineers)
+            foreach (var mechanic in mechanics)
             {
-                AssertJob(pair, Engineer, engi);
+                AssertJob(pair, WLMechanic, mechanic);
             }
         });
 

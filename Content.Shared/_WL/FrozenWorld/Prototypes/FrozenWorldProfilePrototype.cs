@@ -8,8 +8,9 @@ namespace Content.Shared._WL.FrozenWorld.Prototypes;
 /// <summary>
 /// Data-only profile for configuring the primary frozen survival world.
 ///
-/// Stage 1 intentionally contains only biome/atmosphere/safe-zone data.
-/// Ruins, weather and resource layers should be added in later prototypes.
+/// Stage 1 contains only biome/atmosphere/safe-zone data.
+/// Zone layout is intentionally moved into a separate preset so each map/mode can reuse
+/// the same world profile with a different square-zone layout.
 /// </summary>
 [Prototype]
 public sealed partial class FrozenWorldProfilePrototype : IPrototype
@@ -59,4 +60,10 @@ public sealed partial class FrozenWorldProfilePrototype : IPrototype
     /// </summary>
     [DataField]
     public List<float> GasMoles = new() { 21f, 79f };
+
+    /// <summary>
+    /// Square-zone layout preset used by FrozenWorldZoneSystem.
+    /// </summary>
+    [DataField]
+    public ProtoId<FrozenWorldZonePresetPrototype> ZonePreset = "FrostRimDefaultZones";
 }

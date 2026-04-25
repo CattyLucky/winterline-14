@@ -1,0 +1,23 @@
+# /// WL Change
+# Temporary visible debug entities for checking square-zone placement.
+# These are not final resources. Replace with worksites/ruins/animal dens after layout verification.
+- type: entity
+  id: WLZoneMarkerNear
+  parent: CrateHydroponicsSeedsExotic
+  name: near field debug crate
+  suffix: WL, Debug, Near
+  categories: [ HideSpawnMenu ]
+
+- type: entity
+  id: WLZoneMarkerWork
+  parent: CrateMaterialSilo
+  name: work field debug crate
+  suffix: WL, Debug, Work
+  categories: [ HideSpawnMenu ]
+
+- type: entity
+  id: WLZoneMarkerExpedition
+  parent: CrateCargoLuxuryHardsuit
+  name: expedition field debug crate
+  suffix: WL, Debug, Expedition
+  categories: [ HideSpawnMenu ]

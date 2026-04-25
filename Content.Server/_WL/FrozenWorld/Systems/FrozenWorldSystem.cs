@@ -35,6 +35,7 @@ public sealed partial class FrozenWorldSystem : EntitySystem
     [Dependency] private readonly IPrototypeManager _proto = default!;
     [Dependency] private readonly IRobustRandom _random = default!;
     [Dependency] private readonly SharedTransformSystem _transform = default!;
+    [Dependency] private readonly FrozenWorldZoneSystem _zones = default!;
 
     public override void Initialize()
     {
@@ -111,6 +112,9 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         world.Profile = profileId;
         world.BaseGrid = baseGridUid;
         world.MapId = mapId;
+        world.Seed = seed;
+
+        _zones.GenerateZones(mapUid.Value, world, profile);
 
         Log.Info($"Configured primary frozen world '{profileId}' on map {mapId} with base {ToPrettyString(baseGridUid)} and biome '{profile.Biome}'.");
     }

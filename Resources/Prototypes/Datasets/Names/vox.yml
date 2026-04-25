@@ -2,4 +2,5 @@
   id: NamesVox
   values:
     prefix: names-vox-dataset-
-    count: 2761
+    # /// WL Change: synced expected localized dataset count for Winterline.
+    count: 2762
