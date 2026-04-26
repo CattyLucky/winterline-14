@@ -50,6 +50,27 @@ public sealed partial class FrozenWorldComponent : Component
     public bool BaseStamped;
 
     /// <summary>
+    /// Current global static atmosphere temperature in Kelvin.
+    /// Gas moles stay fixed; this value is the only atmosphere value intended to change during gameplay.
+    /// </summary>
+    public float AtmosphereTemperature;
+
+    /// <summary>
+    /// Whether this frozen world should disable normal SS14 grid atmosphere simulation.
+    /// </summary>
+    public bool StaticAtmosphere = true;
+
+    /// <summary>
+    /// How often to re-apply the static temperature to all loaded grid atmosphere tiles.
+    /// </summary>
+    public float AtmosphereTemperatureUpdateInterval = 5f;
+
+    /// <summary>
+    /// Runtime accumulator used by FrozenWorldTemperatureSystem.
+    /// </summary>
+    public float AtmosphereTemperatureAccumulator;
+
+    /// <summary>
     /// Prevents duplicate square-zone generation if setup is called more than once.
     /// </summary>
     public bool ZonesGenerated;

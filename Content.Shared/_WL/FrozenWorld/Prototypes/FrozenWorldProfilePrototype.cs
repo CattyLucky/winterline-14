@@ -62,6 +62,26 @@ public sealed partial class FrozenWorldProfilePrototype : IPrototype
     public List<float> GasMoles = new() { 21f, 79f };
 
     /// <summary>
+    /// If true, the frozen world uses atmosphere as a static background layer.
+    /// Gas moles stay uniform on every tile; only temperature is controlled by FrozenWorld systems.
+    /// </summary>
+    [DataField]
+    public bool StaticAtmosphere = true;
+
+    /// <summary>
+    /// If true, every seeded tile is overwritten with the profile gas mix.
+    /// This avoids local vacuum pockets and removes the need for normal SS14 gas equalization.
+    /// </summary>
+    [DataField]
+    public bool ForceUniformAtmosphere = true;
+
+    /// <summary>
+    /// How often the static temperature system reapplies the current world temperature, in seconds.
+    /// </summary>
+    [DataField]
+    public float AtmosphereTemperatureUpdateInterval = 5f;
+
+    /// <summary>
     /// Square-zone layout preset used by FrozenWorldZoneSystem.
     /// </summary>
     [DataField]
