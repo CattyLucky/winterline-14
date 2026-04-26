@@ -310,29 +310,33 @@ public abstract class SharedBiomeSystem : EntitySystem
         }
 
         var tileId = TileDefManager[tileRef.Value.TypeId].ID;
+        var result = new List<(string ID, Vector2 Position)>();
 
         for (var i = layers.Count - 1; i >= 0; i--)
         {
             var layer = layers[i];
 
-            // Entities might block decal so need to check if there's one in front of us.
             switch (layer)
             {
                 case BiomeDummyLayer:
                     continue;
+
                 case IBiomeWorldLayer worldLayer:
                     if (!worldLayer.AllowedTiles.Contains(tileId))
                         continue;
 
                     break;
+
                 case BiomeMetaLayer:
                     break;
+
                 default:
                     continue;
             }
 
             var invert = layer.Invert;
             var noiseCopy = GetNoise(layer.Noise, seed);
+
             var value = noiseCopy.GetNoise(indices.X, indices.Y);
             value = invert ? value * -1 : value;
 
@@ -341,44 +345,45 @@ public abstract class SharedBiomeSystem : EntitySystem
 
             if (layer is BiomeMetaLayer meta)
             {
-                if (TryGetDecals(indices, ProtoManager.Index<BiomeTemplatePrototype>(meta.Template).Layers, seed, grid, out decals))
-                {
-                    return true;
-                }
+                if (TryGetDecals(indices, ProtoManager.Index<BiomeTemplatePrototype>(meta.Template).Layers, seed, grid, out var metaDecals))
+                    result.AddRange(metaDecals);
 
                 continue;
             }
 
-            // Check if the other layer should even render, if not then keep going.
             if (layer is not BiomeDecalLayer decalLayer)
                 continue;
-
-            decals = new List<(string ID, Vector2 Position)>();
 
             for (var x = 0; x < decalLayer.Divisions; x++)
             {
                 for (var y = 0; y < decalLayer.Divisions; y++)
                 {
-                    var index = new Vector2(indices.X + x * 1f / decalLayer.Divisions, indices.Y + y * 1f / decalLayer.Divisions);
+                    var index = new Vector2(
+                        indices.X + x * 1f / decalLayer.Divisions,
+                        indices.Y + y * 1f / decalLayer.Divisions);
+
                     var decalValue = noiseCopy.GetNoise(index.X, index.Y);
                     decalValue = invert ? decalValue * -1 : decalValue;
 
                     if (decalValue < decalLayer.Threshold)
                         continue;
 
-                    decals.Add((Pick(decalLayer.Decals, (noiseCopy.GetNoise(indices.X, indices.Y, x + y * decalLayer.Divisions) + 1f) / 2f), index));
+                    var decalPickValue = (noiseCopy.GetNoise(indices.X, indices.Y, x + y * decalLayer.Divisions) + 1f) / 2f;
+                    var decal = Pick(decalLayer.Decals, decalPickValue);
+
+                    result.Add((decal, index));
                 }
             }
-
-            // Check other layers
-            if (decals.Count == 0)
-                continue;
-
-            return true;
         }
 
-        decals = null;
-        return false;
+        if (result.Count == 0)
+        {
+            decals = null;
+            return false;
+        }
+
+        decals = result;
+        return true;
     }
 
     /// <summary>

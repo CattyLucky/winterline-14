@@ -24,15 +24,17 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 /// <summary>
 /// Primary frozen-world bootstrap for the round map.
 ///
-/// Important architecture:
-/// - The biome lives on the map entity / planet grid.
-/// - The station/base grid remains a separate technical settlement grid.
-/// - Do not put BiomeComponent on the station grid.
+/// Architecture:
+/// - Map entity remains a map entity. Never add MapGridComponent to it.
+/// - PlanetGrid is the single physical surface grid.
+/// - The originally loaded station/base grid is temporary and gets stamped into PlanetGrid.
+/// - BiomeComponent lives on PlanetGrid.
 /// </summary>
 public sealed partial class FrozenWorldSystem : EntitySystem
 {
     [Dependency] private readonly AtmosphereSystem _atmos = default!;
     [Dependency] private readonly BiomeSystem _biome = default!;
+    [Dependency] private readonly FrozenWorldBaseStampSystem _baseStamp = default!;
     [Dependency] private readonly MetaDataSystem _meta = default!;
     [Dependency] private readonly IPrototypeManager _proto = default!;
     [Dependency] private readonly IRobustRandom _random = default!;
@@ -90,52 +92,50 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         var seed = station.Comp.Seed ?? _random.Next();
         var profileId = station.Comp.Profile;
 
+        var world = EnsureComp<FrozenWorldComponent>(mapUid.Value);
+        if (world.BaseStamped && world.PlanetGrid is { } existingPlanetGrid && Exists(existingPlanetGrid))
+        {
+            Log.Warning($"Frozen world '{profileId}' is already stamped on {ToPrettyString(existingPlanetGrid)}. Skipping duplicate setup.");
+            return;
+        }
+
         _meta.SetEntityName(mapUid.Value, profile.MapName);
         _meta.SetEntityName(baseGridUid, profile.BaseName);
-        EnsureOutdoorLightingOnStationGrids(stationData);
 
-        var baseComp = EnsureComp<FrozenBaseComponent>(baseGridUid);
-        baseComp.Profile = profileId;
-        Dirty(baseGridUid, baseComp);
-
+        // The old settlement grid may have Shuttle/ImplicitRoof because it was loaded as a station grid.
+        // It is temporary, but disabling/removing here avoids side effects during the stamp tick.
         _shuttles.Disable(baseGridUid);
+        RemoveImplicitRoof(baseGridUid);
 
-        EnsureComp<ProtectedGridComponent>(baseGridUid);
-        EnsureComp<ProtectedGridComponent>(mapUid.Value);
-        EnsureComp<NavMapComponent>(mapUid.Value);
+        var planetGridUid = world.PlanetGrid is { } storedPlanetGrid && Exists(storedPlanetGrid)
+            ? storedPlanetGrid
+            : _baseStamp.CreatePlanetGrid(mapId, profile.MapName);
 
-        EnsurePlanetGridOnMap(mapUid.Value, _proto.Index(profile.Biome), seed, profile.MapLightColor);
+        ConfigureMapEntity(mapUid.Value, profile.MapLightColor);
+        ConfigurePlanetGrid(planetGridUid, _proto.Index(profile.Biome), seed);
         SetMapAtmosphere(mapUid.Value, profile);
 
-        var world = EnsureComp<FrozenWorldComponent>(mapUid.Value);
         world.Profile = profileId;
-        world.BaseGrid = baseGridUid;
         world.MapId = mapId;
         world.Seed = seed;
+        world.PlanetGrid = planetGridUid;
+        world.TemporaryBaseGrid = baseGridUid;
         Dirty(mapUid.Value, world);
 
-        // Zones are generated on the planet grid, not on the station/base grid.
-        _zones.GenerateZones(mapUid.Value, world, profile);
-
-        Log.Info($"Configured primary frozen world '{profileId}' on map {mapId} with base {ToPrettyString(baseGridUid)} and map biome '{profile.Biome}'.");
-    }
-
-    /// <summary>
-    /// Shuttle grids default to <see cref="ImplicitRoofComponent"/>, which renders a full dark roof overlay.
-    /// For frozen world station surface we want open-sky lighting (day/night + map ambient), so remove implicit roofing.
-    /// </summary>
-    private void EnsureOutdoorLightingOnStationGrids(StationDataComponent stationData)
-    {
-        foreach (var gridUid in stationData.Grids)
+        if (!_baseStamp.TryStampBaseIntoPlanet(station.Owner, stationData, baseGridUid, planetGridUid, out var stampResult))
         {
-            if (!Exists(gridUid) || !HasComp<MapGridComponent>(gridUid))
-                continue;
-
-            if (!RemComp<ImplicitRoofComponent>(gridUid))
-                continue;
-
-            Log.Debug($"Removed ImplicitRoof from station grid {ToPrettyString(gridUid)} so map lighting affects station surface.");
+            Log.Error($"Frozen world '{profileId}' failed to stamp base {ToPrettyString(baseGridUid)} into planet grid {ToPrettyString(planetGridUid)}.");
+            return;
         }
+
+        world.TemporaryBaseGrid = null;
+        world.BaseBounds = stampResult.BaseBounds;
+        world.BaseStamped = true;
+        Dirty(mapUid.Value, world);
+
+        _zones.GenerateZones(planetGridUid, (mapUid.Value, world), profile);
+
+        Log.Info($"Configured frozen world '{profileId}' on map {mapId}. PlanetGrid={ToPrettyString(planetGridUid)}, stampedTiles={stampResult.TilesCopied}, movedEntities={stampResult.EntitiesMoved}, biome='{profile.Biome}'.");
     }
 
     private bool TryFindMainStationGrid(StationDataComponent stationData, out EntityUid gridUid)
@@ -166,22 +166,9 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         return true;
     }
 
-    private void EnsurePlanetGridOnMap(EntityUid mapUid, BiomeTemplatePrototype biomeTemplate, int seed, Color mapLightColor)
+    private void ConfigureMapEntity(EntityUid mapUid, Color mapLightColor)
     {
-        // This is the actual planet surface grid. The biome must live here, not on the station grid.
-        EnsureComp<MapGridComponent>(mapUid);
-
-        var biome = EnsureComp<BiomeComponent>(mapUid);
-        _biome.SetSeed(mapUid, biome, seed, false);
-        _biome.SetTemplate(mapUid, biome, biomeTemplate, false);
-        biome.Enabled = true;
-        Dirty(mapUid, biome);
-
-        var gravity = EnsureComp<GravityComponent>(mapUid);
-        gravity.Enabled = true;
-        gravity.Inherent = true;
-        Dirty(mapUid, gravity);
-
+        // Map lighting is map-level. The physical terrain grid is separate.
         var light = EnsureComp<MapLightComponent>(mapUid);
         light.AmbientLightColor = mapLightColor;
         Dirty(mapUid, light);
@@ -190,6 +177,39 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         EnsureComp<LightCycleComponent>(mapUid);
         EnsureComp<SunShadowComponent>(mapUid);
         EnsureComp<SunShadowCycleComponent>(mapUid);
+    }
+
+    private void ConfigurePlanetGrid(EntityUid planetGridUid, BiomeTemplatePrototype biomeTemplate, int seed)
+    {
+        if (!HasComp<MapGridComponent>(planetGridUid))
+        {
+            Log.Error($"Frozen planet grid {ToPrettyString(planetGridUid)} has no MapGridComponent.");
+            return;
+        }
+
+        var biome = EnsureComp<BiomeComponent>(planetGridUid);
+        _biome.SetSeed(planetGridUid, biome, seed, false);
+        _biome.SetTemplate(planetGridUid, biome, biomeTemplate, false);
+        biome.Enabled = true;
+        Dirty(planetGridUid, biome);
+
+        var gravity = EnsureComp<GravityComponent>(planetGridUid);
+        gravity.Enabled = true;
+        gravity.Inherent = true;
+        Dirty(planetGridUid, gravity);
+
+        EnsureComp<ProtectedGridComponent>(planetGridUid);
+        EnsureComp<NavMapComponent>(planetGridUid);
+        RemoveImplicitRoof(planetGridUid);
+    }
+
+    private void RemoveImplicitRoof(EntityUid gridUid)
+    {
+        if (!Exists(gridUid) || !HasComp<MapGridComponent>(gridUid))
+            return;
+
+        if (RemComp<ImplicitRoofComponent>(gridUid))
+            Log.Debug($"Removed ImplicitRoof from frozen world grid {ToPrettyString(gridUid)}.");
     }
 
     private void SetMapAtmosphere(EntityUid mapUid, FrozenWorldProfilePrototype profile)

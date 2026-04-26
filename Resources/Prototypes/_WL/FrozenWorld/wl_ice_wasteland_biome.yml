@@ -11,61 +11,26 @@
       fractalType: None
   - !type:BiomeTileLayer
     tile: FloorSnowDug
-    threshold: 0.42
+    threshold: 0.44
     noise:
       seed: 8
       noiseType: OpenSimplex2
-      frequency: 0.045
+      frequency: 0.04
       lacunarity: 2
       fractalType: FBm
       octaves: 3
-  - !type:BiomeTileLayer
-    tile: FloorPlanetDirt
-    threshold: 0.66
-    noise:
-      seed: 9
-      noiseType: Cellular
-      frequency: 0.035
-      lacunarity: 2
-      fractalType: FBm
-      octaves: 3
-      cellularDistanceFunction: Euclidean
-      cellularReturnType: Distance2
-  - !type:BiomeTileLayer
-    tile: FloorIce
-    threshold: 0.89
-    noise:
-      seed: 6
-      noiseType: OpenSimplex2
-      frequency: 0.024
-      lacunarity: 1.75
-      fractalType: FBm
-      octaves: 2
-  - !type:BiomeTileLayer
-    tile: FloorIce
-    threshold: 0.95
-    noise:
-      seed: 7
-      noiseType: Cellular
-      frequency: 0.075
-      lacunarity: 2
-      fractalType: FBm
-      octaves: 3
-      cellularDistanceFunction: Euclidean
-      cellularReturnType: Distance2
   - !type:BiomeDecalLayer
     allowedTiles:
     - FloorSnow
     - FloorSnowDug
-    - FloorPlanetDirt
     divisions: 1
-    threshold: 0.68
+    threshold: 0.58
     noise:
       seed: 110
       noiseType: OpenSimplex2
-      frequency: 0.20
+      frequency: 0.15
       fractalType: FBm
-      octaves: 3
+      octaves: 2
       lacunarity: 2
     decals:
     - grasssnow
@@ -82,23 +47,34 @@
     - grasssnow11
     - grasssnow12
     - grasssnow13
-  - !type:BiomeDecalLayer
-    allowedTiles:
-    - FloorSnow
-    - FloorSnowDug
-    - FloorPlanetDirt
-    divisions: 1
-    threshold: 0.72
-    noise:
-      seed: 111
-      noiseType: Cellular
-      frequency: 0.42
-      fractalType: FBm
-      octaves: 2
-      lacunarity: 2
-      cellularDistanceFunction: Euclidean
-      cellularReturnType: Distance2
-    decals:
+    - grasssnow
+    - grasssnow01
+    - grasssnow02
+    - grasssnow03
+    - grasssnow04
+    - grasssnow05
+    - grasssnow06
+    - grasssnow07
+    - grasssnow08
+    - grasssnow09
+    - grasssnow10
+    - grasssnow11
+    - grasssnow12
+    - grasssnow13
+    - grasssnow
+    - grasssnow01
+    - grasssnow02
+    - grasssnow03
+    - grasssnow04
+    - grasssnow05
+    - grasssnow06
+    - grasssnow07
+    - grasssnow08
+    - grasssnow09
+    - grasssnow10
+    - grasssnow11
+    - grasssnow12
+    - grasssnow13
     - grasssnowa1
     - grasssnowa2
     - grasssnowa3
@@ -108,62 +84,45 @@
     - grasssnowc1
     - grasssnowc2
     - grasssnowc3
-  - !type:BiomeDecalLayer
-    allowedTiles:
-    - FloorSnow
-    - FloorSnowDug
-    - FloorPlanetDirt
-    divisions: 1
-    threshold: 0.86
-    noise:
-      seed: 112
-      noiseType: Cellular
-      frequency: 0.52
-      fractalType: None
-      cellularDistanceFunction: Euclidean
-      cellularReturnType: CellValue
-    decals:
+    - grasssnowa1
+    - grasssnowa2
+    - grasssnowa3
+    - grasssnowb1
+    - grasssnowb2
+    - grasssnowb3
+    - grasssnowc1
+    - grasssnowc2
+    - grasssnowc3
+    - grasssnowa1
+    - grasssnowa2
+    - grasssnowa3
+    - grasssnowb1
+    - grasssnowb2
+    - grasssnowb3
+    - grasssnowc1
+    - grasssnowc2
+    - grasssnowc3
     - bushsnowa1
     - bushsnowa2
     - bushsnowa3
     - bushsnowb1
     - bushsnowb2
     - bushsnowb3
-  - !type:BiomeDecalLayer
-    allowedTiles:
-    - FloorSnow
-    - FloorSnowDug
-    - FloorPlanetDirt
-    divisions: 1
-    threshold: 0.95
-    noise:
-      seed: 113
-      noiseType: Cellular
-      frequency: 0.64
-      fractalType: None
-      cellularDistanceFunction: Euclidean
-      cellularReturnType: CellValue
-    decals:
-    - Rock01
-    - Rock02
-    - Rock03
-    - Rock04
-    - Rock05
-    - Rock06
-    - Rock07
-  - !type:BiomeDecalLayer
-    allowedTiles:
-    - FloorPlanetDirt
-    divisions: 1
-    threshold: 0.965
-    noise:
-      seed: 114
-      noiseType: Cellular
-      frequency: 0.58
-      fractalType: None
-      cellularDistanceFunction: Euclidean
-      cellularReturnType: CellValue
-    decals:
+    - bushsnowa1
+    - bushsnowa2
+    - bushsnowa3
+    - bushsnowb1
+    - bushsnowb2
+    - bushsnowb3
+    - Basalt1
+    - Basalt2
+    - Basalt3
+    - Basalt4
+    - Basalt5
+    - Basalt6
+    - Basalt7
+    - Basalt8
+    - Basalt9
     - Basalt1
     - Basalt2
     - Basalt3
@@ -177,49 +136,51 @@
     allowedTiles:
     - FloorSnow
     - FloorSnowDug
-    - FloorPlanetDirt
-    threshold: 0.50
+    threshold: 0.52
     noise:
       seed: 3
       noiseType: OpenSimplex2
       fractalType: FBm
-      frequency: 0.10
+      frequency: 0.055
       octaves: 2
       lacunarity: 2
     entities:
     - FloraTreeConifer
+    - FloraTreeConifer
+    - FloraTreeConifer
+    - FloraTreeConifer
+    - FloraTreeConifer
+    - FloraTreeSnow
+    - FloraTreeSnow
+    - FloraTreeSnow
+    - FloraTreeSnow
     - FloraTreeSnow
   - !type:BiomeEntityLayer
     allowedTiles:
     - FloorSnow
     - FloorSnowDug
-    - FloorPlanetDirt
-    threshold: 0.84
+    threshold: 0.985
     noise:
       seed: 4
       noiseType: OpenSimplex2
-      frequency: 0.16
-      fractalType: FBm
-      octaves: 2
-      lacunarity: 2
+      frequency: 0.24
+      fractalType: None
     entities:
     - FloraRockSolid
   - !type:BiomeEntityLayer
     allowedTiles:
     - FloorSnow
     - FloorSnowDug
-    - FloorPlanetDirt
-    threshold: 0.58
+    threshold: 0.965
     noise:
-      seed: 5
-      noiseType: Cellular
-      frequency: 0.025
-      lacunarity: 2
+      seed: 6
+      noiseType: OpenSimplex2
+      frequency: 0.11
       fractalType: FBm
-      octaves: 3
-      cellularDistanceFunction: Euclidean
-      cellularReturnType: Distance2
+      octaves: 2
+      lacunarity: 2
     entities:
-    - WallRockSnow
+    - FloraTreeStump
+    - FloraTreeStumpConifer
   - !type:BiomeDummyLayer
     id: Loot
