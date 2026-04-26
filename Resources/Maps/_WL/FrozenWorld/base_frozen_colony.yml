@@ -23,7 +23,7 @@ entities:
     - type: MetaData
       name: grid
     - type: Transform
-      pos: -2.126238,2.7465966
+      pos: 0.5,0.5
       parent: 903
     - type: BecomesStation
       id: Frostland

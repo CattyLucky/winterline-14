@@ -139,7 +139,7 @@ public abstract class SharedBiomeSystem : EntitySystem
             if (layer is not BiomeTileLayer tileLayer)
                 continue;
 
-            if (TryGetTile(indices, noiseCopy, tileLayer.Invert, tileLayer.Threshold, ProtoManager.Index(tileLayer.Tile), tileLayer.Variants, out tile))
+            if (TryGetTile(indices, noiseCopy, tileLayer.Invert, tileLayer.Threshold, ProtoManager.Index(tileLayer.Tile), tileLayer.Variants, seed, out tile))  // _WL Change
             {
                 return true;
             }
@@ -161,7 +161,15 @@ public abstract class SharedBiomeSystem : EntitySystem
     /// <summary>
     /// Gets the underlying biome tile, ignoring any existing tile that may be there.
     /// </summary>
-    private bool TryGetTile(Vector2i indices, FastNoiseLite noise, bool invert, float threshold, ContentTileDefinition tileDef, List<byte>? variants, [NotNullWhen(true)] out Tile? tile)
+    private bool TryGetTile(  // WL Change Begin
+        Vector2i indices,
+        FastNoiseLite noise,
+        bool invert,
+        float threshold,
+        ContentTileDefinition tileDef,
+        List<byte>? variants,
+        int seed,
+        [NotNullWhen(true)] out Tile? tile)
     {
         var found = noise.GetNoise(indices.X, indices.Y);
         found = invert ? found * -1 : found;
@@ -173,16 +181,27 @@ public abstract class SharedBiomeSystem : EntitySystem
         }
 
         byte variant = 0;
-        var variantCount = variants?.Count ?? tileDef.Variants;
 
-        // Pick a variant tile if they're available as well
-        if (variantCount > 1)
+        if (tileDef.Variants > 1)
         {
-            var variantValue = (noise.GetNoise(indices.X * 8, indices.Y * 8, variantCount) + 1f) * 100;
-            variant = _tile.PickVariant(tileDef, (int)variantValue);
+            var variantSeed = HashCode.Combine(indices.X, indices.Y, tileDef.TileId, seed, noise.GetSeed());
+
+            if (variants is { Count: > 0 })
+            {
+                var pick = (variantSeed & int.MaxValue) % variants.Count;
+                var selected = variants[pick];
+
+                variant = selected < tileDef.Variants
+                    ? selected
+                    : (byte)(selected % tileDef.Variants);
+            }
+            else
+            {
+                variant = _tile.PickVariant(tileDef, variantSeed);
+            }
         }
 
-        tile = new Tile(tileDef.TileId, variant);
+        tile = new Tile(tileDef.TileId, variant: variant); // WL Change END
         return true;
     }
 
@@ -211,7 +230,12 @@ public abstract class SharedBiomeSystem : EntitySystem
         return TryGetEntity(indices, component, grid == null ? null : (grid.Owner, grid), out entity);
     }
 
-    public bool TryGetEntity(Vector2i indices, List<IBiomeLayer> layers, Tile tileRef, int seed, Entity<MapGridComponent>? grid,
+    public bool TryGetEntity( // WL Change Begin
+        Vector2i indices,
+        List<IBiomeLayer> layers,
+        Tile tileRef,
+        int seed,
+        Entity<MapGridComponent>? grid,
         [NotNullWhen(true)] out string? entity)
     {
         var tileId = TileDefManager[tileRef.TypeId].ID;
@@ -254,12 +278,8 @@ public abstract class SharedBiomeSystem : EntitySystem
                 continue;
             }
 
-            // Decals might block entity so need to check if there's one in front of us.
             if (layer is not BiomeEntityLayer biomeLayer)
-            {
-                entity = null;
-                return false;
-            }
+                continue; // WL Change end
 
             var noiseValue = noiseCopy.GetNoise(indices.X, indices.Y, i);
             entity = Pick(biomeLayer.Entities, (noiseValue + 1f) / 2f);
@@ -331,10 +351,7 @@ public abstract class SharedBiomeSystem : EntitySystem
 
             // Check if the other layer should even render, if not then keep going.
             if (layer is not BiomeDecalLayer decalLayer)
-            {
-                decals = null;
-                return false;
-            }
+                continue;
 
             decals = new List<(string ID, Vector2 Position)>();
 

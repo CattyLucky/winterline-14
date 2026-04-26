@@ -1,29 +1,25 @@
 using System.Linq;
 using System.Numerics;
 using Content.Server._WL.FrozenWorld.Components;
-using Content.Server.Parallax;
 using Content.Shared._WL.FrozenWorld.Prototypes;
-using Content.Shared.Parallax.Biomes;
-using Content.Shared.Tiles;
 using Robust.Shared.Map;
 using Robust.Shared.Map.Components;
 using Robust.Shared.Maths;
 using Robust.Shared.Physics.Components;
 using Robust.Shared.Prototypes;
+using Robust.Shared.Physics.Systems;
 
 namespace Content.Server._WL.FrozenWorld.Systems;
 
 /// <summary>
 /// Generates square world zones around the colony base.
 ///
-/// Stage 2.0 intentionally spawns only visible test/debug entities.
-/// Real worksites, ruins, animals and weather zones should be added later.
+/// Coordinates are map/planet-grid coordinates. The generated objects are spawned on the map entity grid,
+/// not on the station/base grid.
 /// </summary>
 public sealed partial class FrozenWorldZoneSystem : EntitySystem
 {
-    [Dependency] private readonly BiomeSystem _biome = default!;
     [Dependency] private readonly EntityLookupSystem _lookup = default!;
-    [Dependency] private readonly SharedMapSystem _map = default!;
     [Dependency] private readonly IPrototypeManager _proto = default!;
     [Dependency] private readonly SharedTransformSystem _transform = default!;
 
@@ -44,9 +40,15 @@ public sealed partial class FrozenWorldZoneSystem : EntitySystem
             return;
         }
 
+        if (!HasComp<MapGridComponent>(mapUid))
+        {
+            Log.Error($"Frozen world '{profile.ID}' cannot generate zones: map entity {ToPrettyString(mapUid)} has no MapGridComponent.");
+            return;
+        }
+
         if (!TryGetBaseWorldBounds(world.BaseGrid.Value, out var baseBounds))
         {
-            Log.Error($"Frozen world '{profile.ID}' cannot calculate base bounds for {ToPrettyString(world.BaseGrid.Value)}.");
+            Log.Error($"Frozen world '{profile.ID}' cannot calculate base world bounds for {ToPrettyString(world.BaseGrid.Value)}.");
             return;
         }
 
@@ -59,6 +61,7 @@ public sealed partial class FrozenWorldZoneSystem : EntitySystem
         }
 
         world.ZonesGenerated = true;
+        Dirty(mapUid, world);
 
         Log.Info($"Generated frozen world zones from preset '{profile.ZonePreset}' for map {world.MapId}.");
     }
@@ -81,7 +84,6 @@ public sealed partial class FrozenWorldZoneSystem : EntitySystem
 
         var counts = new int[zone.Spawns.Count];
 
-        // First pass: guaranteed minimum counts.
         for (var i = 0; i < zone.Spawns.Count; i++)
         {
             var entry = zone.Spawns[i];
@@ -100,7 +102,6 @@ public sealed partial class FrozenWorldZoneSystem : EntitySystem
             }
         }
 
-        // Second pass: weighted fill up to max counts.
         for (var attempt = 0; attempt < zone.SpawnAttempts; attempt++)
         {
             var index = PickWeightedEntry(zone.Spawns, counts, random);
@@ -148,11 +149,12 @@ public sealed partial class FrozenWorldZoneSystem : EntitySystem
             if (!IsPlacementClear(mapUid, position, entry.ClearanceRadius))
                 continue;
 
-            if (entry.ReserveBiomePatch && !TryReserveBiomePatch(mapUid, placementBounds))
-                continue;
-
-            if (!IsPlacementClear(mapUid, position, entry.ClearanceRadius))
-                continue;
+            // Do not reserve biome patches here yet. The biome owns terrain generation.
+            // Zone objects should be placed on already-generated/soon-to-be-generated planet terrain.
+            if (entry.ReserveBiomePatch)
+            {
+                Log.Debug($"Frozen world zone '{zone.Id}' ignored ReserveBiomePatch for '{entry.Prototype}' at X={position.X:F1}, Y={position.Y:F1}.");
+            }
 
             var spawned = Spawn(entry.Prototype, new EntityCoordinates(mapUid, position));
             occupied.Add(placementBounds);
@@ -164,28 +166,11 @@ public sealed partial class FrozenWorldZoneSystem : EntitySystem
         return false;
     }
 
-    private bool TryReserveBiomePatch(EntityUid mapUid, Box2 bounds)
-    {
-        if (!TryComp<MapGridComponent>(mapUid, out var mapGrid) || !TryComp<BiomeComponent>(mapUid, out var biome))
-            return false;
-
-        var tiles = new List<(Vector2i Index, Tile Tile)>();
-        _biome.ReserveTiles(mapUid, bounds, tiles, biome, mapGrid);
-
-        if (tiles.Count == 0)
-            return false;
-
-        _map.SetTiles(mapUid, mapGrid, tiles);
-        return true;
-    }
-
     private bool IsPlacementClear(EntityUid mapUid, Vector2 position, float clearanceRadius)
     {
         var coords = new EntityCoordinates(mapUid, position);
         var radius = MathF.Max(clearanceRadius, 0.5f);
 
-        // Reject already occupied positions: biome rocks/trees, liquid plasma entities, placed crates, etc.
-        // This is intentionally conservative for stage 2.0 debug placement.
         return !_lookup.GetEntitiesInRange<PhysicsComponent>(coords, radius).Any();
     }
 
