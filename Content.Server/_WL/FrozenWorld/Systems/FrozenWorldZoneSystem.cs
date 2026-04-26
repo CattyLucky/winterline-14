@@ -168,6 +168,11 @@ public sealed partial class FrozenWorldZoneSystem : EntitySystem
 
     private bool IsPlacementClear(EntityUid planetGridUid, Vector2 position, float clearanceRadius)
     {
+        // A zero/negative clearance radius means the entry is allowed to coexist with biome decoration.
+        // Use this for invisible zone markers. Larger POI/worksite spawns can still request clearance.
+        if (clearanceRadius <= 0f)
+            return true;
+
         var coords = new EntityCoordinates(planetGridUid, position);
         var radius = MathF.Max(clearanceRadius, 0.5f);
 

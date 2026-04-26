@@ -2,6 +2,7 @@ using Content.Server._WL.FrozenWorld.Components;
 using Content.Server.Atmos.EntitySystems;
 using Content.Server.Parallax;
 using Content.Server.Power.Components;
+using Content.Server.Shuttles.Components;
 using Content.Server.Shuttles.Systems;
 using Content.Server.Station.Components;
 using Content.Server.Station.Events;
@@ -24,27 +25,27 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 /// <summary>
 /// Primary frozen-world bootstrap for the round map.
 ///
-/// Architecture:
-/// - Map entity remains a map entity. Never add MapGridComponent to it.
-/// - PlanetGrid is the single physical surface grid.
-/// - The originally loaded station/base grid is temporary and gets stamped into PlanetGrid.
-/// - BiomeComponent lives on PlanetGrid.
+/// Current stable architecture:
+/// - The already-loaded station grid is the main frozen-world surface grid.
+/// - This keeps power cables, anchored machines, spawn points and resource objects on one physical grid.
+/// - We do not copy tiles, move entities, or remove the station grid during round start.
+/// - Separate POI maps that need cables must later be stamped into this same grid, not kept as independent grids.
 /// </summary>
 public sealed partial class FrozenWorldSystem : EntitySystem
 {
     [Dependency] private readonly AtmosphereSystem _atmos = default!;
     [Dependency] private readonly BiomeSystem _biome = default!;
-    [Dependency] private readonly FrozenWorldBaseStampSystem _baseStamp = default!;
     [Dependency] private readonly MetaDataSystem _meta = default!;
     [Dependency] private readonly IPrototypeManager _proto = default!;
     [Dependency] private readonly IRobustRandom _random = default!;
     [Dependency] private readonly ShuttleSystem _shuttles = default!;
     [Dependency] private readonly FrozenWorldZoneSystem _zones = default!;
 
+    private readonly HashSet<EntityUid> _configuredStations = new();
+
     public override void Initialize()
     {
         base.Initialize();
-
         SubscribeLocalEvent<StationFrozenWorldComponent, StationPostInitEvent>(OnStationPostInit);
     }
 
@@ -52,13 +53,16 @@ public sealed partial class FrozenWorldSystem : EntitySystem
     {
         if (!ent.Comp.Enabled)
         {
-            Log.Info($"Frozen world setup disabled for {ToPrettyString(ent)}.");
+            Log.Info($"Frozen world setup disabled for {ToPrettyString(ent.Owner)}.");
             return;
         }
 
+        if (_configuredStations.Contains(ent.Owner))
+            return;
+
         if (!_proto.TryIndex(ent.Comp.Profile, out var profile))
         {
-            Log.Error($"Unable to find frozen world profile '{ent.Comp.Profile}' for {ToPrettyString(ent)}.");
+            Log.Error($"Unable to find frozen world profile '{ent.Comp.Profile}' for {ToPrettyString(ent.Owner)}.");
             return;
         }
 
@@ -67,75 +71,78 @@ public sealed partial class FrozenWorldSystem : EntitySystem
 
     private void SetupPrimaryFrozenWorld(Entity<StationFrozenWorldComponent> station, FrozenWorldProfilePrototype profile)
     {
+        if (_configuredStations.Contains(station.Owner))
+            return;
+
         if (!TryComp<StationDataComponent>(station.Owner, out var stationData))
         {
             Log.Error($"Station {ToPrettyString(station.Owner)} has StationFrozenWorld but no StationDataComponent.");
             return;
         }
 
-        if (!TryFindMainStationGrid(stationData, out var baseGridUid))
+        if (!TryFindMainStationGrid(stationData, out var planetGridUid))
         {
             Log.Error($"Station {ToPrettyString(station.Owner)} has no valid station grid for frozen world setup.");
             return;
         }
 
-        var baseXform = Transform(baseGridUid);
-        var mapUid = baseXform.MapUid;
-        var mapId = baseXform.MapID;
+        if (!TryComp<MapGridComponent>(planetGridUid, out var planetGrid))
+        {
+            Log.Error($"Frozen world planet grid {ToPrettyString(planetGridUid)} has no MapGridComponent.");
+            return;
+        }
+
+        var planetXform = Transform(planetGridUid);
+        var mapUid = planetXform.MapUid;
+        var mapId = planetXform.MapID;
 
         if (mapUid == null)
         {
-            Log.Error($"Main frozen base grid {ToPrettyString(baseGridUid)} is not attached to a map.");
+            Log.Error($"Frozen world planet grid {ToPrettyString(planetGridUid)} is not attached to a map.");
             return;
         }
 
         var seed = station.Comp.Seed ?? _random.Next();
         var profileId = station.Comp.Profile;
 
-        var world = EnsureComp<FrozenWorldComponent>(mapUid.Value);
-        if (world.BaseStamped && world.PlanetGrid is { } existingPlanetGrid && Exists(existingPlanetGrid))
-        {
-            Log.Warning($"Frozen world '{profileId}' is already stamped on {ToPrettyString(existingPlanetGrid)}. Skipping duplicate setup.");
-            return;
-        }
-
         _meta.SetEntityName(mapUid.Value, profile.MapName);
-        _meta.SetEntityName(baseGridUid, profile.BaseName);
-
-        // The old settlement grid may have Shuttle/ImplicitRoof because it was loaded as a station grid.
-        // It is temporary, but disabling/removing here avoids side effects during the stamp tick.
-        _shuttles.Disable(baseGridUid);
-        RemoveImplicitRoof(baseGridUid);
-
-        var planetGridUid = world.PlanetGrid is { } storedPlanetGrid && Exists(storedPlanetGrid)
-            ? storedPlanetGrid
-            : _baseStamp.CreatePlanetGrid(mapId, profile.MapName);
+        _meta.SetEntityName(planetGridUid, profile.BaseName);
 
         ConfigureMapEntity(mapUid.Value, profile.MapLightColor);
-        ConfigurePlanetGrid(planetGridUid, _proto.Index(profile.Biome), seed);
+
+        var biomeComp = ConfigurePlanetGrid(planetGridUid, _proto.Index(profile.Biome), seed);
+        if (biomeComp == null)
+            return;
+
         SetMapAtmosphere(mapUid.Value, profile);
 
-        world.Profile = profileId;
-        world.MapId = mapId;
-        world.Seed = seed;
-        world.PlanetGrid = planetGridUid;
-        world.TemporaryBaseGrid = baseGridUid;
-        Dirty(mapUid.Value, world);
+        // Cache the authored settlement bounds before pinning/preloading biome terrain.
+        // PinPreloadArea will later materialize terrain chunks and expand LocalAABB;
+        // zones must still be measured from the actual base footprint, not from the preloaded wilderness.
+        var baseBounds = planetGrid.LocalAABB;
+        var preloadBounds = GetTerrainPreloadBounds(baseBounds, profile);
+        var pinnedChunks = _biome.PinPreloadArea(planetGridUid, biomeComp, planetGrid, preloadBounds);
 
-        if (!_baseStamp.TryStampBaseIntoPlanet(station.Owner, stationData, baseGridUid, planetGridUid, out var stampResult))
-        {
-            Log.Error($"Frozen world '{profileId}' failed to stamp base {ToPrettyString(baseGridUid)} into planet grid {ToPrettyString(planetGridUid)}.");
-            return;
-        }
+        var worldComp = EnsureComp<FrozenWorldComponent>(mapUid.Value);
+        worldComp.Profile = profileId;
+        worldComp.MapId = mapId;
+        worldComp.Seed = seed;
+        worldComp.PlanetGrid = planetGridUid;
+        worldComp.TemporaryBaseGrid = null;
+        worldComp.BaseBounds = baseBounds;
+        worldComp.BaseStamped = true;
+        worldComp.ZonesGenerated = false;
+        Dirty(mapUid.Value, worldComp);
 
-        world.TemporaryBaseGrid = null;
-        world.BaseBounds = stampResult.BaseBounds;
-        world.BaseStamped = true;
-        Dirty(mapUid.Value, world);
+        var baseComp = EnsureComp<FrozenBaseComponent>(planetGridUid);
+        baseComp.Profile = profileId;
+        Dirty(planetGridUid, baseComp);
 
-        _zones.GenerateZones(planetGridUid, (mapUid.Value, world), profile);
+        _zones.GenerateZones(planetGridUid, (mapUid.Value, worldComp), profile);
 
-        Log.Info($"Configured frozen world '{profileId}' on map {mapId}. PlanetGrid={ToPrettyString(planetGridUid)}, stampedTiles={stampResult.TilesCopied}, movedEntities={stampResult.EntitiesMoved}, biome='{profile.Biome}'.");
+        _configuredStations.Add(station.Owner);
+
+        Log.Info($"Configured frozen world '{profileId}' on main surface grid {ToPrettyString(planetGridUid)}. Map={mapId}, biome='{profile.Biome}', pinnedChunks={pinnedChunks}, preloadBounds={preloadBounds}.");
     }
 
     private bool TryFindMainStationGrid(StationDataComponent stationData, out EntityUid gridUid)
@@ -168,7 +175,6 @@ public sealed partial class FrozenWorldSystem : EntitySystem
 
     private void ConfigureMapEntity(EntityUid mapUid, Color mapLightColor)
     {
-        // Map lighting is map-level. The physical terrain grid is separate.
         var light = EnsureComp<MapLightComponent>(mapUid);
         light.AmbientLightColor = mapLightColor;
         Dirty(mapUid, light);
@@ -179,13 +185,29 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         EnsureComp<SunShadowCycleComponent>(mapUid);
     }
 
-    private void ConfigurePlanetGrid(EntityUid planetGridUid, BiomeTemplatePrototype biomeTemplate, int seed)
+    private BiomeComponent? ConfigurePlanetGrid(EntityUid planetGridUid, BiomeTemplatePrototype biomeTemplate, int seed)
     {
-        if (!HasComp<MapGridComponent>(planetGridUid))
+        if (!TryComp<MapGridComponent>(planetGridUid, out var planetGrid))
         {
             Log.Error($"Frozen planet grid {ToPrettyString(planetGridUid)} has no MapGridComponent.");
-            return;
+            return null;
         }
+
+        // WL: this grid is a static planet surface, not a destructible shuttle/station fragment.
+        // Biome generation can create disconnected or irregular tile regions during chunk loading.
+        // If grid splitting stays enabled, Robust will split the world into many grids and break PVS/physics/power.
+        if (planetGrid.CanSplit)
+        {
+            planetGrid.CanSplit = false;
+            Dirty(planetGridUid, planetGrid);
+        }
+
+        // The loaded settlement grid is authored like a station/shuttle grid.
+        // For frozen world gameplay it is the static main surface grid.
+        // Keeping this as one grid is required for cables/powernets to work between the base and nearby worksites.
+        _shuttles.Disable(planetGridUid);
+        RemoveShuttleIdentity(planetGridUid);
+        RemoveImplicitRoof(planetGridUid);
 
         var biome = EnsureComp<BiomeComponent>(planetGridUid);
         _biome.SetSeed(planetGridUid, biome, seed, false);
@@ -200,7 +222,40 @@ public sealed partial class FrozenWorldSystem : EntitySystem
 
         EnsureComp<ProtectedGridComponent>(planetGridUid);
         EnsureComp<NavMapComponent>(planetGridUid);
-        RemoveImplicitRoof(planetGridUid);
+
+        return biome;
+    }
+
+    private Box2 GetTerrainPreloadBounds(Box2 baseBounds, FrozenWorldProfilePrototype profile)
+    {
+        // This is the part that makes the world look like one connected surface instead of
+        // small streamed biome islands floating in parallax.
+        const float minPreloadDistance = 96f;
+        const float maxPreloadDistance = 256f;
+        const float padding = 32f;
+
+        var distance = minPreloadDistance;
+
+        if (_proto.TryIndex(profile.ZonePreset, out var preset))
+        {
+            foreach (var zone in preset.Zones)
+            {
+                distance = MathF.Max(distance, zone.MaxDistance + padding);
+            }
+        }
+
+        distance = Math.Clamp(distance, minPreloadDistance, maxPreloadDistance);
+        return baseBounds.Enlarged(distance);
+    }
+
+    private void RemoveShuttleIdentity(EntityUid gridUid)
+    {
+        // The authored settlement map is usually saved as a shuttle-like station grid.
+        // For frozen-world gameplay this grid is static terrain. Remove shuttle identity so other systems do not
+        // treat the planet surface as a movable shuttle/FTL object.
+        RemComp<ShuttleComponent>(gridUid);
+        RemComp<IFFComponent>(gridUid);
+        RemComp<FTLComponent>(gridUid);
     }
 
     private void RemoveImplicitRoof(EntityUid gridUid)

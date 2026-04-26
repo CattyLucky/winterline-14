@@ -8,10 +8,10 @@ namespace Content.Server._WL.FrozenWorld.Components;
 /// <summary>
 /// Runtime marker for the primary frozen world map entity.
 ///
-/// Important:
-/// - This component belongs to the map entity.
-/// - PlanetGrid is the real physical grid where biome, base, resources and gameplay entities live.
-/// - TemporaryBaseGrid is only the originally loaded settlement grid before BaseStamp finishes.
+/// Current model:
+/// - The component belongs to the map entity.
+/// - PlanetGrid is the main physical frozen-world surface grid.
+/// - The starting base stays on this same grid so cables, powernets, machines, spawn points and resources work normally.
 /// </summary>
 [RegisterComponent]
 public sealed partial class FrozenWorldComponent : Component
@@ -19,19 +19,20 @@ public sealed partial class FrozenWorldComponent : Component
     public ProtoId<FrozenWorldProfilePrototype> Profile;
 
     /// <summary>
-    /// Main physical world grid. BiomeComponent must live here, not on the map entity and not on the old base grid.
+    /// Main physical world grid. BiomeComponent lives here.
+    /// For the current cable-compatible architecture, this is the loaded station/base grid.
     /// </summary>
     public EntityUid? PlanetGrid;
 
     /// <summary>
-    /// Temporary settlement grid loaded by the game map before it is stamped into PlanetGrid.
-    /// Must be null after successful BaseStamp.
+    /// Kept only for compatibility with older BaseStamp experiments.
+    /// Should stay null in the current main-surface-grid architecture.
     /// </summary>
     public EntityUid? TemporaryBaseGrid;
 
     /// <summary>
-    /// Bounds of the stamped base in PlanetGrid local coordinates.
-    /// Used by zone/resource generation after the old base grid is deleted.
+    /// Bounds of the starting base/main settlement in PlanetGrid local coordinates.
+    /// Used by zone/resource generation.
     /// </summary>
     public Box2 BaseBounds;
 
@@ -43,7 +44,8 @@ public sealed partial class FrozenWorldComponent : Component
     public int Seed;
 
     /// <summary>
-    /// True after the temporary settlement grid has been copied into PlanetGrid and removed.
+    /// True when the main surface grid is configured and can be used for zone generation.
+    /// This does not imply that a BaseStamp operation happened.
     /// </summary>
     public bool BaseStamped;
 

@@ -6,6 +6,7 @@ using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization.TypeSerializers.Implementations.Custom.Prototype;
 using Robust.Shared.Serialization.TypeSerializers.Implementations.Custom.Prototype.Dictionary;
 using Robust.Shared.Serialization.TypeSerializers.Implementations.Custom.Prototype.List;
+using Robust.Shared.Maths;
 
 namespace Content.Shared.Parallax.Biomes;
 
@@ -59,6 +60,13 @@ public sealed partial class BiomeComponent : Component
     /// </summary>
     [DataField("loadedChunks")]
     public HashSet<Vector2i> LoadedChunks = new();
+
+    /// <summary>
+    /// Chunks that must stay loaded permanently for frozen-world / planet-surface maps.
+    /// This prevents pre-generated settlement terrain from unloading back into empty parallax.
+    /// </summary>
+    [DataField("preloadedChunks")]
+    public HashSet<Vector2i> PreloadedChunks = new();
 
     #region Markers
 
