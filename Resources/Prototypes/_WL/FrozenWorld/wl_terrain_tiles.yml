@@ -37,12 +37,12 @@
 
 - type: stack
   id: WLSnowFoundationTile
-  name: snow foundation tile
+  name: wl-snow-foundation-tile
   icon: { sprite: Objects/Tiles/tile.rsi, state: wood-large }
   spawn: WLSnowFoundationTileItem
 
 - type: entity
-  name: snow foundation tile
+  name: wl-snow-foundation-tile
   parent: FloorTileItemBase
   id: WLSnowFoundationTileItem
   description: A foundation plate for building on frozen terrain.

@@ -244,8 +244,7 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         gravity.Inherent = true;
         Dirty(planetGridUid, gravity);
 
-        var gridAtmos = EnsureComp<GridAtmosphereComponent>(planetGridUid);
-        Dirty(planetGridUid, gridAtmos);
+        EnsureComp<GridAtmosphereComponent>(planetGridUid);
 
         var gasOverlay = EnsureComp<GasTileOverlayComponent>(planetGridUid);
         Dirty(planetGridUid, gasOverlay);
