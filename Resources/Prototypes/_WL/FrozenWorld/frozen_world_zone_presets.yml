@@ -6,19 +6,55 @@
   zones:
   - id: BaseSafe
     minDistance: 0
-    maxDistance: 40
+    maxDistance: 8
     spawnAttempts: 0
+
+  - id: SpawnField
+    minDistance: 8
+    maxDistance: 35
+    spawnAttempts: 50
+    spawns:
+    - prototype: WLFrozenBranchPileDebug
+      weight: 3
+      minCount: 2
+      maxCount: 4
+      minSeparation: 10
+      clearanceRadius: 1.0
+    - prototype: WLLooseScrapPileDebug
+      weight: 2
+      minCount: 1
+      maxCount: 3
+      minSeparation: 10
+      clearanceRadius: 1.0
+    - prototype: WLTornSupplyBagDebug
+      weight: 1
+      minCount: 1
+      maxCount: 2
+      minSeparation: 10
+      clearanceRadius: 1.0
 
   - id: NearField
     minDistance: 40
     maxDistance: 100
     spawnAttempts: 60
     spawns:
-    - prototype: WLZoneMarkerNear
+    - prototype: WLSmallCoalOutcropDebug
+      weight: 3
+      minCount: 3
+      maxCount: 5
+      minSeparation: 16
+      clearanceRadius: 1.5
+    - prototype: WLFrozenDeadwoodClusterDebug
+      weight: 2
+      minCount: 2
+      maxCount: 4
+      minSeparation: 16
+      clearanceRadius: 1.5
+    - prototype: WLSmallScrapPileDebug
       weight: 1
-      minCount: 8
-      maxCount: 12
-      minSeparation: 20
+      minCount: 1
+      maxCount: 3
+      minSeparation: 16
       clearanceRadius: 1.5
 
   - id: WorkField
@@ -26,21 +62,45 @@
     maxDistance: 180
     spawnAttempts: 80
     spawns:
-    - prototype: WLZoneMarkerWork
-      weight: 1
-      minCount: 8
-      maxCount: 12
-      minSeparation: 28
-      clearanceRadius: 1.5
+    - prototype: WLCoalOutcropDebug
+      weight: 3
+      minCount: 3
+      maxCount: 5
+      minSeparation: 24
+      clearanceRadius: 2.0
+    - prototype: WLScrapWreckDebug
+      weight: 2
+      minCount: 2
+      maxCount: 4
+      minSeparation: 24
+      clearanceRadius: 2.0
+    - prototype: WLFrozenGroveDebug
+      weight: 2
+      minCount: 2
+      maxCount: 4
+      minSeparation: 24
+      clearanceRadius: 2.0
 
   - id: ExpeditionField
     minDistance: 180
     maxDistance: 300
     spawnAttempts: 100
     spawns:
-    - prototype: WLZoneMarkerExpedition
+    - prototype: WLLargeCoalVeinDebug
+      weight: 3
+      minCount: 2
+      maxCount: 4
+      minSeparation: 40
+      clearanceRadius: 2.5
+    - prototype: WLFrozenConvoyWreckDebug
+      weight: 2
+      minCount: 2
+      maxCount: 3
+      minSeparation: 40
+      clearanceRadius: 2.5
+    - prototype: WLOldSupplyCacheDebug
       weight: 1
-      minCount: 8
-      maxCount: 12
-      minSeparation: 36
-      clearanceRadius: 1.5
+      minCount: 1
+      maxCount: 2
+      minSeparation: 40
+      clearanceRadius: 2.5

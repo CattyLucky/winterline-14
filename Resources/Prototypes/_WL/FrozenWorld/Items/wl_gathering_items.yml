@@ -1,0 +1,40 @@
+# /// WL Change
+# Предметы добычи для FrozenWorld — выпадают из ResourcePoint при сборе.
+# Стартовые ресурсы: ветки, металлолом, ткань.
+
+- type: entity
+  id: WLFrozenBranch
+  parent: BaseItem
+  name: frozen branch
+  description: A dead branch coated in ice. Needs to thaw before it burns well, but it's wood nonetheless.
+  components:
+  - type: Sprite
+    sprite: Objects/Materials/materials.rsi
+    state: wood
+  - type: Item
+    size: Small
+
+- type: entity
+  id: WLLooseScrap
+  parent: BaseItem
+  name: loose scrap
+  description: A bent chunk of scrap metal salvaged from the ruins. Useful for crude tools and repairs.
+  components:
+  - type: Sprite
+    sprite: Objects/Materials/Sheets/metal.rsi
+    state: steel
+    color: "#8a8a7a"
+  - type: Item
+    size: Small
+
+- type: entity
+  id: WLTornCloth
+  parent: BaseItem
+  name: torn cloth
+  description: A strip of weathered fabric. Not much on its own, but cloth is cloth out here.
+  components:
+  - type: Sprite
+    sprite: Objects/Materials/materials.rsi
+    state: cloth
+  - type: Item
+    size: Small

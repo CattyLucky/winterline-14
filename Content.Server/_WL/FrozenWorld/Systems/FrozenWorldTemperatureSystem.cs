@@ -4,12 +4,10 @@ using Content.Server.Atmos.EntitySystems;
 namespace Content.Server._WL.FrozenWorld.Systems;
 
 /// <summary>
-/// Keeps FrozenWorld atmosphere static while allowing the global temperature to change.
-///
-/// Normal SS14 atmos simulation is disabled for the main surface grid. This system only reapplies
-/// the current world temperature to already seeded tile mixtures. It does not change gas moles.
+/// Keeps FrozenWorld static atmosphere synchronized with AmbientTemperature.
+/// Affects gas analyzer / tile atmosphere only. Does not apply cold damage.
 /// </summary>
-public sealed partial class FrozenWorldTemperatureSystem : EntitySystem
+public sealed partial class FrozenWorldAtmosphereTemperatureSystem : EntitySystem
 {
     [Dependency] private readonly AtmosphereSystem _atmos = default!;
 
@@ -31,11 +29,11 @@ public sealed partial class FrozenWorldTemperatureSystem : EntitySystem
 
             world.AtmosphereTemperatureAccumulator = 0f;
 
-            if (world.AtmosphereTemperature == world.LastAppliedAtmosphereTemperature)
+            if (MathHelper.CloseTo(world.LastAppliedAtmosphereTemperature, world.AmbientTemperature))
                 continue;
 
-            _atmos.WLSetGridAtmosphereTemperature(gridUid, world.AtmosphereTemperature);
-            world.LastAppliedAtmosphereTemperature = world.AtmosphereTemperature;
+            _atmos.WLSetGridAtmosphereTemperature(gridUid, world.AmbientTemperature);
+            world.LastAppliedAtmosphereTemperature = world.AmbientTemperature;
         }
     }
 }

@@ -1,4 +1,5 @@
 using System.Linq;
+using Content.Server._WL.FrozenWorld.Components;
 using Content.Server.Atmos.Components;
 using Content.Server.NodeContainer.Nodes;
 using Content.Server.Popups;
@@ -157,6 +158,15 @@ public sealed class GasAnalyzerSystem : EntitySystem
 
         // Fetch the environmental atmosphere around the scanner. This must be the first entry
         var tileMixture = _atmo.GetContainingMixture(uid, true);
+
+        // /// WL Change: on FrozenWorld, override tile temperature with effective temperature of the user
+        if (tileMixture != null && component.User.HasValue
+            && TryComp<FrozenColdExposureComponent>(component.User.Value, out var coldExposure))
+        {
+            tileMixture = tileMixture.Clone();
+            tileMixture.Temperature = coldExposure.LastEffectiveTemperature;
+        }
+
         var tileMixtureName = Loc.GetString("gas-analyzer-window-environment-tab-label");
         gasMixList.Add(GenerateGasMixEntry(tileMixtureName, tileMixture));
 

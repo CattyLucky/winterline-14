@@ -1,0 +1,19 @@
+# Examples only. Add FrozenHeatSource to actual campfire/heater/generator entities.
+
+- type: entity
+  id: WLCampfireHeatSourceExample
+  abstract: true
+  components:
+  - type: FrozenHeatSource
+    radius: 4
+    temperatureDelta: 45
+    transferEfficiency: 1
+
+- type: entity
+  id: WLGeneratorHeatSourceExample
+  abstract: true
+  components:
+  - type: FrozenHeatSource
+    radius: 10
+    temperatureDelta: 55
+    transferEfficiency: 1

@@ -5,6 +5,12 @@
   deconstructTools: []
   indestructible: true
   weather: true
+  mobAcceleration: 1
+  mobFriction: 1
+  wlSpeedModifier: 0.50
+  wlTerrainTags:
+  - Snow
+  - DeepSnow
 
 - type: tile
   id: WLFloorSnowDug
@@ -13,6 +19,12 @@
   deconstructTools: []
   indestructible: true
   weather: true
+  mobAcceleration: 1
+  mobFriction: 1
+  wlSpeedModifier: 0.75
+  wlTerrainTags:
+  - Snow
+  - PackedSnow
 
 - type: tile
   id: WLPlatingSnowFoundation
@@ -26,6 +38,12 @@
   - WLFloorSnowDug
   itemDrop: WLSnowFoundationTileItem
   weather: true
+  mobAcceleration: 1
+  mobFriction: 1
+  wlSpeedModifier: 0.75
+  wlTerrainTags:
+  - Foundation
+  - PackedSnow
 
 - type: tile
   id: WLFloorSteel
@@ -34,6 +52,11 @@
   baseTurf: WLPlatingSnowFoundation
   baseWhitelist:
   - WLPlatingSnowFoundation
+  mobAcceleration: 1
+  mobFriction: 1
+  wlTerrainTags:
+  - Constructed
+  - Road
 
 - type: stack
   id: WLSnowFoundationTile

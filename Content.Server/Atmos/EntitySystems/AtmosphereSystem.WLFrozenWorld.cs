@@ -8,21 +8,16 @@ public sealed partial class AtmosphereSystem
 {
     /// <summary>
     /// WL: Applies a uniform static atmosphere to every existing tile on a grid.
-    ///
-    /// This is intentionally not vanilla equalization. FrozenWorld treats outdoor air as a global background:
-    /// same moles everywhere, fixed pressure everywhere, temperature controlled by FrozenWorld systems.
+    /// Simulation is disabled so gas does not equalize between tiles.
+    /// Temperature changes (campfires, weather) still work per-tile.
     /// </summary>
-    public int WLApplyStaticGridAtmosphere(
-        EntityUid gridUid,
-        GasMixture mixture,
-        bool forceUniform = true,
-        bool disableSimulation = true)
+    public int WLApplyStaticGridAtmosphere(EntityUid gridUid, GasMixture mixture)
     {
         if (!TryComp<MapGridComponent>(gridUid, out var grid))
             return 0;
 
         var atmosphere = EnsureComp<GridAtmosphereComponent>(gridUid);
-        var overlay = EnsureComp<GasTileOverlayComponent>(gridUid);
+        EnsureComp<GasTileOverlayComponent>(gridUid);
         var volume = GetVolumeForTiles(grid);
         var touched = 0;
 
@@ -32,54 +27,39 @@ public sealed partial class AtmosphereSystem
             var indices = tileRef.Value.GridIndices;
             var tile = GetOrNewTile(gridUid, atmosphere, indices, invalidateNew: false);
 
-            if (!forceUniform && tile.Air != null && tile.Air.TotalMoles > Atmospherics.GasMinMoles)
+            if (tile.Air != null && tile.Air.TotalMoles > Atmospherics.GasMinMoles)
                 continue;
 
-            var air = new GasMixture(mixture)
-            {
-                Volume = volume,
-            };
-
-            if (air.TotalMoles <= Atmospherics.GasMinMoles)
-                continue;
-
-            tile.Air = air;
+            tile.Air = new GasMixture(mixture) { Volume = volume };
             tile.AirArchived = null;
             tile.ArchivedCycle = 0;
             tile.LastShare = 0f;
-            tile.Temperature = air.Temperature;
+            tile.Temperature = mixture.Temperature;
             tile.Space = false;
             tile.MapAtmosphere = false;
             tile.NoGridTile = false;
             tile.Hotspot = new Hotspot();
 
-            // This tile is no longer an immutable map-atmos tile; it is a local static grid tile.
             atmosphere.MapTiles.Remove(tile);
             atmosphere.InvalidatedCoords.Remove(indices);
             atmosphere.PossiblyDisconnectedTiles.Remove(tile);
             atmosphere.ActiveTiles.Remove(tile);
-            InvalidateVisuals((gridUid, overlay), indices);
-            NotifyDeviceTileChanged((gridUid, atmosphere, grid), indices);
 
             touched++;
         }
 
-        if (disableSimulation)
-            WLDisableGridAtmosphereSimulation(gridUid, atmosphere);
-
+        WLDisableGridAtmosphereSimulation(gridUid, atmosphere);
         return touched;
     }
 
     /// <summary>
-    /// WL: Updates only temperature on an already seeded static atmosphere.
-    /// Moles and pressure are kept uniform and unchanged.
+    /// WL: Updates temperature on all seeded static atmosphere tiles.
+    /// Moles are not changed. Use after AmbientTemperature changes.
     /// </summary>
-    public int WLSetGridAtmosphereTemperature(EntityUid gridUid, float temperature)
+    public void WLSetGridAtmosphereTemperature(EntityUid gridUid, float temperature)
     {
         if (!TryComp<GridAtmosphereComponent>(gridUid, out var atmosphere))
-            return 0;
-
-        var touched = 0;
+            return;
 
         foreach (var tile in atmosphere.Tiles.Values)
         {
@@ -90,15 +70,12 @@ public sealed partial class AtmosphereSystem
             tile.Temperature = temperature;
             tile.AirArchived = null;
             tile.ArchivedCycle = 0;
-            touched++;
         }
-
-        return touched;
     }
 
     /// <summary>
-    /// WL: Turns grid atmos into a static data layer.
-    /// Gas analyzers still read tile mixtures, but normal SS14 atmos processing no longer equalizes or drains the world.
+    /// WL: Disables SS14 atmosphere equalization on a grid.
+    /// Gas analyzers still read per-tile mixtures; temperature changes still apply.
     /// </summary>
     public void WLDisableGridAtmosphereSimulation(EntityUid gridUid)
     {

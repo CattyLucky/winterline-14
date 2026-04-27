@@ -44,18 +44,11 @@ public sealed partial class FrozenWorldSystem : EntitySystem
     [Dependency] private readonly FrozenWorldZoneSystem _zones = default!;
 
     private readonly HashSet<EntityUid> _configuredStations = new();
-    private readonly List<PendingFrozenAtmosphereSeed> _pendingAtmosphereSeeds = new();
 
     public override void Initialize()
     {
         base.Initialize();
         SubscribeLocalEvent<StationFrozenWorldComponent, StationPostInitEvent>(OnStationPostInit);
-    }
-
-    public override void Update(float frameTime)
-    {
-        base.Update(frameTime);
-        ProcessPendingAtmosphereSeeds();
     }
 
     private void OnStationPostInit(Entity<StationFrozenWorldComponent> ent, ref StationPostInitEvent args)
@@ -125,14 +118,9 @@ public sealed partial class FrozenWorldSystem : EntitySystem
 
         var atmosphereMixture = SetMapAtmosphere(mapUid.Value, profile);
 
-        // Grid atmosphere tiles created from loaded maps often start as local vacuum.
-        // MapAtmosphere alone is not enough for normal floor tiles: GetTileMixture resolves the grid tile first.
-        // Seed existing settlement tiles now, then repeat after biome preload has materialized its pinned chunks.
-        var seededTiles = _atmos.WLApplyStaticGridAtmosphere(planetGridUid, atmosphereMixture, profile.ForceUniformAtmosphere, profile.StaticAtmosphere);
-        ScheduleAtmosphereSeed(mapUid.Value, planetGridUid, atmosphereMixture, 1, profile.ForceUniformAtmosphere, profile.StaticAtmosphere);
-        ScheduleAtmosphereSeed(mapUid.Value, planetGridUid, atmosphereMixture, 5, profile.ForceUniformAtmosphere, profile.StaticAtmosphere);
-        ScheduleAtmosphereSeed(mapUid.Value, planetGridUid, atmosphereMixture, 20, profile.ForceUniformAtmosphere, profile.StaticAtmosphere);
-        ScheduleAtmosphereSeed(mapUid.Value, planetGridUid, atmosphereMixture, 60, profile.ForceUniformAtmosphere, profile.StaticAtmosphere);
+        // Seed all existing grid tiles with the world atmosphere and disable gas simulation.
+        // Gas does not equalize between tiles; temperature changes per-tile still work (campfires, weather).
+        var seededTiles = _atmos.WLApplyStaticGridAtmosphere(planetGridUid, atmosphereMixture);
 
         // Cache the authored settlement bounds before pinning/preloading biome terrain.
         // PinPreloadArea will later materialize terrain chunks and expand LocalAABB;
@@ -150,10 +138,7 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         worldComp.TemporaryBaseGrid = null;
         worldComp.BaseBounds = baseBounds;
         worldComp.BaseStamped = true;
-        worldComp.AtmosphereTemperature = profile.AtmosphereTemperature;
-        worldComp.StaticAtmosphere = profile.StaticAtmosphere;
-        worldComp.AtmosphereTemperatureUpdateInterval = profile.AtmosphereTemperatureUpdateInterval;
-        worldComp.AtmosphereTemperatureAccumulator = 0f;
+        worldComp.AmbientTemperature = profile.AmbientTemperature;
         worldComp.ZonesGenerated = false;
         Dirty(mapUid.Value, worldComp);
 
@@ -306,43 +291,11 @@ public sealed partial class FrozenWorldSystem : EntitySystem
             moles[i] = profile.GasMoles[i];
         }
 
-        var mixture = new GasMixture(moles, profile.AtmosphereTemperature);
+        var mixture = new GasMixture(moles, profile.AmbientTemperature);
         _atmos.SetMapAtmosphere(mapUid, false, mixture);
 
-        Log.Info($"Frozen world map atmosphere configured: temperature={profile.AtmosphereTemperature:F1}K, totalMoles={mixture.TotalMoles:F2}, pressure={mixture.Pressure:F2}kPa.");
+        Log.Info($"Frozen world map atmosphere configured: ambientTemperature={profile.AmbientTemperature:F1}K, totalMoles={mixture.TotalMoles:F2}, pressure={mixture.Pressure:F2}kPa.");
         return mixture;
     }
 
-    private void ScheduleAtmosphereSeed(EntityUid mapUid, EntityUid gridUid, GasMixture mixture, int ticksRemaining, bool forceUniform, bool staticAtmosphere)
-    {
-        _pendingAtmosphereSeeds.Add(new PendingFrozenAtmosphereSeed(mapUid, gridUid, mixture, ticksRemaining, forceUniform, staticAtmosphere));
-    }
-
-    private void ProcessPendingAtmosphereSeeds()
-    {
-        for (var i = _pendingAtmosphereSeeds.Count - 1; i >= 0; i--)
-        {
-            var pending = _pendingAtmosphereSeeds[i];
-
-            if (pending.TicksRemaining > 0)
-            {
-                pending.TicksRemaining--;
-                _pendingAtmosphereSeeds[i] = pending;
-                continue;
-            }
-
-            _pendingAtmosphereSeeds.RemoveAt(i);
-
-            if (!Exists(pending.MapUid) || !Exists(pending.GridUid))
-                continue;
-
-            var seeded = _atmos.WLApplyStaticGridAtmosphere(pending.GridUid, pending.Mixture, pending.ForceUniform, pending.StaticAtmosphere);
-            _atmos.RefreshAllGridMapAtmospheres(pending.MapUid);
-
-            if (seeded > 0)
-                Log.Debug($"Frozen world delayed atmosphere seed filled {seeded} vacuum tiles on {ToPrettyString(pending.GridUid)}.");
-        }
-    }
-
-    private record struct PendingFrozenAtmosphereSeed(EntityUid MapUid, EntityUid GridUid, GasMixture Mixture, int TicksRemaining, bool ForceUniform, bool StaticAtmosphere);
 }

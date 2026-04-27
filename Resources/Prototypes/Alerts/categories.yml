@@ -33,3 +33,7 @@
 
 - type: alertCategory
   id: Battery
+
+# /// WL Change
+- type: alertCategory
+  id: WLColdExposure

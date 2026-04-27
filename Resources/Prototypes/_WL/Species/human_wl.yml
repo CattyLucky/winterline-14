@@ -15,6 +15,21 @@
   components:
   - type: HumanoidProfile
     species: HumanWL
+  - type: TemperatureDamage
+    heatDamageThreshold: 10000
+    coldDamageThreshold: 0
+    damageCap: 0
+  - type: FrozenColdExposure
+    safeTemperature: 283.15      # +10°C — безопасно, exposure падает
+    extremeTemperature: 233.15   # -40°C — максимальный набор exposure
+    exposureGainRate: 1.0
+    recoveryRate: 3.0
+    damageThreshold: 60
+    maxExposure: 100
+    damageInterval: 2
+    minDamagePerTick: 0.5
+    maxDamagePerTick: 2.0
+    damageType: Cold
 
 - type: species
   id: HumanWL
