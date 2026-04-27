@@ -71,6 +71,12 @@ public sealed partial class FrozenWorldComponent : Component
     public float AtmosphereTemperatureAccumulator;
 
     /// <summary>
+    /// Last temperature value that was written to all grid tiles.
+    /// Used to skip tile iteration when temperature has not changed.
+    /// </summary>
+    public float LastAppliedAtmosphereTemperature = float.NaN;
+
+    /// <summary>
     /// Prevents duplicate square-zone generation if setup is called more than once.
     /// </summary>
     public bool ZonesGenerated;

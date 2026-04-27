@@ -30,8 +30,12 @@ public sealed partial class FrozenWorldTemperatureSystem : EntitySystem
                 continue;
 
             world.AtmosphereTemperatureAccumulator = 0f;
+
+            if (world.AtmosphereTemperature == world.LastAppliedAtmosphereTemperature)
+                continue;
+
             _atmos.WLSetGridAtmosphereTemperature(gridUid, world.AtmosphereTemperature);
-            _atmos.WLDisableGridAtmosphereSimulation(gridUid);
+            world.LastAppliedAtmosphereTemperature = world.AtmosphereTemperature;
         }
     }
 }

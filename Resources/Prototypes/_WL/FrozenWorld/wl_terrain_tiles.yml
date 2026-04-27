@@ -42,7 +42,7 @@
   spawn: WLSnowFoundationTileItem
 
 - type: entity
-  name: wl-snow-foundation-tile
+  name: Wood Planking
   parent: FloorTileItemBase
   id: WLSnowFoundationTileItem
   description: A foundation plate for building on frozen terrain.

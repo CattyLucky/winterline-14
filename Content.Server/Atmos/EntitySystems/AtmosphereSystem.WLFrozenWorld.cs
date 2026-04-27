@@ -67,7 +67,6 @@ public sealed partial class AtmosphereSystem
         if (disableSimulation)
             WLDisableGridAtmosphereSimulation(gridUid, atmosphere);
 
-        Dirty(gridUid, atmosphere);
         return touched;
     }
 
@@ -94,7 +93,6 @@ public sealed partial class AtmosphereSystem
             touched++;
         }
 
-        Dirty(gridUid, atmosphere);
         return touched;
     }
 
@@ -126,6 +124,5 @@ public sealed partial class AtmosphereSystem
         atmosphere.SuperconductivityTiles.Clear();
         atmosphere.InvalidatedCoords.Clear();
         atmosphere.PossiblyDisconnectedTiles.Clear();
-        Dirty(gridUid, atmosphere);
     }
 }
