@@ -250,7 +250,8 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         var gasOverlay = EnsureComp<GasTileOverlayComponent>(planetGridUid);
         Dirty(planetGridUid, gasOverlay);
 
-        EnsureComp<ProtectedGridComponent>(planetGridUid);
+        if (RemComp<ProtectedGridComponent>(planetGridUid))
+            Log.Debug($"Removed ProtectedGrid from frozen world main surface grid {ToPrettyString(planetGridUid)}.");
         EnsureComp<NavMapComponent>(planetGridUid);
 
         return biome;

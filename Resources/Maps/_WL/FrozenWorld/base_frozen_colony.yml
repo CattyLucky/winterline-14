@@ -14,7 +14,7 @@ orphans: []
 nullspace: []
 tilemap:
   1: Space
-  0: FloorAstroSnow
+  0: WLFloorSnow
 entities:
 - proto: ""
   entities:

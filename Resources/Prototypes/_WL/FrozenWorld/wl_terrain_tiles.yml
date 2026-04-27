@@ -1,0 +1,58 @@
+- type: tile
+  id: WLFloorSnow
+  parent: FloorSnow
+  name: tiles-wl-snow
+  deconstructTools: []
+  indestructible: true
+  weather: true
+
+- type: tile
+  id: WLFloorSnowDug
+  parent: FloorSnowDug
+  name: tiles-wl-snow-dug
+  deconstructTools: []
+  indestructible: true
+  weather: true
+
+- type: tile
+  id: WLPlatingSnowFoundation
+  parent: PlatingSnow
+  name: tiles-wl-snow-foundation
+  deconstructTools: [ Prying ]
+  indestructible: false
+  baseTurf: WLFloorSnow
+  baseWhitelist:
+  - WLFloorSnow
+  - WLFloorSnowDug
+  itemDrop: WLSnowFoundationTileItem
+  weather: true
+
+- type: tile
+  id: WLFloorSteel
+  parent: FloorSteel
+  name: tiles-wl-steel-floor
+  baseTurf: WLPlatingSnowFoundation
+  baseWhitelist:
+  - WLPlatingSnowFoundation
+
+- type: stack
+  id: WLSnowFoundationTile
+  name: snow foundation tile
+  icon: { sprite: Objects/Tiles/tile.rsi, state: wood-large }
+  spawn: WLSnowFoundationTileItem
+
+- type: entity
+  name: snow foundation tile
+  parent: FloorTileItemBase
+  id: WLSnowFoundationTileItem
+  description: A foundation plate for building on frozen terrain.
+  components:
+  - type: Sprite
+    state: wood-large
+  - type: Item
+    heldPrefix: wood
+  - type: FloorTile
+    outputs:
+    - WLPlatingSnowFoundation
+  - type: Stack
+    stackType: WLSnowFoundationTile

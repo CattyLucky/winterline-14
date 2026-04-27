@@ -2,7 +2,7 @@
   id: WLIceWasteland
   layers:
   - !type:BiomeTileLayer
-    tile: FloorSnow
+    tile: WLFloorSnow
     threshold: -1
     noise:
       seed: 120
@@ -10,7 +10,7 @@
       frequency: 0.02
       fractalType: None
   - !type:BiomeTileLayer
-    tile: FloorSnowDug
+    tile: WLFloorSnowDug
     threshold: 0.44
     noise:
       seed: 8
@@ -21,8 +21,8 @@
       octaves: 3
   - !type:BiomeDecalLayer
     allowedTiles:
-    - FloorSnow
-    - FloorSnowDug
+    - WLFloorSnow
+    - WLFloorSnowDug
     divisions: 1
     threshold: 0.58
     noise:
@@ -134,8 +134,8 @@
     - Basalt9
   - !type:BiomeEntityLayer
     allowedTiles:
-    - FloorSnow
-    - FloorSnowDug
+    - WLFloorSnow
+    - WLFloorSnowDug
     threshold: 0.52
     noise:
       seed: 3
@@ -157,8 +157,8 @@
     - FloraTreeSnow
   - !type:BiomeEntityLayer
     allowedTiles:
-    - FloorSnow
-    - FloorSnowDug
+    - WLFloorSnow
+    - WLFloorSnowDug
     threshold: 0.985
     noise:
       seed: 4
@@ -169,8 +169,8 @@
     - FloraRockSolid
   - !type:BiomeEntityLayer
     allowedTiles:
-    - FloorSnow
-    - FloorSnowDug
+    - WLFloorSnow
+    - WLFloorSnowDug
     threshold: 0.965
     noise:
       seed: 6
