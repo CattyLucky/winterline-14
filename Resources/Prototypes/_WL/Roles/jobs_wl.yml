@@ -3,6 +3,7 @@
   name: job-name-wl-settlement-head
   description: job-description-wl-settlement-head
   setPreference: true
+  grantPersistentCraftAccess: true
   playTimeTracker: JobWLSettlementHead
   weight: 20
   icon: JobIconHeadOfPersonnel
@@ -16,14 +17,13 @@
   - Engineering
   - Medical
   - Cryogenics # /// WL Change
-  special:
-  - !type:GrantPersistentCraftAccessSpecial
 
 - type: job
   id: WLMechanic
   name: job-name-wl-mechanic
   description: job-description-wl-mechanic
   setPreference: true
+  grantPersistentCraftAccess: true
   playTimeTracker: JobWLMechanic
   weight: 10
   icon: JobIconStationEngineer
@@ -35,14 +35,13 @@
   - Engineering
   - External
   - Cryogenics # /// WL Change
-  special:
-  - !type:GrantPersistentCraftAccessSpecial
 
 - type: job
   id: WLHunter
   name: job-name-wl-hunter
   description: job-description-wl-hunter
   setPreference: true
+  grantPersistentCraftAccess: true
   playTimeTracker: JobWLHunter
   weight: 10
   icon: JobIconShaftMiner
@@ -54,14 +53,13 @@
   - Salvage
   - External
   - Cryogenics # /// WL Change
-  special:
-  - !type:GrantPersistentCraftAccessSpecial
 
 - type: job
   id: WLGathererProcessor
   name: job-name-wl-gatherer-processor
   description: job-description-wl-gatherer-processor
   setPreference: true
+  grantPersistentCraftAccess: true
   playTimeTracker: JobWLGathererProcessor
   weight: 10
   icon: JobIconMedicalDoctor
@@ -74,5 +72,3 @@
   - Chemistry
   - Hydroponics
   - Cryogenics # /// WL Change
-  special:
-  - !type:GrantPersistentCraftAccessSpecial

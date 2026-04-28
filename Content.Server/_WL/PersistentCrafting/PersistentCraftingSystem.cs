@@ -5,6 +5,7 @@ using Content.Shared.DoAfter;
 using Content.Shared.GameTicking;
 using Content.Shared.Hands.EntitySystems;
 using Content.Shared.Popups;
+using Content.Shared.Roles;
 using Content.Shared.Stacks;
 using Content.Shared.Tag;
 using Robust.Shared.Network;
@@ -373,6 +374,13 @@ public sealed class PersistentCraftingSystem : EntitySystem
 
     private void OnPlayerSpawnComplete(PlayerSpawnCompleteEvent args)
     {
+        if (args.JobId != null &&
+            _proto.TryIndex<JobPrototype>(args.JobId, out var job) &&
+            job.GrantPersistentCraftAccess)
+        {
+            EnsureComp<PersistentCraftAccessComponent>(args.Mob);
+        }
+
         var profile = EnsureComp<PersistentCraftProfileComponent>(args.Mob);
         ResetRoundProfile(args.Mob, profile, args.Profile.Name);
     }
