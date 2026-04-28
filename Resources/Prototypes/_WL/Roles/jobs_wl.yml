@@ -17,9 +17,7 @@
   - Medical
   - Cryogenics # /// WL Change
   special:
-  - !type:AddComponentSpecial
-    components:
-    - type: PersistentCraftAccess
+  - !type:GrantPersistentCraftAccessSpecial
 
 - type: job
   id: WLMechanic
@@ -38,9 +36,7 @@
   - External
   - Cryogenics # /// WL Change
   special:
-  - !type:AddComponentSpecial
-    components:
-    - type: PersistentCraftAccess
+  - !type:GrantPersistentCraftAccessSpecial
 
 - type: job
   id: WLHunter
@@ -59,9 +55,7 @@
   - External
   - Cryogenics # /// WL Change
   special:
-  - !type:AddComponentSpecial
-    components:
-    - type: PersistentCraftAccess
+  - !type:GrantPersistentCraftAccessSpecial
 
 - type: job
   id: WLGathererProcessor
@@ -81,6 +75,4 @@
   - Hydroponics
   - Cryogenics # /// WL Change
   special:
-  - !type:AddComponentSpecial
-    components:
-    - type: PersistentCraftAccess
+  - !type:GrantPersistentCraftAccessSpecial
