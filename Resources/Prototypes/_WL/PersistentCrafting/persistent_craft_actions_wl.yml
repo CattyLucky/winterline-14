@@ -1,8 +1,8 @@
 - type: entity
   parent: BaseMentalAction
   id: ActionOpenPersistentCraftMenu
-  name: persistent-craft-action-name
-  description: persistent-craft-action-description
+  name: persistent craft
+  description: Open your personal crafting menu.
   components:
   - type: Action
     itemIconStyle: NoItem

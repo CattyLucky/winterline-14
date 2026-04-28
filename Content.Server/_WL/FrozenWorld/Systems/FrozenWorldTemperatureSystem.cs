@@ -1,39 +1,68 @@
 using Content.Server._WL.FrozenWorld.Components;
 using Content.Server.Atmos.EntitySystems;
+using Robust.Shared.Maths;
 
 namespace Content.Server._WL.FrozenWorld.Systems;
 
 /// <summary>
-/// Keeps FrozenWorld static atmosphere synchronized with AmbientTemperature.
+/// Keeps FrozenWorld static atmosphere synchronized with AmbientTemperature via events.
 /// Affects gas analyzer / tile atmosphere only. Does not apply cold damage.
 /// </summary>
 public sealed partial class FrozenWorldAtmosphereTemperatureSystem : EntitySystem
 {
     [Dependency] private readonly AtmosphereSystem _atmos = default!;
 
-    public override void Update(float frameTime)
+    public override void Initialize()
     {
-        base.Update(frameTime);
+        base.Initialize();
+        SubscribeLocalEvent<FrozenWorldComponent, ComponentStartup>(OnFrozenWorldStartup);
+        SubscribeLocalEvent<FrozenWorldComponent, FrozenAmbientTemperatureChangedEvent>(OnAmbientTemperatureChanged);
+    }
 
-        var query = EntityQueryEnumerator<FrozenWorldComponent>();
-        while (query.MoveNext(out _, out var world))
-        {
-            if (!world.StaticAtmosphere || world.PlanetGrid is not { } gridUid || !Exists(gridUid))
-                continue;
+    public void SetAmbientTemperature(EntityUid mapUid, float temperature, FrozenWorldComponent? world = null)
+    {
+        if (!Resolve(mapUid, ref world))
+            return;
 
-            world.AtmosphereTemperatureAccumulator += frameTime;
-            var interval = MathF.Max(0.25f, world.AtmosphereTemperatureUpdateInterval);
+        if (MathHelper.CloseTo(world.AmbientTemperature, temperature))
+            return;
 
-            if (world.AtmosphereTemperatureAccumulator < interval)
-                continue;
+        world.AmbientTemperature = temperature;
+        RaiseLocalEvent(mapUid, new FrozenAmbientTemperatureChangedEvent(temperature));
+    }
 
-            world.AtmosphereTemperatureAccumulator = 0f;
+    private void OnFrozenWorldStartup(Entity<FrozenWorldComponent> ent, ref ComponentStartup args)
+    {
+        ApplyStaticAtmosphereTemperature(ent.Comp, ent.Comp.AmbientTemperature);
+    }
 
-            if (MathHelper.CloseTo(world.LastAppliedAtmosphereTemperature, world.AmbientTemperature))
-                continue;
+    private void OnAmbientTemperatureChanged(Entity<FrozenWorldComponent> ent, ref FrozenAmbientTemperatureChangedEvent args)
+    {
+        if (!MathHelper.CloseTo(ent.Comp.AmbientTemperature, args.Temperature))
+            ent.Comp.AmbientTemperature = args.Temperature;
 
-            _atmos.WLSetGridAtmosphereTemperature(gridUid, world.AmbientTemperature);
-            world.LastAppliedAtmosphereTemperature = world.AmbientTemperature;
-        }
+        ApplyStaticAtmosphereTemperature(ent.Comp, ent.Comp.AmbientTemperature);
+    }
+
+    private void ApplyStaticAtmosphereTemperature(FrozenWorldComponent world, float temperature)
+    {
+        if (!world.StaticAtmosphere || world.PlanetGrid is not { } gridUid || !Exists(gridUid))
+            return;
+
+        if (MathHelper.CloseTo(world.LastAppliedAtmosphereTemperature, temperature))
+            return;
+
+        _atmos.WLSetGridAtmosphereTemperature(gridUid, temperature);
+        world.LastAppliedAtmosphereTemperature = temperature;
+    }
+}
+
+public sealed class FrozenAmbientTemperatureChangedEvent : EntityEventArgs
+{
+    public float Temperature;
+
+    public FrozenAmbientTemperatureChangedEvent(float temperature)
+    {
+        Temperature = temperature;
     }
 }

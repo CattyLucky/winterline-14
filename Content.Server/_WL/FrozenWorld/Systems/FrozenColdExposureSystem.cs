@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using Content.Server._WL.FrozenWorld.Components;
 using Content.Shared.Alert;
@@ -6,6 +7,7 @@ using Content.Shared.Damage;
 using Content.Shared.Damage.Prototypes;
 using Content.Shared.Damage.Systems;
 using Content.Shared.FixedPoint;
+using Robust.Shared.Timing;
 using Robust.Shared.Prototypes;
 
 namespace Content.Server._WL.FrozenWorld.Systems;
@@ -19,46 +21,14 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
     [Dependency] private readonly AlertsSystem _alerts = default!;
     [Dependency] private readonly DamageableSystem _damage = default!;
     [Dependency] private readonly IPrototypeManager _proto = default!;
+    [Dependency] private readonly IGameTiming _timing = default!;
 
     private const float UpdateInterval = 1f;
+    private static readonly TimeSpan HeatSourceSnapshotTtl = TimeSpan.FromSeconds(1);
+
     private float _accumulator;
-
-    private readonly Dictionary<EntityUid, List<(EntityUid Uid, FrozenHeatSourceComponent Comp)>> _sourceCache = new();
-
-    public override void Initialize()
-    {
-        base.Initialize();
-        SubscribeLocalEvent<FrozenHeatSourceComponent, ComponentStartup>(OnHeatSourceStartup);
-        SubscribeLocalEvent<FrozenHeatSourceComponent, ComponentShutdown>(OnHeatSourceShutdown);
-    }
-
-    private void OnHeatSourceStartup(Entity<FrozenHeatSourceComponent> ent, ref ComponentStartup args)
-    {
-        var mapUid = Transform(ent).MapUid;
-        if (mapUid == null)
-            return;
-
-        if (!_sourceCache.TryGetValue(mapUid.Value, out var list))
-        {
-            list = new List<(EntityUid, FrozenHeatSourceComponent)>();
-            _sourceCache[mapUid.Value] = list;
-        }
-
-        list.Add((ent.Owner, ent.Comp));
-    }
-
-    private void OnHeatSourceShutdown(Entity<FrozenHeatSourceComponent> ent, ref ComponentShutdown args)
-    {
-        RemoveHeatSource(ent.Owner);
-    }
-
-    private void RemoveHeatSource(EntityUid uid)
-    {
-        foreach (var list in _sourceCache.Values)
-        {
-            list.RemoveAll(x => x.Uid == uid);
-        }
-    }
+    private TimeSpan _nextHeatSourceSnapshotRebuild;
+    private Dictionary<EntityUid, List<FrozenHeatSourceSnapshot>> _cachedHeatSourcesByMap = new();
 
     public override void Update(float frameTime)
     {
@@ -70,6 +40,7 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
 
         var dt = _accumulator;
         _accumulator = 0f;
+        var heatSourcesByMap = GetHeatSourceSnapshot();
 
         var query = EntityQueryEnumerator<FrozenColdExposureComponent>();
         while (query.MoveNext(out var uid, out var exposure))
@@ -88,7 +59,7 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
                 continue;
             }
 
-            var effectiveTemperature = GetEffectiveTemperatureAt(mapUid, xform.WorldPosition, world);
+            var effectiveTemperature = GetEffectiveTemperatureAt(mapUid, xform.WorldPosition, world, heatSourcesByMap);
             exposure.LastEffectiveTemperature = effectiveTemperature;
             UpdateExposure(uid, exposure, effectiveTemperature, dt);
         }
@@ -192,21 +163,25 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
 
     public float GetEffectiveTemperatureAt(EntityUid mapUid, Vector2 worldPos, FrozenWorldComponent world)
     {
+        var heatSourcesByMap = GetHeatSourceSnapshot();
+        return GetEffectiveTemperatureAt(mapUid, worldPos, world, heatSourcesByMap);
+    }
+
+    private float GetEffectiveTemperatureAt(
+        EntityUid mapUid,
+        Vector2 worldPos,
+        FrozenWorldComponent world,
+        Dictionary<EntityUid, List<FrozenHeatSourceSnapshot>> heatSourcesByMap)
+    {
         var temperature = world.AmbientTemperature;
 
-        if (!_sourceCache.TryGetValue(mapUid, out var sources))
+        if (!heatSourcesByMap.TryGetValue(mapUid, out var sources))
             return temperature;
 
-        for (var i = sources.Count - 1; i >= 0; i--)
+        for (var i = 0; i < sources.Count; i++)
         {
-            var (sourceUid, source) = sources[i];
-            if (!Exists(sourceUid))
-            {
-                sources.RemoveAt(i);
-                continue;
-            }
-
-            var sourcePos = Transform(sourceUid).WorldPosition;
+            var source = sources[i];
+            var sourcePos = source.Position;
             var radius = MathF.Max(0.01f, source.Radius);
             var radiusSq = radius * radius;
             var distSq = Vector2.DistanceSquared(worldPos, sourcePos);
@@ -216,11 +191,54 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
 
             var dist = MathF.Sqrt(distSq);
             var falloff = 1f - dist / radius;
-            temperature += source.TemperatureDelta * falloff;
+            temperature += source.TemperatureDelta * falloff * source.TransferEfficiency;
         }
 
         return temperature;
     }
+
+    private Dictionary<EntityUid, List<FrozenHeatSourceSnapshot>> BuildHeatSourceSnapshot()
+    {
+        var result = new Dictionary<EntityUid, List<FrozenHeatSourceSnapshot>>();
+        var query = EntityQueryEnumerator<FrozenHeatSourceComponent, TransformComponent>();
+
+        while (query.MoveNext(out _, out var source, out var xform))
+        {
+            if (xform.MapUid is not { } mapUid)
+                continue;
+
+            if (!result.TryGetValue(mapUid, out var sources))
+            {
+                sources = new List<FrozenHeatSourceSnapshot>();
+                result[mapUid] = sources;
+            }
+
+            sources.Add(new FrozenHeatSourceSnapshot(
+                xform.WorldPosition,
+                source.Radius,
+                source.TemperatureDelta,
+                source.TransferEfficiency));
+        }
+
+        return result;
+    }
+
+    private Dictionary<EntityUid, List<FrozenHeatSourceSnapshot>> GetHeatSourceSnapshot()
+    {
+        if (_timing.CurTime >= _nextHeatSourceSnapshotRebuild)
+        {
+            _cachedHeatSourcesByMap = BuildHeatSourceSnapshot();
+            _nextHeatSourceSnapshotRebuild = _timing.CurTime + HeatSourceSnapshotTtl;
+        }
+
+        return _cachedHeatSourcesByMap;
+    }
+
+    private readonly record struct FrozenHeatSourceSnapshot(
+        Vector2 Position,
+        float Radius,
+        float TemperatureDelta,
+        float TransferEfficiency);
 
     private static float Lerp(float a, float b, float t)
     {

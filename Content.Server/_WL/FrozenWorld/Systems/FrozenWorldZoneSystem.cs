@@ -61,7 +61,6 @@ public sealed partial class FrozenWorldZoneSystem : EntitySystem
         }
 
         world.Comp.ZonesGenerated = true;
-        Dirty(world.Owner, world.Comp);
 
         Log.Info($"Generated frozen world zones from preset '{profile.ZonePreset}' for map {world.Comp.MapId} on planet grid {ToPrettyString(planetGridUid)}.");
     }
