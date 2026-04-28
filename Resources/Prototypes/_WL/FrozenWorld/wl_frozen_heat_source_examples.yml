@@ -1,8 +1,10 @@
-# Examples only. Add FrozenHeatSource to actual campfire/heater/generator entities.
+# Real spawnable frozen-world heat source entities.
 
 - type: entity
-  id: WLCampfireHeatSourceExample
-  abstract: true
+  id: WLCampfireHeatSource
+  parent: Fireplace
+  name: frozen campfire
+  description: A reliable heat source for survival in the frozen wastes.
   components:
   - type: FrozenHeatSource
     radius: 4
@@ -10,8 +12,10 @@
     transferEfficiency: 1
 
 - type: entity
-  id: WLGeneratorHeatSourceExample
-  abstract: true
+  id: WLGeneratorHeatSource
+  parent: GeneratorBasic
+  name: frozen heat generator
+  description: A generator tuned to radiate strong local heat in extreme cold.
   components:
   - type: FrozenHeatSource
     radius: 10

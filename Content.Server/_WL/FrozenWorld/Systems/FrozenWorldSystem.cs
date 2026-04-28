@@ -140,11 +140,9 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         worldComp.BaseStamped = true;
         worldComp.AmbientTemperature = profile.AmbientTemperature;
         worldComp.ZonesGenerated = false;
-        Dirty(mapUid.Value, worldComp);
 
         var baseComp = EnsureComp<FrozenBaseComponent>(planetGridUid);
         baseComp.Profile = profileId;
-        Dirty(planetGridUid, baseComp);
 
         _zones.GenerateZones(planetGridUid, (mapUid.Value, worldComp), profile);
         _atmos.RefreshAllGridMapAtmospheres(mapUid.Value);

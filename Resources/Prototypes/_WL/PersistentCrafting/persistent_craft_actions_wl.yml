@@ -1,0 +1,13 @@
+- type: entity
+  parent: BaseMentalAction
+  id: ActionOpenPersistentCraftMenu
+  name: persistent-craft-action-name
+  description: persistent-craft-action-description
+  components:
+  - type: Action
+    itemIconStyle: NoItem
+    icon:
+      sprite: Interface/Actions/actions_crit.rsi
+      state: lastwords
+  - type: InstantAction
+    event: !type:OpenPersistentCraftMenuActionEvent
