@@ -139,15 +139,18 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         worldComp.BaseBounds = baseBounds;
         worldComp.BaseStamped = true;
         worldComp.AmbientTemperature = profile.AmbientTemperature;
-        worldComp.LastAppliedAtmosphereTemperature = float.NaN;
+
+        // The grid was just seeded by WLApplyStaticGridAtmosphere(atmosphereMixture), so tile atmos already matches
+        // the initial ambient temperature. Do not mark it dirty or immediately rewrite the whole grid again.
+        worldComp.LastAppliedAtmosphereTemperature = profile.AmbientTemperature;
+        worldComp.AtmosphereTemperatureDirty = false;
+        worldComp.AtmosphereTemperatureAccumulator = 0f;
         worldComp.ZonesGenerated = false;
 
         var baseComp = EnsureComp<FrozenBaseComponent>(planetGridUid);
         baseComp.Profile = profileId;
 
         _zones.GenerateZones(planetGridUid, (mapUid.Value, worldComp), profile);
-        RaiseLocalEvent(mapUid.Value, new FrozenAmbientTemperatureChangedEvent(worldComp.AmbientTemperature));
-        _atmos.RefreshAllGridMapAtmospheres(mapUid.Value);
 
         _configuredStations.Add(station.Owner);
 

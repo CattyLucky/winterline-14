@@ -18,8 +18,7 @@ public sealed partial class FrozenWorldComponent : Component
 
     /// <summary>
     /// Single global ambient temperature of the frozen world in Kelvin.
-    /// Used by static tile atmosphere, gas analyzer baseline and survival exposure baseline.
-    /// Local heat sources do not mutate this value.
+    /// Used by survival exposure immediately. Local heat sources do not mutate this value.
     /// </summary>
     public float AmbientTemperature = 243.15f;
 
@@ -38,13 +37,44 @@ public sealed partial class FrozenWorldComponent : Component
 
     /// <summary>
     /// Maximum absolute local heat/cold bonus from heat sources before effective temperature clamp.
-    /// This is a temporary Phase 2 anti-stacking guard until the heat-field system is introduced.
     /// </summary>
     public float MaxLocalTemperatureOffset = 60f;
 
+    /// <summary>
+    /// Maximum total insulation bonus from worn clothing/body modifiers before effective temperature clamp.
+    /// Prevents stacking many clothing slots into absurd cold immunity.
+    /// </summary>
+    public float MaxInsulationBonus = 45f;
+
+    /// <summary>
+    /// Last temperature actually written into tile atmosphere.
+    /// This can intentionally lag behind AmbientTemperature because mass grid-atmos writes are expensive.
+    /// </summary>
     public float LastAppliedAtmosphereTemperature = float.NaN;
+
+    /// <summary>
+    /// Whether the frozen world grid uses pre-seeded static atmosphere.
+    /// </summary>
     public bool StaticAtmosphere = true;
-    public float AtmosphereTemperatureUpdateInterval = 5f;
+
+    /// <summary>
+    /// Minimum time between expensive tile-atmos temperature syncs.
+    /// Gameplay AmbientTemperature is still available immediately through FrozenThermalQuerySystem.
+    /// </summary>
+    public float AtmosphereTemperatureUpdateInterval = 30f;
+
     public float AtmosphereTemperatureAccumulator;
+
+    /// <summary>
+    /// Minimum absolute difference in Kelvin required before rewriting all grid tile atmospheres.
+    /// Prevents small weather/day-night changes from constantly touching the whole grid.
+    /// </summary>
+    public float AtmosphereTemperatureSyncMinDelta = 3f;
+
+    /// <summary>
+    /// Set when AmbientTemperature changed and tile atmosphere should be synced later.
+    /// </summary>
+    public bool AtmosphereTemperatureDirty;
+
     public bool ZonesGenerated;
 }

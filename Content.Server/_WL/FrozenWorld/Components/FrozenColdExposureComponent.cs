@@ -40,6 +40,14 @@ public sealed partial class FrozenColdExposureComponent : Component
     [DataField]
     public float MaxDamagePerTick = 2.0f;
 
+    /// <summary>
+    /// Minimum share of current cold severity used for damage while below SafeTemperature.
+    /// Prevents a deeply exposed character from becoming completely stable at 0.1K below safe temperature,
+    /// while still allowing damage to stop immediately once they reach safe temperature.
+    /// </summary>
+    [DataField]
+    public float ColdDamageSeverityFloor = 0.25f;
+
     [DataField]
     public ProtoId<DamageTypePrototype> DamageType = "Cold";
 
@@ -72,4 +80,22 @@ public sealed partial class FrozenColdExposureComponent : Component
 
     [ViewVariables]
     public float LastShelterBonus;
+
+    [ViewVariables]
+    public float LastExposureGainMultiplier = 1f;
+
+    [ViewVariables]
+    public float LastRecoveryMultiplier = 1f;
+
+    [ViewVariables]
+    public float LastColdDamageMultiplier = 1f;
+
+    [ViewVariables]
+    public float LastColdSeverity;
+
+    [ViewVariables]
+    public float LastDamageSeverity;
+
+    [ViewVariables]
+    public float LastDamageAmount;
 }

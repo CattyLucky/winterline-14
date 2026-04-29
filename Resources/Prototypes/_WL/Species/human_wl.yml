@@ -20,15 +20,16 @@
     coldDamageThreshold: 0
     damageCap: 0
   - type: FrozenColdExposure
-    safeTemperature: 283.15      # +10°C — безопасно, exposure падает
-    extremeTemperature: 233.15   # -40°C — максимальный набор exposure
+    safeTemperature: 278.15
+    extremeTemperature: 233.15
     exposureGainRate: 1.0
-    recoveryRate: 3.0
+    recoveryRate: 1.5
     damageThreshold: 60
     maxExposure: 100
     damageInterval: 2
     minDamagePerTick: 0.5
     maxDamagePerTick: 2.0
+    coldDamageSeverityFloor: 0.25
     damageType: Cold
 
 - type: species

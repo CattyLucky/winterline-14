@@ -17,7 +17,7 @@ public sealed partial class FrozenHeatSourceComponent : Component
     /// <summary>
     /// Dynamic sources are carried/moved sources: torches, hand warmers, portable heaters.
     /// Static sources are buildings/world heat sources: campfires, generators, heaters.
-    /// Phase 2 still calculates both from the snapshot. Later phases will route them through separate caches.
+    /// Static sources are rasterized by FrozenHeatFieldSystem. Dynamic sources are indexed by FrozenDynamicHeatSourceSystem.
     /// </summary>
     [DataField]
     public bool Dynamic;

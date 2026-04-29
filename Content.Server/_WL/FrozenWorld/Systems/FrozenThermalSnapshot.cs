@@ -11,7 +11,10 @@ public readonly record struct FrozenThermalSnapshot(
     float InsulationBonus,
     float ShelterBonus,
     float EffectiveTemperature,
-    float SafeTemperature)
+    float SafeTemperature,
+    float ExposureGainMultiplier,
+    float RecoveryMultiplier,
+    float ColdDamageMultiplier)
 {
     public float LocalHeatBonus => StaticHeatBonus + DynamicHeatBonus;
 }

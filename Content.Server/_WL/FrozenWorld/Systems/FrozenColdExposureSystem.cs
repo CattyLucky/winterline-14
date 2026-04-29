@@ -59,6 +59,9 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
         exposure.LastDynamicHeatBonus = snapshot.DynamicHeatBonus;
         exposure.LastInsulationBonus = snapshot.InsulationBonus;
         exposure.LastShelterBonus = snapshot.ShelterBonus;
+        exposure.LastExposureGainMultiplier = snapshot.ExposureGainMultiplier;
+        exposure.LastRecoveryMultiplier = snapshot.RecoveryMultiplier;
+        exposure.LastColdDamageMultiplier = snapshot.ColdDamageMultiplier;
     }
 
     private void UpdateExposure(EntityUid uid, FrozenColdExposureComponent exposure, FrozenThermalSnapshot snapshot, float frameTime)
@@ -67,14 +70,21 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
 
         if (effectiveTemperature >= exposure.SafeTemperature)
         {
-            exposure.Exposure = MathF.Max(0f, exposure.Exposure - exposure.RecoveryRate * frameTime);
+            var recoveryRate = exposure.RecoveryRate * snapshot.RecoveryMultiplier;
+            exposure.Exposure = MathF.Max(0f, exposure.Exposure - recoveryRate * frameTime);
             exposure.DamageAccumulator = 0f;
+            exposure.LastColdSeverity = 0f;
+            exposure.LastDamageSeverity = 0f;
+            exposure.LastDamageAmount = 0f;
             UpdateColdAlert(uid, exposure, effectiveTemperature);
             return;
         }
 
-        var coldSeverity = GetColdSeverity(exposure, effectiveTemperature);
-        exposure.Exposure = MathF.Min(exposure.MaxExposure, exposure.Exposure + exposure.ExposureGainRate * coldSeverity * frameTime);
+        var coldSeverity = FrozenThermalMath.GetColdSeverity(exposure.SafeTemperature, exposure.ExtremeTemperature, effectiveTemperature);
+        exposure.LastColdSeverity = coldSeverity;
+
+        var gainRate = exposure.ExposureGainRate * snapshot.ExposureGainMultiplier;
+        exposure.Exposure = MathF.Min(exposure.MaxExposure, exposure.Exposure + gainRate * coldSeverity * frameTime);
 
         if (exposure.Exposure >= exposure.DamageThreshold)
         {
@@ -82,32 +92,40 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
             if (exposure.DamageAccumulator >= exposure.DamageInterval)
             {
                 exposure.DamageAccumulator = 0f;
-                ApplyColdDamage(uid, exposure, coldSeverity);
+                ApplyColdDamage(uid, exposure, snapshot, coldSeverity);
             }
         }
         else
         {
             exposure.DamageAccumulator = 0f;
+            exposure.LastDamageSeverity = 0f;
+            exposure.LastDamageAmount = 0f;
         }
 
         UpdateColdAlert(uid, exposure, effectiveTemperature);
     }
 
-    private void ApplyColdDamage(EntityUid uid, FrozenColdExposureComponent exposure, float coldSeverity)
+    private void ApplyColdDamage(EntityUid uid, FrozenColdExposureComponent exposure, FrozenThermalSnapshot snapshot, float coldSeverity)
     {
         if (!_proto.TryIndex<DamageTypePrototype>(exposure.DamageType, out var damageType))
             return;
 
-        var exposureSeverity = Math.Clamp(
-            (exposure.Exposure - exposure.DamageThreshold) / MathF.Max(1f, exposure.MaxExposure - exposure.DamageThreshold),
-            0f,
-            1f);
+        var exposureSeverity = FrozenThermalMath.GetExposureSeverity(
+            exposure.Exposure,
+            exposure.DamageThreshold,
+            exposure.MaxExposure);
 
-        // Damage should be strongest when the character is already deeply exposed and still standing in dangerous cold.
-        // Keep a small floor while below safe temperature so an already-frozen character does not become harmlessly stable
-        // just because the current temperature is only slightly below SafeTemperature.
-        var damageSeverity = exposureSeverity * MathF.Max(0.25f, coldSeverity);
-        var amount = Lerp(exposure.MinDamagePerTick, exposure.MaxDamagePerTick, damageSeverity);
+        // Damage depends on both accumulated exposure and current cold.
+        // It stops immediately once EffectiveTemperature reaches SafeTemperature because UpdateExposure returns before this point.
+        var damageSeverity = FrozenThermalMath.GetDamageSeverity(
+            exposureSeverity,
+            coldSeverity,
+            exposure.ColdDamageSeverityFloor);
+        var amount = FrozenThermalMath.Lerp(exposure.MinDamagePerTick, exposure.MaxDamagePerTick, damageSeverity) * snapshot.ColdDamageMultiplier;
+
+        exposure.LastDamageSeverity = damageSeverity;
+        exposure.LastDamageAmount = amount;
+
         if (amount <= 0f)
             return;
 
@@ -157,14 +175,4 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
         return 0;
     }
 
-    private static float GetColdSeverity(FrozenColdExposureComponent exposure, float effectiveTemperature)
-    {
-        var temperatureRange = MathF.Max(1f, exposure.SafeTemperature - exposure.ExtremeTemperature);
-        return Math.Clamp((exposure.SafeTemperature - effectiveTemperature) / temperatureRange, 0f, 1f);
-    }
-
-    private static float Lerp(float a, float b, float t)
-    {
-        return a + (b - a) * Math.Clamp(t, 0f, 1f);
-    }
 }
