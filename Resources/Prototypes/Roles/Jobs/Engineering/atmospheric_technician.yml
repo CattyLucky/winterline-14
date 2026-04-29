@@ -1,8 +1,7 @@
-- type: job
+﻿- type: job
   id: AtmosphericTechnician
   name: job-name-atmostech
   description: job-description-atmostech
-  setPreference: false # /// WL Change
   playTimeTracker: JobAtmosphericTechnician
   requirements:
   - !type:DepartmentTimeRequirement

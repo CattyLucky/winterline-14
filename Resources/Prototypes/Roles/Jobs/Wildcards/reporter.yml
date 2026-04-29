@@ -1,8 +1,7 @@
-- type: job
+﻿- type: job
   id: Reporter
   name: job-name-reporter
   description: job-description-reporter
-  setPreference: false # /// WL Change
   playTimeTracker: JobReporter
   startingGear: ReporterGear
   icon: "JobIconReporter"

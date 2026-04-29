@@ -1,8 +1,7 @@
-- type: job
+﻿- type: job
   id: Bartender
   name: job-name-bartender
   description: job-description-bartender
-  setPreference: false # /// WL Change
   playTimeTracker: JobBartender
   requirements:
     - !type:DepartmentTimeRequirement

@@ -8,4 +8,7 @@ public sealed partial class JobPrototype
 {
     [DataField]
     public bool GrantPersistentCraftAccess { get; private set; } = false;
+
+    [DataField("wlVisibleInLobby")]
+    public bool WlVisibleInLobby { get; private set; } = false;
 }

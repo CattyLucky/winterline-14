@@ -1,8 +1,7 @@
-- type: job
+﻿- type: job
   id: Mime
   name: job-name-mime
   description: job-description-mime
-  setPreference: false # /// WL Change
   playTimeTracker: JobMime
   requirements:
     - !type:OverallPlaytimeRequirement

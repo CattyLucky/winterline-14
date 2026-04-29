@@ -1,8 +1,7 @@
-- type: job
+﻿- type: job
   id: Detective
   name: job-name-detective
   description: job-description-detective
-  setPreference: false # /// WL Change
   playTimeTracker: JobDetective
   requirements:
   - !type:RoleTimeRequirement
