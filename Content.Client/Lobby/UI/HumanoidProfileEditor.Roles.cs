@@ -182,7 +182,7 @@ public sealed partial class HumanoidProfileEditor
             }
 
             var jobs = department.Roles.Select(jobId => _prototypeManager.Index(jobId))
-                .Where(job => job.SetPreference)
+                .Where(job => job.SetPreference && job.WlVisibleInLobby)
                 .ToArray();
 
             Array.Sort(jobs, JobUIComparer.Instance);

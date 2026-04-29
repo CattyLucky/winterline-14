@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -50,6 +51,7 @@ public sealed partial class BiomeSystem : SharedBiomeSystem
     [Dependency] private readonly SharedMapSystem _mapSystem = default!;
     [Dependency] private readonly SharedPhysicsSystem _physics = default!;
     [Dependency] private readonly SharedTransformSystem _transform = default!;
+    [Dependency] private readonly ITileDefinitionManager _tileDefManager = default!;
     [Dependency] private readonly ShuttleSystem _shuttles = default!;
     [Dependency] private readonly TagSystem _tags = default!;
 
@@ -137,7 +139,7 @@ public sealed partial class BiomeSystem : SharedBiomeSystem
         {
             var setTiles = new List<(Vector2i Index, Tile tile)>();
 
-            foreach (var grid in _mapManager.GetAllGrids(mapId))
+            foreach (var grid in _mapManager.GetAllGrids(mapId).ToArray())
             {
                 if (!_fixturesQuery.TryGetComponent(grid.Owner, out var fixtures))
                     continue;
@@ -146,7 +148,7 @@ public sealed partial class BiomeSystem : SharedBiomeSystem
                 _shuttles.Disable(grid.Owner);
                 var pTransform = _physics.GetPhysicsTransform(grid.Owner);
 
-                foreach (var fixture in fixtures.Fixtures.Values)
+                foreach (var fixture in fixtures.Fixtures.Values.ToArray())
                 {
                     for (var i = 0; i < fixture.Shape.ChildCount; i++)
                     {
@@ -327,6 +329,17 @@ public sealed partial class BiomeSystem : SharedBiomeSystem
         return !_ghostQuery.HasComp(uid) || _tags.HasTag(uid, AllowBiomeLoadingTag);
     }
 
+    private bool TryGetBiomeForTransform(TransformComponent xform, [NotNullWhen(true)] out BiomeComponent? biome)
+    {
+        if (xform.GridUid is { } gridUid && _biomeQuery.TryGetComponent(gridUid, out biome))
+            return true;
+
+        if (xform.MapUid is { } mapUid && _biomeQuery.TryGetComponent(mapUid, out biome))
+            return true;
+
+        biome = null;
+        return false;
+    }
     public override void Update(float frameTime)
     {
         base.Update(frameTime);
@@ -346,7 +359,7 @@ public sealed partial class BiomeSystem : SharedBiomeSystem
         {
             if (_xformQuery.TryGetComponent(pSession.AttachedEntity, out var xform) &&
                 _handledEntities.Add(pSession.AttachedEntity.Value) &&
-                 _biomeQuery.TryGetComponent(xform.MapUid, out var biome) &&
+                 TryGetBiomeForTransform(xform, out var biome) &&
                 biome.Enabled &&
                 CanLoad(pSession.AttachedEntity.Value))
             {
@@ -364,7 +377,7 @@ public sealed partial class BiomeSystem : SharedBiomeSystem
             {
                 if (!_handledEntities.Add(viewer) ||
                     !_xformQuery.TryGetComponent(viewer, out xform) ||
-                    !_biomeQuery.TryGetComponent(xform.MapUid, out biome) ||
+                    !TryGetBiomeForTransform(xform, out biome) ||
                     !biome.Enabled ||
                     !CanLoad(viewer))
                 {
@@ -380,6 +393,17 @@ public sealed partial class BiomeSystem : SharedBiomeSystem
                     AddMarkerChunksInRange(biome, worldPos, layerProto);
                 }
             }
+        }
+
+        // FrozenWorld: pinned/preloaded chunks must be routed through the normal biome loading path.
+        // Do not call LoadChunk directly during station setup: doing so while map/grid init is still settling can corrupt
+        // the grid chunk collection and later explode in PVS serialization with duplicate chunk keys.
+        foreach (var (biome, active) in _activeChunks)
+        {
+            if (biome.PreloadedChunks.Count == 0)
+                continue;
+
+            active.UnionWith(biome.PreloadedChunks);
         }
 
         var loadBiomes = AllEntityQuery<BiomeComponent, MapGridComponent>();
@@ -764,6 +788,19 @@ public sealed partial class BiomeSystem : SharedBiomeSystem
         component.PendingMarkers.Remove(chunk);
     }
 
+    private bool CanBiomeReplaceExistingTile(Tile tile)
+    {
+        if (tile.IsEmpty)
+            return true;
+
+        var tileDef = _tileDefManager[tile.TypeId];
+
+        // Saved station grids often contain explicit Space tiles around the authored base. Space is a real tile,
+        // so the vanilla biome loader would treat it as occupied and skip it, leaving visible holes/parallax.
+        // For frozen-world terrain generation, Space is just empty wilderness and may be replaced by biome tiles.
+        return tileDef.ID == "Space";
+    }
+
     /// <summary>
     /// Loads a particular queued chunk for a biome.
     /// </summary>
@@ -789,9 +826,14 @@ public sealed partial class BiomeSystem : SharedBiomeSystem
                 if (modified.Contains(indices))
                     continue;
 
-                // If there's existing data then don't overwrite it.
-                if (_mapSystem.TryGetTileRef(gridUid, grid, indices, out var tileRef) && !tileRef.Tile.IsEmpty)
+                // If there's existing data then don't overwrite it, except explicit Space tiles.
+                // The frozen-world starter map has saved Space cells around the base. If we treat those as solid data,
+                // biome generation creates disconnected snow islands floating in parallax instead of one surface.
+                if (_mapSystem.TryGetTileRef(gridUid, grid, indices, out var tileRef) &&
+                    !CanBiomeReplaceExistingTile(tileRef.Tile))
+                {
                     continue;
+                }
 
                 if (!TryGetBiomeTile(indices, component.Layers, seed, (gridUid, grid), out var biomeTile))
                     continue;
@@ -876,6 +918,30 @@ public sealed partial class BiomeSystem : SharedBiomeSystem
         }
     }
 
+    /// <summary>
+    /// Pins biome chunks inside an area so the normal biome Update path will load them and keep them loaded.
+    /// Important: this intentionally does not call LoadChunk directly. Calling LoadChunk from station setup / map init
+    /// can mutate MapGrid chunks before Robust has finished grid bookkeeping, which causes duplicate chunk keys in PVS.
+    /// </summary>
+    public int PinPreloadArea(EntityUid gridUid, BiomeComponent component, MapGridComponent grid, Box2 area)
+    {
+        if (!component.Enabled)
+            return 0;
+
+        var pinned = 0;
+        var enumerator = new ChunkIndicesEnumerator(area, ChunkSize);
+
+        while (enumerator.MoveNext(out var chunkOrigin))
+        {
+            var chunk = chunkOrigin.Value * ChunkSize;
+
+            if (component.PreloadedChunks.Add(chunk))
+                pinned++;
+        }
+
+        return pinned;
+    }
+
     #endregion
 
     #region Unload
@@ -888,8 +954,11 @@ public sealed partial class BiomeSystem : SharedBiomeSystem
         var active = _activeChunks[component];
         List<(Vector2i, Tile)>? tiles = null;
 
-        foreach (var chunk in component.LoadedChunks)
+        foreach (var chunk in component.LoadedChunks.ToArray())
         {
+            if (component.PreloadedChunks.Contains(chunk))
+                continue;
+
             if (active.Contains(chunk) || !component.LoadedChunks.Remove(chunk))
                 continue;
 

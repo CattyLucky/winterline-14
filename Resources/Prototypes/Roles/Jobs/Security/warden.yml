@@ -1,8 +1,7 @@
-- type: job
+﻿- type: job
   id: Warden
   name: job-name-warden
   description: job-description-warden
-  setPreference: false # /// WL Change
   playTimeTracker: JobWarden
   requirements:
     - !type:RoleTimeRequirement

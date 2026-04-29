@@ -229,11 +229,7 @@ namespace Content.Client.Construction
 
         private static bool IsCraftingAvailable(EntityUid? entity)
         {
-            if (entity == default)
-                return false;
-
-            // TODO: Decide if entity can craft, using capabilities or something
-            return true;
+            return false;
         }
 
         private bool HandleUse(in PointerInputCmdHandler.PointerInputCmdArgs args)

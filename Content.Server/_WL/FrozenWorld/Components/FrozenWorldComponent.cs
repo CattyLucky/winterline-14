@@ -1,28 +1,30 @@
 using Content.Shared._WL.FrozenWorld.Prototypes;
 using Robust.Shared.Map;
+using Robust.Shared.Maths;
 using Robust.Shared.Prototypes;
 
 namespace Content.Server._WL.FrozenWorld.Components;
 
-/// <summary>
-/// Runtime marker for the primary frozen world map entity.
-/// </summary>
 [RegisterComponent]
 public sealed partial class FrozenWorldComponent : Component
 {
     public ProtoId<FrozenWorldProfilePrototype> Profile;
-
-    public EntityUid? BaseGrid;
-
+    public EntityUid? PlanetGrid;
+    public EntityUid? TemporaryBaseGrid;
+    public Box2 BaseBounds;
     public MapId MapId;
-
-    /// <summary>
-    /// Seed used for deterministic world-side generation.
-    /// </summary>
     public int Seed;
+    public bool BaseStamped;
 
     /// <summary>
-    /// Prevents duplicate square-zone generation if setup is called more than once.
+    /// Single global ambient temperature of the frozen world in Kelvin.
+    /// Used by static tile atmosphere, gas analyzer baseline and survival exposure baseline.
+    /// Local heat sources do not mutate this value.
     /// </summary>
+    public float AmbientTemperature = 243.15f;
+    public float LastAppliedAtmosphereTemperature = float.NaN;
+    public bool StaticAtmosphere = true;
+    public float AtmosphereTemperatureUpdateInterval = 5f;
+    public float AtmosphereTemperatureAccumulator;
     public bool ZonesGenerated;
 }

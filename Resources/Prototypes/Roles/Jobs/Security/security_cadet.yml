@@ -1,8 +1,7 @@
-- type: job
+﻿- type: job
   id: SecurityCadet
   name: job-name-cadet
   description: job-description-cadet
-  setPreference: false # /// WL Change
   playTimeTracker: JobSecurityCadet
   requirements:
     - !type:OverallPlaytimeRequirement

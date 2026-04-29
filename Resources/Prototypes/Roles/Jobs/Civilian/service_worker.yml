@@ -1,8 +1,7 @@
-- type: job
+﻿- type: job
   id: ServiceWorker
   name: job-name-serviceworker
   description: job-description-serviceworker
-  setPreference: false # /// WL Change
   playTimeTracker: JobServiceWorker
   requirements:
   - !type:DepartmentTimeRequirement

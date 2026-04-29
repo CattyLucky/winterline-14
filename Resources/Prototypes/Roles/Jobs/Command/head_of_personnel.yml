@@ -1,8 +1,7 @@
-- type: job
+﻿- type: job
   id: HeadOfPersonnel
   name: job-name-hop
   description: job-description-hop
-  setPreference: false # /// WL Change
   playTimeTracker: JobHeadOfPersonnel
   requirements:
     - !type:DepartmentTimeRequirement

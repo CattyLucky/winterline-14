@@ -1,8 +1,7 @@
-- type: job
+﻿- type: job
   id: Paramedic
   name: job-name-paramedic
   description: job-description-paramedic
-  setPreference: false # /// WL Change
   playTimeTracker: JobParamedic
   requirements:
   - !type:DepartmentTimeRequirement

@@ -1,0 +1,23 @@
+# Real spawnable frozen-world heat source entities.
+
+- type: entity
+  id: WLCampfireHeatSource
+  parent: Fireplace
+  name: frozen campfire
+  description: A reliable heat source for survival in the frozen wastes.
+  components:
+  - type: FrozenHeatSource
+    radius: 4
+    temperatureDelta: 45
+    transferEfficiency: 1
+
+- type: entity
+  id: WLGeneratorHeatSource
+  parent: GeneratorBasic
+  name: frozen heat generator
+  description: A generator tuned to radiate strong local heat in extreme cold.
+  components:
+  - type: FrozenHeatSource
+    radius: 10
+    temperatureDelta: 55
+    transferEfficiency: 1

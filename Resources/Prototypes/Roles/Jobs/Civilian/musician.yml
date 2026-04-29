@@ -1,8 +1,7 @@
-- type: job
+﻿- type: job
   id: Musician
   name: job-name-musician
   description: job-description-musician
-  setPreference: false # /// WL Change
   playTimeTracker: JobMusician
   startingGear: MusicianGear
   icon: "JobIconMusician"

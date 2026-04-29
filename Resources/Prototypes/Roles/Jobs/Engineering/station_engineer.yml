@@ -1,8 +1,7 @@
-- type: job
+﻿- type: job
   id: StationEngineer
   name: job-name-engineer
   description: job-description-engineer
-  setPreference: false # /// WL Change
   playTimeTracker: JobStationEngineer
   requirements:
     - !type:DepartmentTimeRequirement

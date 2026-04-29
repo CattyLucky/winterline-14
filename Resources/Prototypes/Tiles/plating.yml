@@ -34,6 +34,7 @@
     - FloorAsteroidSandBorderless
     - FloorAsteroidIronsandBorderless
     - FloorAsteroidSandRedBorderless
+    - WLPlatingSnowFoundation
 
 - type: tile
   id: FloorHullReinforced

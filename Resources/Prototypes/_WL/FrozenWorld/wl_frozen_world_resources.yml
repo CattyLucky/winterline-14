@@ -1,0 +1,188 @@
+# /// WL Change
+# Ресурсные заглушки для зон FrozenWorld.
+# Этап 2.2 — видимые объекты мира без механики добычи.
+# После WorksiteSystem заменить на WLResourcePointComponent с DoAfter, зарядами и истощением.
+
+# ─── SpawnField — стартовые кучки прямо у базы ────────────────────────────────
+
+- type: entity
+  id: WLFrozenBranchPileDebug
+  parent: BaseStructure
+  name: frozen branch pile
+  suffix: WL, Debug
+  description: A pile of dead branches frozen in the snow. Easy firewood for a desperate start.
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Decoration/bonfire.rsi
+    state: bonfire_extinguished
+  - type: WLResourcePoint
+    charges: 3
+    gatherTime: 3.0
+    loot:
+    - prototype: WLFrozenBranch
+      minCount: 2
+      maxCount: 4
+
+- type: entity
+  id: WLLooseScrapPileDebug
+  parent: BaseStructure
+  name: loose scrap pile
+  suffix: WL, Debug
+  description: Scattered metal scraps half-buried in the snow. Barely enough to work with.
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/closet.rsi
+    state: metalbox
+  - type: WLResourcePoint
+    charges: 2
+    gatherTime: 3.0
+    loot:
+    - prototype: WLLooseScrap
+      minCount: 2
+      maxCount: 3
+
+- type: entity
+  id: WLTornSupplyBagDebug
+  parent: BaseStructure
+  name: torn supply bag
+  suffix: WL, Debug
+  description: A torn supply bag from before the collapse. Whatever is inside has survived the cold.
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/closet.rsi
+    state: cardboard
+  - type: WLResourcePoint
+    charges: 1
+    gatherTime: 2.0
+    loot:
+    - prototype: WLTornCloth
+      minCount: 2
+      maxCount: 4
+    - prototype: WLLooseScrap
+      minCount: 1
+      maxCount: 2
+
+# ─── NearField — бедные начальные ресурсы рядом с базой ───────────────────────
+
+- type: entity
+  id: WLSmallCoalOutcropDebug
+  parent: BaseStructure
+  name: small coal outcrop
+  suffix: WL, Debug
+  description: A small exposed vein of coal just beneath the snow. Barely worth the effort, but it's close.
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/orebox.rsi
+    state: orebox
+    color: "#2a2a2a"
+
+- type: entity
+  id: WLFrozenDeadwoodClusterDebug
+  parent: BaseStructure
+  name: frozen deadwood cluster
+  suffix: WL, Debug
+  description: Dead trees locked in ice. Could be chopped for firewood and rough lumber.
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Decoration/bonfire.rsi
+    state: bonfire_extinguished
+    color: "#8b7355"
+
+- type: entity
+  id: WLSmallScrapPileDebug
+  parent: BaseStructure
+  name: small scrap pile
+  suffix: WL, Debug
+  description: Twisted metal half-buried in snow. Not much, but salvageable.
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/closet.rsi
+    state: metalbox
+    color: "#888888"
+
+# ─── WorkField — основные рабочие ресурсы ─────────────────────────────────────
+
+- type: entity
+  id: WLCoalOutcropDebug
+  parent: BaseStructure
+  name: coal outcrop
+  suffix: WL, Debug
+  description: A solid coal deposit breaking through the frozen ground. The backbone of early industry.
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/orebox.rsi
+    state: orebox
+    color: "#1a1a1a"
+
+- type: entity
+  id: WLScrapWreckDebug
+  parent: BaseStructure
+  name: scrap wreck
+  suffix: WL, Debug
+  description: The remains of something large and mechanical. A rich source of metal and parts.
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/closet.rsi
+    state: metalbox
+    color: "#666666"
+
+- type: entity
+  id: WLFrozenGroveDebug
+  parent: BaseStructure
+  name: frozen grove
+  suffix: WL, Debug
+  description: A cluster of ancient frozen trees. Enough wood here to keep fires burning for weeks.
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Decoration/bonfire.rsi
+    state: bonfire_extinguished
+    color: "#6b5a3e"
+
+# ─── ExpeditionField — дальние ценные объекты ─────────────────────────────────
+
+- type: entity
+  id: WLLargeCoalVeinDebug
+  parent: BaseStructure
+  name: large coal vein
+  suffix: WL, Debug
+  description: A massive exposed coal seam. Enough to fuel the settlement for a long time — if you can reach it.
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/orebox.rsi
+    state: orebox
+    color: "#111111"
+
+- type: entity
+  id: WLFrozenConvoyWreckDebug
+  parent: BaseStructure
+  name: frozen convoy wreck
+  suffix: WL, Debug
+  description: The frozen remains of a supply convoy. Valuable salvage, but far from home.
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/closet.rsi
+    state: metalbox
+    color: "#4a4a4a"
+
+- type: entity
+  id: WLOldSupplyCacheDebug
+  parent: BaseStructure
+  name: old supply cache
+  suffix: WL, Debug
+  description: A pre-collapse supply cache buried under ice and snow. What's left inside?
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/Crates/generic.rsi
+    state: closed

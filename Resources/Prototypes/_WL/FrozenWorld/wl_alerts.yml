@@ -1,0 +1,17 @@
+# /// WL Change
+# Алерты для системы промерзания FrozenWorld.
+# Категория WLColdExposure — независима от ванильной Temperature, не перекрывается TemperatureSystem.
+
+- type: alert
+  id: WLFrostbite
+  category: WLColdExposure
+  maxSeverity: 3
+  icons:
+  - sprite: /Textures/Interface/Alerts/temperature.rsi
+    state: cold1
+  - sprite: /Textures/Interface/Alerts/temperature.rsi
+    state: cold2
+  - sprite: /Textures/Interface/Alerts/temperature.rsi
+    state: cold3
+  name: wl-alert-frostbite-name
+  description: wl-alert-frostbite-desc

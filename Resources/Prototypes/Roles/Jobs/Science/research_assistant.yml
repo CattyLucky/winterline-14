@@ -1,8 +1,7 @@
-- type: job
+﻿- type: job
   id: ResearchAssistant
   name: job-name-research-assistant
   description: job-description-research-assistant
-  setPreference: false # /// WL Change
   playTimeTracker: JobResearchAssistant
   requirements:
     - !type:DepartmentTimeRequirement

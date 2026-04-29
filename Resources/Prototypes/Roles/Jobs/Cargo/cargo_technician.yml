@@ -1,8 +1,7 @@
-- type: job
+﻿- type: job
   id: CargoTechnician
   name: job-name-cargotech
   description: job-description-cargotech
-  setPreference: false # /// WL Change
   playTimeTracker: JobCargoTechnician
   startingGear: CargoTechGear
   icon: "JobIconCargoTechnician"
