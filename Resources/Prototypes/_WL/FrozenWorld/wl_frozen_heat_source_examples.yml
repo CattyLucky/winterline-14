@@ -7,8 +7,11 @@
   description: A reliable heat source for survival in the frozen wastes.
   components:
   - type: FrozenHeatSource
-    radius: 4
-    temperatureDelta: 45
+    enabled: true
+    dynamic: false
+    innerRadius: 1.5
+    outerRadius: 4
+    heatBonus: 45
     transferEfficiency: 1
 
 - type: entity
@@ -18,6 +21,9 @@
   description: A generator tuned to radiate strong local heat in extreme cold.
   components:
   - type: FrozenHeatSource
-    radius: 10
-    temperatureDelta: 55
+    enabled: true
+    dynamic: false
+    innerRadius: 4
+    outerRadius: 10
+    heatBonus: 55
     transferEfficiency: 1

@@ -57,4 +57,19 @@ public sealed partial class FrozenColdExposureComponent : Component
 
     [ViewVariables]
     public float LastEffectiveTemperature = 293.15f;
+
+    [ViewVariables]
+    public float LastAmbientTemperature = 293.15f;
+
+    [ViewVariables]
+    public float LastStaticHeatBonus;
+
+    [ViewVariables]
+    public float LastDynamicHeatBonus;
+
+    [ViewVariables]
+    public float LastInsulationBonus;
+
+    [ViewVariables]
+    public float LastShelterBonus;
 }
