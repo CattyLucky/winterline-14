@@ -151,7 +151,7 @@ public sealed partial class FrozenHeatFieldSystem : EntitySystem
         if (!source.Enabled || source.Dynamic)
             return false;
 
-        if (source.HeatBonus <= 0f || source.TransferEfficiency <= 0f)
+        if (source.EffectiveHeatBonus <= 0f || source.EffectiveTransferEfficiency <= 0f)
             return false;
 
         if (xform.MapUid is not { } mapUid)
@@ -165,8 +165,8 @@ public sealed partial class FrozenHeatFieldSystem : EntitySystem
             xform.WorldPosition,
             innerRadius,
             outerRadius,
-            source.HeatBonus,
-            source.TransferEfficiency);
+            source.EffectiveHeatBonus,
+            source.EffectiveTransferEfficiency);
 
         return true;
     }

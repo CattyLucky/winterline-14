@@ -96,7 +96,7 @@ public sealed partial class FrozenDynamicHeatSourceSystem : EntitySystem
             if (!source.Enabled || !source.Dynamic)
                 continue;
 
-            if (source.HeatBonus <= 0f || source.TransferEfficiency <= 0f)
+            if (source.EffectiveHeatBonus <= 0f || source.EffectiveTransferEfficiency <= 0f)
                 continue;
 
             if (xform.MapUid is not { } mapUid)
@@ -123,8 +123,8 @@ public sealed partial class FrozenDynamicHeatSourceSystem : EntitySystem
                 position,
                 innerRadius,
                 outerRadius,
-                source.HeatBonus,
-                source.TransferEfficiency));
+                source.EffectiveHeatBonus,
+                source.EffectiveTransferEfficiency));
 
             mapIndex.MaxOuterRadius = MathF.Max(mapIndex.MaxOuterRadius, outerRadius);
         }

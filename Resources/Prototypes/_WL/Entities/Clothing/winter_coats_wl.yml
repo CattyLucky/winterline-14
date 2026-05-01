@@ -5,4 +5,62 @@
   description: A heavy jacket made from 'synthetic' animal furs.
   components:
   - type: FrozenInsulation
-    insulationBonus: 50
+    ratedTemperatureCelsius: -22
+    coverage:
+    - Torso
+    - Arms
+    - Legs
+
+- type: entity
+  parent: ClothingUniformJumpsuitColorGrey
+  id: ClothingUniformJumpsuitWinterWL
+  name: thermal underlayer
+  description: A warm inner layer for survival in severe cold.
+  components:
+  - type: FrozenInsulation
+    ratedTemperatureCelsius: -12
+    coverage:
+    - Torso
+    - Arms
+    - Legs
+
+- type: entity
+  parent: ClothingHeadHelmetBasic
+  id: ClothingHeadHelmetWinterWL
+  name: winter helmet
+  description: An insulated helmet that shields the head and face from freezing air.
+  components:
+  - type: FrozenInsulation
+    ratedTemperatureCelsius: -26
+    coverage:
+    - Head
+    - Face
+
+# Backward-compatible alias for previous WL headwear id.
+- type: entity
+  parent: ClothingHeadHelmetWinterWL
+  id: ClothingHeadHatHoodWinterWL
+  name: winter helmet
+  description: An insulated helmet that shields the head and face from freezing air.
+
+- type: entity
+  parent: ClothingHandsGlovesLeather
+  id: ClothingHandsGlovesWinterWL
+  name: winter gloves
+  description: Insulated gloves for extreme cold.
+  components:
+  - type: FrozenInsulation
+    ratedTemperatureCelsius: -20
+    coverage:
+    - Hands
+
+- type: entity
+  parent: ClothingShoesBootsWinter
+  id: ClothingShoesBootsWinterWL
+  name: winter boots
+  description: Insulated boots built for frozen terrain.
+  components:
+  - type: FrozenInsulation
+    ratedTemperatureCelsius: -24
+    coverage:
+    - Feet

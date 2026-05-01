@@ -1,0 +1,77 @@
+# /// WL Change
+# WL-specific combustible material/ore items for FrozenWorld.
+# Keep fuel tuning local to WL instead of editing vanilla material prototypes.
+
+- type: entity
+  id: WLMaterialWoodFuel
+  parent: MaterialWoodPlank
+  name: frozen firewood
+  description: Dried timber prepared for frozen-world heating.
+  suffix: Full
+  components:
+  - type: Stack
+    stackType: WLWoodFuelStack
+  - type: FrozenFuel
+    fuelSeconds: 55
+    priority: 20
+    heatBonusMultiplier: 1.0
+    transferEfficiencyMultiplier: 1.0
+    burnRateMultiplier: 1.0
+
+- type: entity
+  id: WLMaterialWoodFuel10
+  parent: WLMaterialWoodFuel
+  suffix: 10
+  components:
+  - type: Stack
+    count: 10
+
+- type: entity
+  id: WLMaterialWoodFuel1
+  parent: WLMaterialWoodFuel
+  suffix: Single
+  components:
+  - type: Stack
+    count: 1
+
+- type: entity
+  id: WLCoalFuel
+  parent: Coal
+  name: frozen coal chunk
+  description: Dense coal chunk used as long-burning fuel in extreme cold.
+  suffix: Full
+  components:
+  - type: Stack
+    stackType: WLCoalFuelStack
+  - type: FrozenFuel
+    fuelSeconds: 90
+    priority: 30
+    heatBonusMultiplier: 1.2
+    transferEfficiencyMultiplier: 1.1
+    burnRateMultiplier: 0.9
+
+- type: entity
+  id: WLCoalFuel10
+  parent: WLCoalFuel
+  suffix: 10
+  components:
+  - type: Stack
+    count: 10
+
+- type: entity
+  id: WLCoalFuel1
+  parent: WLCoalFuel
+  suffix: Single
+  components:
+  - type: Stack
+    count: 1
+
+- type: entity
+  id: WLLog
+  parent: Log
+  name: frozen log
+  description: A dense frozen trunk. Split it to get usable Winterline firewood.
+  components:
+  - type: Log
+    spawnedPrototype: WLMaterialWoodFuel1
+    spawnCount: 2

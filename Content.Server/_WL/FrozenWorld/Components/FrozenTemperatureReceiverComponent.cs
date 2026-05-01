@@ -9,29 +9,35 @@ namespace Content.Server._WL.FrozenWorld.Components;
 public sealed partial class FrozenTemperatureReceiverComponent : Component
 {
     /// <summary>
-    /// Multiplier for how quickly Exposure grows while below safe temperature.
+    /// Multiplier for how quickly Exposure grows while below the wearer's personal safe temperature.
     /// 1 = normal, 0.5 = half as vulnerable, 1.5 = more vulnerable.
     /// </summary>
     [DataField]
     public float ExposureGainMultiplier = 1f;
 
     /// <summary>
-    /// Multiplier for how quickly Exposure recovers while at or above safe temperature.
+    /// Multiplier for how quickly Exposure recovers while at or above the wearer's personal safe temperature.
     /// 1 = normal, 2 = recovers twice as fast.
     /// </summary>
     [DataField]
     public float RecoveryMultiplier = 1f;
 
     /// <summary>
-    /// Multiplier for WL cold damage after Exposure reaches DamageThreshold.
+    /// Multiplier for WL cold damage after Exposure reaches damaging stages.
     /// 1 = normal, 0.5 = half damage, 0 = immune to WL cold damage.
     /// </summary>
     [DataField]
     public float ColdDamageMultiplier = 1f;
 
     /// <summary>
-    /// Multiplier applied to insulation bonuses gathered from FrozenInsulationComponent.
-    /// Useful for species/body types that benefit more or less from clothing.
+    /// Legacy compatibility only. The coverage/rated-temperature model does not use total ColdTolerance.
+    /// Keep this field so older YAML does not fail immediately.
+    /// </summary>
+    [DataField]
+    public float ColdToleranceMultiplier = 1f;
+
+    /// <summary>
+    /// Legacy compatibility only. The coverage/rated-temperature model does not use total insulation multipliers.
     /// </summary>
     [DataField]
     public float InsulationMultiplier = 1f;

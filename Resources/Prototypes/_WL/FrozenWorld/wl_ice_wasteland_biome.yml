@@ -145,16 +145,16 @@
       octaves: 2
       lacunarity: 2
     entities:
-    - FloraTreeConifer
-    - FloraTreeConifer
-    - FloraTreeConifer
-    - FloraTreeConifer
-    - FloraTreeConifer
-    - FloraTreeSnow
-    - FloraTreeSnow
-    - FloraTreeSnow
-    - FloraTreeSnow
-    - FloraTreeSnow
+    - WLFloraTreeConifer
+    - WLFloraTreeConifer
+    - WLFloraTreeConifer
+    - WLFloraTreeConifer
+    - WLFloraTreeConifer
+    - WLFloraTreeSnow
+    - WLFloraTreeSnow
+    - WLFloraTreeSnow
+    - WLFloraTreeSnow
+    - WLFloraTreeSnow
   - !type:BiomeEntityLayer
     allowedTiles:
     - WLFloorSnow
@@ -180,7 +180,7 @@
       octaves: 2
       lacunarity: 2
     entities:
-    - FloraTreeStump
-    - FloraTreeStumpConifer
+    - WLFloraTreeStump
+    - WLFloraTreeStumpConifer
   - !type:BiomeDummyLayer
     id: Loot

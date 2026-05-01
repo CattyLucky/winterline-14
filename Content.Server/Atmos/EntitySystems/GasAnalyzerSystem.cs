@@ -159,12 +159,12 @@ public sealed class GasAnalyzerSystem : EntitySystem
         // Fetch the environmental atmosphere around the scanner. This must be the first entry
         var tileMixture = _atmo.GetContainingMixture(uid, true);
 
-        // /// WL Change: on FrozenWorld, override tile temperature with effective temperature of the user
+        // WL Change: on FrozenWorld, override tile temperature with the user's last environmental temperature.
         if (tileMixture != null && component.User.HasValue
             && TryComp<FrozenColdExposureComponent>(component.User.Value, out var coldExposure))
         {
             tileMixture = tileMixture.Clone();
-            tileMixture.Temperature = coldExposure.LastEffectiveTemperature;
+            tileMixture.Temperature = coldExposure.LastEnvironmentalTemperature;
         }
 
         var tileMixtureName = Loc.GetString("gas-analyzer-window-environment-tab-label");

@@ -137,6 +137,7 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         worldComp.PlanetGrid = planetGridUid;
         worldComp.TemporaryBaseGrid = null;
         worldComp.BaseBounds = baseBounds;
+        worldComp.BaseBoundsWorld = baseBounds.Translated(planetXform.WorldPosition);
         worldComp.BaseStamped = true;
         worldComp.AmbientTemperature = profile.AmbientTemperature;
 

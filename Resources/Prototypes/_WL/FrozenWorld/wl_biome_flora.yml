@@ -1,0 +1,136 @@
+# /// WL Change
+# WL-specific biome flora wrappers.
+# These wrappers are used by WLIceWasteland so future balance/visual/drop changes
+# can be done locally in WL without touching vanilla flora prototypes.
+
+- type: entity
+  id: WLFloraTreeConifer
+  parent: FloraTreeConifer
+  name: snowy conifer
+  suffix: WL
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 400
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+    - trigger:
+        !type:DamageTrigger
+        damage: 50
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          path: /Audio/Effects/tree_fell.ogg
+          params:
+            volume: 5
+            variation: 0.05
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          WLLog:
+            min: 2
+            max: 8
+
+- type: entity
+  id: WLFloraTreeSnow
+  parent: FloraTreeSnow
+  name: snowy tree
+  suffix: WL
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 400
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+    - trigger:
+        !type:DamageTrigger
+        damage: 50
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          path: /Audio/Effects/tree_fell.ogg
+          params:
+            volume: 5
+            variation: 0.05
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          WLLog:
+            min: 2
+            max: 8
+
+- type: entity
+  id: WLFloraTreeStump
+  parent: FloraTreeStump
+  name: tree stump
+  suffix: WL
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 400
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+    - trigger:
+        !type:DamageTrigger
+        damage: 50
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          path: /Audio/Effects/tree_fell.ogg
+          params:
+            volume: 5
+            variation: 0.05
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          WLLog:
+            min: 2
+            max: 8
+
+- type: entity
+  id: WLFloraTreeStumpConifer
+  parent: FloraTreeStumpConifer
+  name: tree stump
+  suffix: WL
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 400
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+    - trigger:
+        !type:DamageTrigger
+        damage: 50
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          path: /Audio/Effects/tree_fell.ogg
+          params:
+            volume: 5
+            variation: 0.05
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          WLLog:
+            min: 2
+            max: 8

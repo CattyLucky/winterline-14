@@ -1,7 +1,7 @@
 # /// WL Change
 # Ресурсные заглушки для зон FrozenWorld.
-# Этап 2.2 — видимые объекты мира без механики добычи.
-# После WorksiteSystem заменить на WLResourcePointComponent с DoAfter, зарядами и истощением.
+# Этап 2.2+ — базовые объекты мира.
+# Часть объектов уже использует WLResourcePointComponent для тестового сбора.
 
 # ─── SpawnField — стартовые кучки прямо у базы ────────────────────────────────
 
@@ -79,6 +79,13 @@
     sprite: Structures/Storage/orebox.rsi
     state: orebox
     color: "#2a2a2a"
+  - type: WLResourcePoint
+    charges: 2
+    gatherTime: 4.0
+    loot:
+    - prototype: WLCoalFuel1
+      minCount: 2
+      maxCount: 3
 
 - type: entity
   id: WLFrozenDeadwoodClusterDebug
@@ -92,6 +99,13 @@
     sprite: Structures/Decoration/bonfire.rsi
     state: bonfire_extinguished
     color: "#8b7355"
+  - type: WLResourcePoint
+    charges: 3
+    gatherTime: 4.0
+    loot:
+    - prototype: WLMaterialWoodFuel1
+      minCount: 2
+      maxCount: 4
 
 - type: entity
   id: WLSmallScrapPileDebug
@@ -120,6 +134,13 @@
     sprite: Structures/Storage/orebox.rsi
     state: orebox
     color: "#1a1a1a"
+  - type: WLResourcePoint
+    charges: 4
+    gatherTime: 5.0
+    loot:
+    - prototype: WLCoalFuel1
+      minCount: 2
+      maxCount: 4
 
 - type: entity
   id: WLScrapWreckDebug
@@ -146,6 +167,13 @@
     sprite: Structures/Decoration/bonfire.rsi
     state: bonfire_extinguished
     color: "#6b5a3e"
+  - type: WLResourcePoint
+    charges: 4
+    gatherTime: 5.0
+    loot:
+    - prototype: WLMaterialWoodFuel1
+      minCount: 3
+      maxCount: 5
 
 # ─── ExpeditionField — дальние ценные объекты ─────────────────────────────────
 
@@ -161,6 +189,13 @@
     sprite: Structures/Storage/orebox.rsi
     state: orebox
     color: "#111111"
+  - type: WLResourcePoint
+    charges: 5
+    gatherTime: 6.0
+    loot:
+    - prototype: WLCoalFuel1
+      minCount: 3
+      maxCount: 5
 
 - type: entity
   id: WLFrozenConvoyWreckDebug

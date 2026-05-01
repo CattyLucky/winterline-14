@@ -12,6 +12,7 @@ public sealed partial class FrozenWorldComponent : Component
     public EntityUid? PlanetGrid;
     public EntityUid? TemporaryBaseGrid;
     public Box2 BaseBounds;
+    public Box2 BaseBoundsWorld;
     public MapId MapId;
     public int Seed;
     public bool BaseStamped;
@@ -23,28 +24,22 @@ public sealed partial class FrozenWorldComponent : Component
     public float AmbientTemperature = 243.15f;
 
     /// <summary>
-    /// Minimum effective gameplay temperature after all modifiers.
+    /// Minimum environmental gameplay temperature after world/local heat modifiers.
     /// This is a safety clamp for survival calculations, not atmos gas temperature.
     /// </summary>
     public float MinEffectiveTemperature = 203.15f;
 
     /// <summary>
-    /// Maximum effective gameplay temperature after all modifiers.
+    /// Maximum environmental gameplay temperature after world/local heat modifiers.
     /// Prevents many heaters from turning a frozen base into absurd heat.
     /// Default is +20 C.
     /// </summary>
     public float MaxEffectiveTemperature = 293.15f;
 
     /// <summary>
-    /// Maximum absolute local heat/cold bonus from heat sources before effective temperature clamp.
+    /// Maximum absolute local heat/cold bonus from heat sources before environmental temperature clamp.
     /// </summary>
     public float MaxLocalTemperatureOffset = 60f;
-
-    /// <summary>
-    /// Maximum total insulation bonus from worn clothing/body modifiers before effective temperature clamp.
-    /// Prevents stacking many clothing slots into absurd cold immunity.
-    /// </summary>
-    public float MaxInsulationBonus = 45f;
 
     /// <summary>
     /// Last temperature actually written into tile atmosphere.
@@ -77,4 +72,12 @@ public sealed partial class FrozenWorldComponent : Component
     public bool AtmosphereTemperatureDirty;
 
     public bool ZonesGenerated;
+
+    /// <summary>
+    /// Ambient temperature offsets (Kelvin/Celsius delta) by square distance bands from the base.
+    /// Used by FrozenThermalQuerySystem to provide zone-to-zone temperature gameplay.
+    /// </summary>
+    public List<FrozenWorldTemperatureBand> TemperatureBands = new();
 }
+
+public readonly record struct FrozenWorldTemperatureBand(float MinDistance, float MaxDistance, float TemperatureOffset);
