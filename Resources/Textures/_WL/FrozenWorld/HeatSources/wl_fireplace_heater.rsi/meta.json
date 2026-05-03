@@ -57,6 +57,12 @@
           0.1
         ]
       ]
+    },
+    {
+      "name": "on_fire_source"
+    },
+    {
+      "name": "on_glow_source"
     }
   ]
 }

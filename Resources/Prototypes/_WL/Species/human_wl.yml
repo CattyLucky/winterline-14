@@ -20,16 +20,9 @@
     coldDamageThreshold: 0
     damageCap: 0
   - type: FrozenColdExposure
-    safeTemperature: 278.15
-    extremeTemperature: 233.15
     exposureGainRate: 1.0
     recoveryRate: 1.5
-    damageThreshold: 60
     maxExposure: 100
-    damageInterval: 2
-    minDamagePerTick: 0.5
-    maxDamagePerTick: 2.0
-    coldDamageSeverityFloor: 0.25
     damageType: Cold
   - type: FrozenSurfaceAffected
 
