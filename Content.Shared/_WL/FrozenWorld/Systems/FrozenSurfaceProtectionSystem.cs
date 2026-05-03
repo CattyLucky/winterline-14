@@ -72,7 +72,6 @@ public sealed partial class FrozenSurfaceProtectionSystem : EntitySystem
 
         protection.ColdPenaltyMultiplier = coldMultiplier;
         protection.SpeedPenaltyMultiplier = speedMultiplier;
-        Dirty(uid, protection);
         RaiseLocalEvent(uid, new FrozenSurfaceProtectionChangedEvent());
     }
 

@@ -20,10 +20,23 @@
     coldDamageThreshold: 0
     damageCap: 0
   - type: FrozenColdExposure
+    maxExposure: 100
+    baseUnprotectedTemperatureCelsius: 5
+    fullDeficitTemperatureCelsius: 30
     exposureGainRate: 1.0
     recoveryRate: 1.5
-    maxExposure: 100
     damageType: Cold
+    chilledThreshold: 20
+    freezingThreshold: 40
+    hypothermiaThreshold: 60
+    severeHypothermiaThreshold: 80
+    criticalThreshold: 95
+    hypothermiaDamage: 0.5
+    hypothermiaDamageInterval: 4
+    severeHypothermiaDamage: 1.0
+    severeHypothermiaDamageInterval: 3
+    criticalDamage: 2.0
+    criticalDamageInterval: 2
   - type: FrozenSurfaceAffected
 
 - type: species

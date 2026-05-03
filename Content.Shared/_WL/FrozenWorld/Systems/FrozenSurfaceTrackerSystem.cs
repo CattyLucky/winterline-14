@@ -93,7 +93,6 @@ public sealed partial class FrozenSurfaceTrackerSystem : EntitySystem
         tracker.FootContactPenaltyCelsius = footPenalty;
         tracker.HasSurface = hasSurface;
         tracker.IsInitialized = true;
-        Dirty(uid, tracker);
 
         RaiseLocalEvent(uid, new FrozenSurfaceTrackerChangedEvent());
     }
@@ -117,7 +116,6 @@ public sealed partial class FrozenSurfaceTrackerSystem : EntitySystem
         tracker.FootContactPenaltyCelsius = 0f;
         tracker.HasSurface = false;
         tracker.IsInitialized = true;
-        Dirty(uid, tracker);
         return true;
     }
 
