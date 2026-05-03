@@ -1,5 +1,6 @@
 using System;
 using Content.Shared._WL.FrozenWorld.Components;
+using Content.Shared._WL.FrozenWorld.Events;
 using Content.Shared.Inventory;
 using Content.Shared.Inventory.Events;
 
@@ -12,6 +13,7 @@ namespace Content.Shared._WL.FrozenWorld.Systems;
 public sealed partial class FrozenSurfaceProtectionSystem : EntitySystem
 {
     [Dependency] private readonly InventorySystem _inventory = default!;
+    [Dependency] private readonly FrozenSurfaceTrackerSystem _tracker = default!;
 
     public override void Initialize()
     {
@@ -24,6 +26,7 @@ public sealed partial class FrozenSurfaceProtectionSystem : EntitySystem
 
     private void OnAffectedStartup(Entity<FrozenSurfaceAffectedComponent> ent, ref ComponentStartup args)
     {
+        _tracker.ForceRefreshSurface(ent.Owner);
         Recalculate(ent.Owner);
     }
 
@@ -70,6 +73,7 @@ public sealed partial class FrozenSurfaceProtectionSystem : EntitySystem
         protection.ColdPenaltyMultiplier = coldMultiplier;
         protection.SpeedPenaltyMultiplier = speedMultiplier;
         Dirty(uid, protection);
+        RaiseLocalEvent(uid, new FrozenSurfaceProtectionChangedEvent());
     }
 
     private static float SanitizeMultiplier(float value)
@@ -80,4 +84,3 @@ public sealed partial class FrozenSurfaceProtectionSystem : EntitySystem
         return MathF.Max(0f, value);
     }
 }
-

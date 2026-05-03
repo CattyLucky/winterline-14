@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Content.Server._WL.FrozenWorld.Components;
 using Content.Shared._WL.FrozenWorld;
 
@@ -23,8 +22,8 @@ public readonly record struct FrozenThermalSnapshot(
     float FootContactPenaltyCelsius,
     FrozenBodyPart WeakestBodyPart,
     float WeakestBodyPartSeverity,
-    IReadOnlyDictionary<FrozenBodyPart, float> PartRatedTemperatureCelsius,
-    IReadOnlyDictionary<FrozenBodyPart, float> PartColdSeverity,
+    FrozenBodyPartValues PartRatedTemperatureCelsius,
+    FrozenBodyPartValues PartColdSeverity,
     float ExposureGainMultiplier,
     float RecoveryMultiplier,
     float ColdDamageMultiplier)

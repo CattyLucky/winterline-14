@@ -676,15 +676,33 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         FrozenHeatSourceFuelComponent fuel)
     {
         var burning = IsBurning(fuel);
+        var outerRadius = burning ? MathF.Max(0.1f, source.OuterRadius) : 0f;
+        var effectiveLocalHeat = burning
+            ? MathF.Max(0f, source.EffectiveHeatBonus * source.EffectiveTransferEfficiency)
+            : 0f;
+
+        if (fuel.BurningPresentationInitialized &&
+            fuel.LastPresentationBurning == burning &&
+            CloseTo(fuel.LastPresentationOuterRadius, outerRadius) &&
+            CloseTo(fuel.LastPresentationEffectiveLocalHeat, effectiveLocalHeat))
+        {
+            return;
+        }
+
+        fuel.BurningPresentationInitialized = true;
+        fuel.LastPresentationBurning = burning;
+        fuel.LastPresentationOuterRadius = outerRadius;
+        fuel.LastPresentationEffectiveLocalHeat = effectiveLocalHeat;
+        Dirty(uid, fuel);
 
         if (TryComp<AppearanceComponent>(uid, out var appearance))
             _appearance.SetData(uid, FrozenHeatSourceFuelVisuals.Burning, burning, appearance);
 
-        UpdatePointLight(uid, source, burning);
-        UpdateAmbientSound(uid, source, burning);
+        UpdatePointLight(uid, burning, outerRadius, effectiveLocalHeat);
+        UpdateAmbientSound(uid, burning, outerRadius);
     }
 
-    private void UpdatePointLight(EntityUid uid, FrozenHeatSourceComponent source, bool burning)
+    private void UpdatePointLight(EntityUid uid, bool burning, float radius, float effectiveLocalHeat)
     {
         if (!TryComp<PointLightComponent>(uid, out var light))
             return;
@@ -694,15 +712,13 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         if (!burning)
             return;
 
-        var radius = MathF.Max(0.1f, source.OuterRadius);
         _pointLight.SetRadius(uid, radius, light);
 
-        var effectiveLocalHeat = MathF.Max(0f, source.EffectiveHeatBonus * source.EffectiveTransferEfficiency);
         var energy = Math.Clamp(effectiveLocalHeat / 25f, 1f, 3f);
         _pointLight.SetEnergy(uid, energy, light);
     }
 
-    private void UpdateAmbientSound(EntityUid uid, FrozenHeatSourceComponent source, bool burning)
+    private void UpdateAmbientSound(EntityUid uid, bool burning, float radius)
     {
         if (!TryComp<AmbientSoundComponent>(uid, out var ambient))
             return;
@@ -712,8 +728,13 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         if (!burning)
             return;
 
-        var range = MathF.Max(1f, source.OuterRadius);
+        var range = MathF.Max(1f, radius);
         _ambientSound.SetRange(uid, range, ambient);
+    }
+
+    private static bool CloseTo(float a, float b)
+    {
+        return MathF.Abs(a - b) < 0.0001f;
     }
 
     private void UpdateFuelUiIfOpen(

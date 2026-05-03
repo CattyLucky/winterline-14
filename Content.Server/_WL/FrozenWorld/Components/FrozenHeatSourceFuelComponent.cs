@@ -138,4 +138,20 @@ public sealed partial class FrozenHeatSourceFuelComponent : Component
     /// </summary>
     [ViewVariables]
     public HashSet<EntityUid> OpenFuelStorageUsers = new();
+
+    /// <summary>
+    /// Presentation cache: prevents reapplying Appearance/PointLight/AmbientSound every fuel tick.
+    /// </summary>
+    [ViewVariables]
+    public bool BurningPresentationInitialized;
+
+    [ViewVariables]
+    public bool LastPresentationBurning;
+
+    [ViewVariables]
+    public float LastPresentationOuterRadius;
+
+    [ViewVariables]
+    public float LastPresentationEffectiveLocalHeat;
+
 }

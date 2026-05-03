@@ -1,11 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 using Content.Server._WL.FrozenWorld.Components;
 using Content.Shared._WL.FrozenWorld.Components;
 using Content.Shared._WL.FrozenWorld.Systems;
 using Content.Server.Inventory;
-using Content.Shared._WL.FrozenWorld.Prototypes;
 using Content.Shared.Atmos;
 using Content.Shared.Inventory;
 using Robust.Shared.Maths;
@@ -56,17 +54,6 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
         FrozenBodyPart.Feet,
     };
 
-    private static readonly Dictionary<FrozenBodyPart, float> BodyPartWeights = new()
-    {
-        [FrozenBodyPart.Torso] = 0.30f,
-        [FrozenBodyPart.Legs] = 0.20f,
-        [FrozenBodyPart.Arms] = 0.15f,
-        [FrozenBodyPart.Head] = 0.15f,
-        [FrozenBodyPart.Hands] = 0.08f,
-        [FrozenBodyPart.Feet] = 0.08f,
-        [FrozenBodyPart.Face] = 0.04f,
-    };
-
     public bool TryGetSnapshot(EntityUid uid, FrozenColdExposureComponent exposure, out FrozenThermalSnapshot snapshot)
     {
         snapshot = default;
@@ -104,14 +91,13 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
 
         var partRatings = GetBodyPartRatings(uid, exposure);
         var footContactPenaltyCelsius = GetFootContactPenaltyCelsius(uid);
-        var partSeverities = new Dictionary<FrozenBodyPart, float>(BodyParts.Length);
 
         var totalColdSeverity = GetTotalColdSeverity(
             partRatings,
             environmentalTemperatureCelsius,
             footContactPenaltyCelsius,
             exposure.FullDeficitTemperatureCelsius,
-            partSeverities,
+            out var partSeverities,
             out var weakestPart,
             out var weakestSeverity);
 
@@ -213,45 +199,39 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
         dynamicHeatBonus = _dynamicHeat.GetDynamicHeatBonusAt(mapUid, worldPos);
     }
 
-    private Dictionary<FrozenBodyPart, float> GetBodyPartRatings(EntityUid uid, FrozenColdExposureComponent exposure)
+    private FrozenBodyPartValues GetBodyPartRatings(EntityUid uid, FrozenColdExposureComponent exposure)
     {
-        var ratings = new Dictionary<FrozenBodyPart, float>(BodyParts.Length);
-        var baseRating = exposure.BaseUnprotectedTemperatureCelsius;
-
-        foreach (var part in BodyParts)
-        {
-            ratings[part] = baseRating;
-        }
+        var ratings = new FrozenBodyPartValues(exposure.BaseUnprotectedTemperatureCelsius);
 
         // Direct modifier on the body itself: species, mutation, temporary status entity, etc.
-        AddInsulationCoverage(uid, ratings);
+        AddInsulationCoverage(uid, ref ratings);
 
         if (TryComp<InventoryComponent>(uid, out _))
         {
-            AddInventoryInsulationCoverage(uid, ratings);
+            AddInventoryInsulationCoverage(uid, ref ratings);
         }
         else
         {
             // Fallback for simple mobs/entities without slot inventory.
             // Do not use this path for humanoids: inventory slots are the authoritative worn-items source.
-            AddDirectChildInsulationCoverage(uid, ratings);
+            AddDirectChildInsulationCoverage(uid, ref ratings);
         }
 
         return ratings;
     }
 
-    private void AddInventoryInsulationCoverage(EntityUid uid, Dictionary<FrozenBodyPart, float> ratings)
+    private void AddInventoryInsulationCoverage(EntityUid uid, ref FrozenBodyPartValues ratings)
     {
         foreach (var slot in InsulationInventorySlots)
         {
             if (!_inventory.TryGetSlotEntity(uid, slot, out var slotEntity) || slotEntity is not { } equipped)
                 continue;
 
-            AddInsulationCoverage(equipped, ratings);
+            AddInsulationCoverage(equipped, ref ratings);
         }
     }
 
-    private void AddDirectChildInsulationCoverage(EntityUid uid, Dictionary<FrozenBodyPart, float> ratings)
+    private void AddDirectChildInsulationCoverage(EntityUid uid, ref FrozenBodyPartValues ratings)
     {
         if (!TryComp(uid, out TransformComponent? xform))
             return;
@@ -259,11 +239,11 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
         var enumerator = xform.ChildEnumerator;
         while (enumerator.MoveNext(out var child))
         {
-            AddInsulationCoverage(child, ratings);
+            AddInsulationCoverage(child, ref ratings);
         }
     }
 
-    private void AddInsulationCoverage(EntityUid uid, Dictionary<FrozenBodyPart, float> ratings)
+    private void AddInsulationCoverage(EntityUid uid, ref FrozenBodyPartValues ratings)
     {
         if (!TryComp<FrozenInsulationComponent>(uid, out var insulation) || !insulation.Enabled)
             return;
@@ -271,13 +251,11 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
         if (insulation.Coverage.Count == 0)
             return;
 
+        var ratedTemperature = insulation.GetRatedTemperatureCelsius();
+
         foreach (var part in insulation.Coverage)
         {
-            if (!ratings.ContainsKey(part))
-                continue;
-
-            // Lower rated temperature is better. Do not stack overlapping clothing; take the best layer.
-            ratings[part] = MathF.Min(ratings[part], insulation.RatedTemperatureCelsius);
+            ratings.ApplyMin(part, ratedTemperature);
         }
     }
 
@@ -312,32 +290,30 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
     }
 
     private static float GetTotalColdSeverity(
-        IReadOnlyDictionary<FrozenBodyPart, float> partRatings,
+        FrozenBodyPartValues partRatings,
         float environmentalTemperatureCelsius,
         float footContactPenaltyCelsius,
         float fullDeficitTemperatureCelsius,
-        Dictionary<FrozenBodyPart, float> partSeverities,
+        out FrozenBodyPartValues partSeverities,
         out FrozenBodyPart weakestPart,
         out float weakestSeverity)
     {
         var total = 0f;
         weakestPart = FrozenBodyPart.Torso;
         weakestSeverity = 0f;
+        partSeverities = new FrozenBodyPartValues(0f);
         var fullDeficit = MathF.Max(1f, fullDeficitTemperatureCelsius);
 
         foreach (var part in BodyParts)
         {
-            var rated = partRatings.TryGetValue(part, out var value)
-                ? value
-                : 5f;
-
+            var rated = partRatings.Get(part);
             var penalty = part == FrozenBodyPart.Feet ? footContactPenaltyCelsius : 0f;
             var deficit = rated - environmentalTemperatureCelsius + penalty;
             var severity = deficit <= 0f
                 ? 0f
                 : Math.Clamp(deficit / fullDeficit, 0f, 1f);
 
-            partSeverities[part] = severity;
+            partSeverities.Set(part, severity);
 
             if (severity > weakestSeverity)
             {
@@ -345,10 +321,25 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
                 weakestPart = part;
             }
 
-            total += severity * BodyPartWeights[part];
+            total += severity * GetBodyPartWeight(part);
         }
 
         return Math.Clamp(total, 0f, 1f);
+    }
+
+    private static float GetBodyPartWeight(FrozenBodyPart part)
+    {
+        return part switch
+        {
+            FrozenBodyPart.Torso => 0.30f,
+            FrozenBodyPart.Legs => 0.20f,
+            FrozenBodyPart.Arms => 0.15f,
+            FrozenBodyPart.Head => 0.15f,
+            FrozenBodyPart.Hands => 0.08f,
+            FrozenBodyPart.Feet => 0.08f,
+            FrozenBodyPart.Face => 0.04f,
+            _ => 0f,
+        };
     }
 
     private float GetShelterBonus(EntityUid uid)

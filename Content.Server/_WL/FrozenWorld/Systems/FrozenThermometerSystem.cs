@@ -120,12 +120,8 @@ public sealed partial class FrozenThermometerSystem : EntitySystem
         for (var i = 0; i < BodyParts.Length; i++)
         {
             var part = BodyParts[i];
-            var rated = snapshot.PartRatedTemperatureCelsius.TryGetValue(part, out var ratedValue)
-                ? ratedValue
-                : exposure.BaseUnprotectedTemperatureCelsius;
-            var severity = snapshot.PartColdSeverity.TryGetValue(part, out var severityValue)
-                ? severityValue
-                : 0f;
+            var rated = snapshot.PartRatedTemperatureCelsius.Get(part);
+            var severity = snapshot.PartColdSeverity.Get(part);
 
             var isProtected = rated < exposure.BaseUnprotectedTemperatureCelsius - 0.01f;
             bodyParts[i] = new FrozenThermometerBodyPartState(part, rated, severity, isProtected);
