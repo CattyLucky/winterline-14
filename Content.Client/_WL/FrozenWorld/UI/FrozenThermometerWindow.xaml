@@ -2,17 +2,14 @@
     xmlns="https://spacestation14.io"
     xmlns:ui="clr-namespace:Content.Client._WL.FrozenWorld.UI"
     Title="Термометр"
-    SetSize="640 620"
+    SetSize="720 620"
     Resizable="True"
-    MinWidth="560"
+    MinWidth="680"
     MinHeight="500">
     <BoxContainer Orientation="Vertical" Margin="12 12 12 12">
         <PanelContainer Name="TemperaturePanel" HorizontalExpand="True">
             <BoxContainer Orientation="Vertical">
-                <Label Name="EnvironmentalTemperatureLabel" Text="Температура среды: —" />
-                <Label Name="AmbientTemperatureLabel" Text="Базовая температура: —" />
-                <Label Name="HeatBreakdownLabel" Text="Тепло: —" />
-                <Label Name="SurfacePenaltyLabel" Text="Поверхность: —" />
+                <Label Name="EnvironmentalTemperatureLabel" Text="ТЕМПЕРАТУРА СРЕДЫ: —" />
             </BoxContainer>
         </PanelContainer>
 

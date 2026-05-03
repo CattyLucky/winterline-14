@@ -6,7 +6,7 @@
   id: WLFrostbiteChilled
   category: WLColdExposure
   icons:
-  - sprite: /Textures/Interface/Alerts/wl_frostbite.rsi
+  - sprite: /Textures/_WL/Interface/Alerts/wl_frostbite.rsi
     state: cold1
   name: wl-alert-frostbite-chilled-name
   description: wl-alert-frostbite-chilled-desc
@@ -15,7 +15,7 @@
   id: WLFrostbiteFreezing
   category: WLColdExposure
   icons:
-  - sprite: /Textures/Interface/Alerts/wl_frostbite.rsi
+  - sprite: /Textures/_WL/Interface/Alerts/wl_frostbite.rsi
     state: cold2
   name: wl-alert-frostbite-freezing-name
   description: wl-alert-frostbite-freezing-desc
@@ -24,7 +24,7 @@
   id: WLFrostbiteHypothermia
   category: WLColdExposure
   icons:
-  - sprite: /Textures/Interface/Alerts/wl_frostbite.rsi
+  - sprite: /Textures/_WL/Interface/Alerts/wl_frostbite.rsi
     state: cold3
   name: wl-alert-frostbite-hypothermia-name
   description: wl-alert-frostbite-hypothermia-desc
@@ -33,8 +33,8 @@
   id: WLFrostbiteSevereHypothermia
   category: WLColdExposure
   icons:
-  - sprite: /Textures/Interface/Alerts/wl_frostbite.rsi
-    state: hot1
+  - sprite: /Textures/_WL/Interface/Alerts/wl_frostbite.rsi
+    state: cold4
   name: wl-alert-frostbite-severe-name
   description: wl-alert-frostbite-severe-desc
 
@@ -42,8 +42,8 @@
   id: WLFrostbiteCritical
   category: WLColdExposure
   icons:
-  - sprite: /Textures/Interface/Alerts/wl_frostbite.rsi
-    state: hot3
+  - sprite: /Textures/_WL/Interface/Alerts/wl_frostbite.rsi
+    state: cold5
   name: wl-alert-frostbite-critical-name
   description: wl-alert-frostbite-critical-desc
 
@@ -53,15 +53,15 @@
   category: WLColdExposure
   maxSeverity: 5
   icons:
-  - sprite: /Textures/Interface/Alerts/wl_frostbite.rsi
+  - sprite: /Textures/_WL/Interface/Alerts/wl_frostbite.rsi
     state: cold1
-  - sprite: /Textures/Interface/Alerts/wl_frostbite.rsi
+  - sprite: /Textures/_WL/Interface/Alerts/wl_frostbite.rsi
     state: cold2
-  - sprite: /Textures/Interface/Alerts/wl_frostbite.rsi
+  - sprite: /Textures/_WL/Interface/Alerts/wl_frostbite.rsi
     state: cold3
-  - sprite: /Textures/Interface/Alerts/wl_frostbite.rsi
-    state: hot1
-  - sprite: /Textures/Interface/Alerts/wl_frostbite.rsi
-    state: hot3
+  - sprite: /Textures/_WL/Interface/Alerts/wl_frostbite.rsi
+    state: cold4
+  - sprite: /Textures/_WL/Interface/Alerts/wl_frostbite.rsi
+    state: cold5
   name: wl-alert-frostbite-name
   description: wl-alert-frostbite-desc

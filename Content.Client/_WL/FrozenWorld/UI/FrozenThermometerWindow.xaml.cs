@@ -20,7 +20,11 @@ public sealed partial class FrozenThermometerWindow : DefaultWindow
         TemperaturePanel.PanelOverride = FrozenWorldUiTheme.Panel(
             FrozenWorldUiTheme.SurfacePanelAlt,
             FrozenWorldUiTheme.BorderStrong,
-            1);
+            1,
+            14,
+            14,
+            12,
+            12);
 
         ExposurePanel.PanelOverride = FrozenWorldUiTheme.Panel(
             FrozenWorldUiTheme.SurfacePanel,
@@ -40,19 +44,14 @@ public sealed partial class FrozenThermometerWindow : DefaultWindow
 
     public void SetState(FrozenThermometerBoundUserInterfaceState state)
     {
+        if (!state.Available)
+        {
+            SetUnavailableState();
+            return;
+        }
+
         EnvironmentalTemperatureLabel.Text =
-            $"Температура среды: {FormatSigned(state.EnvironmentalTemperatureCelsius)}°C";
-
-        AmbientTemperatureLabel.Text =
-            $"Базовая температура зоны: {FormatSigned(state.AmbientTemperatureCelsius)}°C";
-
-        HeatBreakdownLabel.Text =
-            $"Тепло: статич. {FormatSigned(state.StaticHeatBonusCelsius)}°C, " +
-            $"динамич. {FormatSigned(state.DynamicHeatBonusCelsius)}°C, " +
-            $"укрытие {FormatSigned(state.ShelterBonusCelsius)}°C";
-
-        SurfacePenaltyLabel.Text =
-            $"Поверхность: штраф к ногам {FormatSigned(state.FootContactPenaltyCelsius)}°C";
+            $"ТЕМПЕРАТУРА СРЕДЫ: {FormatSigned(state.EnvironmentalTemperatureCelsius)}°C";
 
         var stageText = FormatStage(state.Stage);
         var stageColor = FrozenWorldUiTheme.StageColor(state.Stage.ToString());
@@ -100,11 +99,11 @@ public sealed partial class FrozenThermometerWindow : DefaultWindow
                     FrozenWorldUiTheme.SurfacePanelSoft,
                     GetSeverityColor(part.ColdSeverity).WithAlpha(0.8f),
                     1,
-                    8,
-                    8,
-                    6,
-                    6),
-                Margin = new Thickness(0, 0, 0, 4),
+                    10,
+                    10,
+                    7,
+                    7),
+                Margin = new Thickness(0, 0, 0, 5),
             };
 
             var line = new BoxContainer
@@ -114,12 +113,16 @@ public sealed partial class FrozenThermometerWindow : DefaultWindow
             };
 
             var name = FrozenWorldUiTheme.MakeValueLabel(FormatBodyPart(part.BodyPart));
-            name.SetWidth = 120;
+            name.SetWidth = 130;
 
-            var rated = FrozenWorldUiTheme.MakeMutedLabel($"защита до {FormatSigned(part.RatedTemperatureCelsius)}°C");
-            rated.SetWidth = 170;
+            var protectionText = part.IsProtected
+                ? $"защита до температуры {FormatSigned(part.RatedTemperatureCelsius)}°C"
+                : "без защиты";
 
-            var severity = FrozenWorldUiTheme.MakeMutedLabel($"холод {part.ColdSeverity:0.00}");
+            var rated = FrozenWorldUiTheme.MakeMutedLabel(protectionText);
+            rated.SetWidth = 275;
+
+            var severity = FrozenWorldUiTheme.MakeMutedLabel($"холод: {part.ColdSeverity:0.00}");
             severity.FontColorOverride = GetSeverityColor(part.ColdSeverity);
             severity.HorizontalExpand = true;
 
@@ -132,12 +135,28 @@ public sealed partial class FrozenThermometerWindow : DefaultWindow
         }
     }
 
+    private void SetUnavailableState()
+    {
+        EnvironmentalTemperatureLabel.Text = "ТЕМПЕРАТУРА СРЕДЫ: НЕТ ДАННЫХ";
+
+        StageLabel.Text = "Стадия: нет данных";
+        StageLabel.FontColorOverride = FrozenWorldUiTheme.TextSecondary;
+
+        ExposureLabel.Text = "Переохлаждение: нет данных";
+        ExposureBar.Value = 0f;
+        if (ExposureBar.ForegroundStyleBoxOverride is StyleBoxFlat foreground)
+            foreground.BackgroundColor = FrozenWorldUiTheme.TextSecondary.WithAlpha(0.6f);
+
+        SeverityLabel.Text = "Опасность холода: нет данных";
+        WeakestPartLabel.Text = "Слабое место: нет данных";
+
+        BodyPartsContainer.RemoveAllChildren();
+        BodyPartsContainer.AddChild(FrozenWorldUiTheme.MakeMutedLabel("Нет данных по частям тела."));
+    }
+
     private void ApplyStaticLabelColors()
     {
         EnvironmentalTemperatureLabel.FontColorOverride = FrozenWorldUiTheme.TextPrimary;
-        AmbientTemperatureLabel.FontColorOverride = FrozenWorldUiTheme.TextSecondary;
-        HeatBreakdownLabel.FontColorOverride = FrozenWorldUiTheme.TextSecondary;
-        SurfacePenaltyLabel.FontColorOverride = FrozenWorldUiTheme.TextSecondary;
 
         StageLabel.FontColorOverride = FrozenWorldUiTheme.TextPrimary;
         ExposureLabel.FontColorOverride = FrozenWorldUiTheme.TextPrimary;

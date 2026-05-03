@@ -1,3 +1,4 @@
+using System;
 using Content.Server._WL.FrozenWorld.Components;
 using Content.Server.Storage.EntitySystems;
 using Content.Shared._WL.FrozenWorld.UI;
@@ -142,25 +143,40 @@ public sealed partial class FrozenHeatSourceFuelUiSystem : EntitySystem
         var effectiveHeatBonus = source?.EffectiveHeatBonus ?? 0f;
         var baseTransferEfficiency = source?.TransferEfficiency ?? 0f;
         var effectiveTransferEfficiency = source?.EffectiveTransferEfficiency ?? 0f;
+        var effectiveLocalHeatBonus = effectiveHeatBonus * effectiveTransferEfficiency;
         var innerRadius = source?.InnerRadius ?? 0f;
         var outerRadius = source?.OuterRadius ?? 0f;
         var hasActiveFuel = fuel.RemainingFuelSeconds > 0f;
         var hasQueuedFuel = fuel.LastFuelStackUnits > 0;
+        var effectiveBurnRate = MathF.Max(0f, fuel.BurnRate) * MathF.Max(0f, fuel.ActiveFuelBurnRateMultiplier);
+        var remainingFuelRealSeconds = effectiveBurnRate > 0.001f
+            ? fuel.RemainingFuelSeconds / effectiveBurnRate
+            : fuel.RemainingFuelSeconds;
+        var activeFuelTotalSeconds = MathF.Max(fuel.ActiveFuelTotalSeconds, fuel.RemainingFuelSeconds);
+        var activeFuelTotalRealSeconds = effectiveBurnRate > 0.001f
+            ? activeFuelTotalSeconds / effectiveBurnRate
+            : activeFuelTotalSeconds;
 
         return new FrozenHeatSourceFuelBoundUserInterfaceState(
             enabled,
             hasActiveFuel,
             hasQueuedFuel,
             fuel.RemainingFuelSeconds,
+            remainingFuelRealSeconds,
+            activeFuelTotalSeconds,
+            activeFuelTotalRealSeconds,
             fuel.LastAvailableFuelSeconds,
+            fuel.LastAvailableFuelRealSeconds,
             baseHeatBonus,
             effectiveHeatBonus,
             baseTransferEfficiency,
             effectiveTransferEfficiency,
+            effectiveLocalHeatBonus,
             innerRadius,
             outerRadius,
             fuel.BurnRate,
             fuel.ActiveFuelBurnRateMultiplier,
+            effectiveBurnRate,
             fuel.ActiveFuelHeatBonusMultiplier,
             fuel.ActiveFuelTransferEfficiencyMultiplier,
             fuel.LastFuelItemCount,

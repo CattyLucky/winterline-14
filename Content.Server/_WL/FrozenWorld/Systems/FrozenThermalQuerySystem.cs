@@ -95,6 +95,17 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
             out var ambientTemperatureAtPosition);
 
         var environmentalTemperatureCelsius = KelvinToCelsius(environmentalTemperature);
+        var unclampedEnvironmentalTemperature = GetUnclampedEnvironmentalTemperature(
+            ambientTemperatureAtPosition,
+            staticHeatBonus,
+            dynamicHeatBonus,
+            shelterBonus,
+            world);
+        var unclampedEnvironmentalTemperatureCelsius = KelvinToCelsius(unclampedEnvironmentalTemperature);
+        var isEnvironmentalTemperatureClamped = MathF.Abs(environmentalTemperature - unclampedEnvironmentalTemperature) > 0.01f;
+        var minEffectiveTemperatureCelsius = KelvinToCelsius(world.MinEffectiveTemperature);
+        var maxEffectiveTemperatureCelsius = KelvinToCelsius(world.MaxEffectiveTemperature);
+
         var partRatings = GetBodyPartRatings(uid, exposure);
         var footContactPenaltyCelsius = GetFootContactPenaltyCelsius(uid);
         var partSeverities = new Dictionary<FrozenBodyPart, float>(BodyParts.Length);
@@ -115,6 +126,10 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
             shelterBonus,
             environmentalTemperature,
             environmentalTemperatureCelsius,
+            unclampedEnvironmentalTemperatureCelsius,
+            isEnvironmentalTemperatureClamped,
+            minEffectiveTemperatureCelsius,
+            maxEffectiveTemperatureCelsius,
             totalColdSeverity,
             footContactPenaltyCelsius,
             weakestPart,
@@ -194,6 +209,21 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
     {
         GetLocalHeatBonusesAt(mapUid, worldPos, out var staticHeatBonus, out var dynamicHeatBonus);
         return staticHeatBonus + dynamicHeatBonus;
+    }
+
+    private static float GetUnclampedEnvironmentalTemperature(
+        float ambientTemperature,
+        float staticHeatBonus,
+        float dynamicHeatBonus,
+        float shelterBonus,
+        FrozenWorldComponent world)
+    {
+        var localHeatBonus = staticHeatBonus + dynamicHeatBonus;
+        var maxOffset = MathF.Max(0f, world.MaxLocalTemperatureOffset);
+        if (maxOffset > 0f)
+            localHeatBonus = Math.Clamp(localHeatBonus, -maxOffset, maxOffset);
+
+        return ambientTemperature + localHeatBonus + shelterBonus;
     }
 
     public void GetLocalHeatBonusesAt(EntityUid mapUid, Vector2 worldPos, out float staticHeatBonus, out float dynamicHeatBonus)

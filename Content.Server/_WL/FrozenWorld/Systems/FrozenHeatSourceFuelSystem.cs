@@ -26,6 +26,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
     [Dependency] private readonly StackSystem _stack = default!;
 
     private const float UpdateInterval = 1f;
+    private const float MinBurnRate = 0.001f;
     private float _accumulator;
 
     public override void Initialize()
@@ -70,9 +71,17 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
             return;
 
         if (ent.Comp.RemainingFuelSeconds <= 0f)
+        {
+            ent.Comp.RemainingFuelSeconds = 0f;
             ClearActiveFuel(ent.Owner, source, ent.Comp);
 
-        SetSourceEnabled(ent.Owner, source, HasAvailableFuel(ent.Owner, ent.Comp));
+            if (ent.Comp.AutoConsumeFuel)
+                TryConsumeNextFuelUnit(ent.Owner, source, ent.Comp);
+        }
+
+        SetSourceEnabled(ent.Owner, source, ent.Comp.RemainingFuelSeconds > 0f);
+        RefreshQueuedFuelStats(ent.Owner, ent.Comp);
+        Dirty(ent.Owner, ent.Comp);
         _fuelUi.UpdateUiState(ent.Owner, ent.Comp, source);
     }
 
@@ -83,8 +92,9 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
 
         RefreshQueuedFuelStats(uid, fuel);
 
-        if (TryComp<FrozenHeatSourceComponent>(uid, out var source) && fuel.RemainingFuelSeconds <= 0f)
-            SetSourceEnabled(uid, source, HasAvailableFuel(uid, fuel));
+        // Queued fuel in Storage is not active heat. The source heats only while a unit is actually burning.
+        if (TryComp<FrozenHeatSourceComponent>(uid, out var source))
+            SetSourceEnabled(uid, source, fuel.RemainingFuelSeconds > 0f);
 
         Dirty(uid, fuel);
         _fuelUi.UpdateUiState(uid, fuel, source);
@@ -98,41 +108,48 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
     {
         EnsureFuelContainer(uid, fuel);
 
-        if (fuel.RemainingFuelSeconds <= 0f)
+        var remainingFrameTime = MathF.Max(0f, frameTime);
+
+        while (remainingFrameTime > 0f)
         {
+            if (fuel.RemainingFuelSeconds <= 0f)
+            {
+                fuel.RemainingFuelSeconds = 0f;
+                ClearActiveFuel(uid, source, fuel);
+
+                if (!fuel.AutoConsumeFuel || !TryConsumeNextFuelUnit(uid, source, fuel))
+                {
+                    SetSourceEnabled(uid, source, false);
+                    RefreshQueuedFuelStats(uid, fuel);
+                    Dirty(uid, fuel);
+                    _fuelUi.UpdateUiState(uid, fuel, source);
+                    return;
+                }
+            }
+
+            SetSourceEnabled(uid, source, true);
+
+            var burnRate = GetEffectiveBurnRate(fuel.BurnRate, fuel.ActiveFuelBurnRateMultiplier);
+            if (burnRate <= MinBurnRate)
+                break;
+
+            var burnableFuelSeconds = burnRate * remainingFrameTime;
+            if (fuel.RemainingFuelSeconds > burnableFuelSeconds)
+            {
+                fuel.RemainingFuelSeconds -= burnableFuelSeconds;
+                remainingFrameTime = 0f;
+                break;
+            }
+
+            // Consume only the real time needed to finish the current unit, then continue with the next fuel unit
+            // inside the same server update. This prevents short fuel items from gaining free time at transitions.
+            var timeSpentOnCurrentFuel = fuel.RemainingFuelSeconds / burnRate;
+            remainingFrameTime = MathF.Max(0f, remainingFrameTime - timeSpentOnCurrentFuel);
             fuel.RemainingFuelSeconds = 0f;
-
-            if (fuel.AutoConsumeFuel)
-                TryConsumeNextFuelUnit(uid, source, fuel);
-        }
-
-        if (fuel.RemainingFuelSeconds <= 0f)
-        {
             ClearActiveFuel(uid, source, fuel);
-            SetSourceEnabled(uid, source, false);
-            RefreshQueuedFuelStats(uid, fuel);
-            Dirty(uid, fuel);
-            _fuelUi.UpdateUiState(uid, fuel, source);
-            return;
-        }
-
-        SetSourceEnabled(uid, source, true);
-
-        var burnRate = MathF.Max(0f, fuel.BurnRate) * MathF.Max(0f, fuel.ActiveFuelBurnRateMultiplier);
-        if (burnRate > 0f)
-            fuel.RemainingFuelSeconds = MathF.Max(0f, fuel.RemainingFuelSeconds - burnRate * frameTime);
-
-        if (fuel.RemainingFuelSeconds <= 0f)
-        {
-            fuel.RemainingFuelSeconds = 0f;
-            ClearActiveFuel(uid, source, fuel);
-
-            if (fuel.AutoConsumeFuel)
-                TryConsumeNextFuelUnit(uid, source, fuel);
         }
 
         SetSourceEnabled(uid, source, fuel.RemainingFuelSeconds > 0f);
-        RefreshQueuedFuelStats(uid, fuel);
         Dirty(uid, fuel);
         _fuelUi.UpdateUiState(uid, fuel, source);
     }
@@ -153,6 +170,8 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         if (fuelSeconds <= 0f)
             return false;
 
+        var fuelPrototype = MetaData(fuelUid).EntityPrototype?.ID;
+
         if (stack != null)
         {
             if (stack.Unlimited || stack.Count <= 0)
@@ -172,7 +191,8 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         }
 
         fuel.RemainingFuelSeconds = fuelSeconds;
-        fuel.LastConsumedFuelPrototype = MetaData(fuelUid).EntityPrototype?.ID;
+        fuel.ActiveFuelTotalSeconds = fuelSeconds;
+        fuel.LastConsumedFuelPrototype = fuelPrototype;
         SetActiveFuel(uid, source, fuel, fuelItem, fuel.LastConsumedFuelPrototype);
         RefreshQueuedFuelStats(uid, fuel);
         Dirty(uid, fuel);
@@ -223,29 +243,6 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         return hasCandidate;
     }
 
-    private bool HasAvailableFuel(EntityUid uid, FrozenHeatSourceFuelComponent fuel)
-    {
-        if (fuel.RemainingFuelSeconds > 0f)
-            return true;
-
-        var container = EnsureFuelContainer(uid, fuel);
-        if (container == null)
-            return false;
-
-        foreach (var contained in container.ContainedEntities)
-        {
-            if (!TryComp<FrozenFuelComponent>(contained, out var fuelItem) || fuelItem.FuelSeconds <= 0f)
-                continue;
-
-            if (TryComp<StackComponent>(contained, out var stack) && (stack.Unlimited || stack.Count <= 0))
-                continue;
-
-            return true;
-        }
-
-        return false;
-    }
-
     private void RefreshQueuedFuelStats(EntityUid uid, FrozenHeatSourceFuelComponent fuel)
     {
         var container = EnsureFuelContainer(uid, fuel);
@@ -254,12 +251,14 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
             fuel.LastFuelItemCount = 0;
             fuel.LastFuelStackUnits = 0;
             fuel.LastAvailableFuelSeconds = 0f;
+            fuel.LastAvailableFuelRealSeconds = 0f;
             return;
         }
 
         var itemCount = 0;
         var stackUnits = 0;
         var availableSeconds = 0f;
+        var availableRealSeconds = 0f;
 
         foreach (var contained in container.ContainedEntities)
         {
@@ -275,14 +274,20 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
                 units = stack.Count;
             }
 
+            var fuelSeconds = MathF.Max(0f, fuelItem.FuelSeconds);
+            var fuelBurnRate = GetEffectiveBurnRate(fuel.BurnRate, fuelItem.BurnRateMultiplier);
+            var realSeconds = fuelBurnRate > MinBurnRate ? fuelSeconds / fuelBurnRate : fuelSeconds;
+
             itemCount++;
             stackUnits += units;
-            availableSeconds += MathF.Max(0f, fuelItem.FuelSeconds) * units;
+            availableSeconds += fuelSeconds * units;
+            availableRealSeconds += realSeconds * units;
         }
 
         fuel.LastFuelItemCount = itemCount;
         fuel.LastFuelStackUnits = stackUnits;
         fuel.LastAvailableFuelSeconds = availableSeconds;
+        fuel.LastAvailableFuelRealSeconds = availableRealSeconds;
     }
 
     private Container? EnsureFuelContainer(EntityUid uid, FrozenHeatSourceFuelComponent fuel)
@@ -315,6 +320,8 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
 
     private void ClearActiveFuel(EntityUid uid, FrozenHeatSourceComponent source, FrozenHeatSourceFuelComponent fuel)
     {
+        fuel.ActiveFuelTotalSeconds = 0f;
+
         if (fuel.ActiveFuelPrototype == null
             && MathHelper.CloseTo(fuel.ActiveFuelHeatBonusMultiplier, 1f)
             && MathHelper.CloseTo(fuel.ActiveFuelTransferEfficiencyMultiplier, 1f)
@@ -359,6 +366,11 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
     private static float SanitizeMultiplier(float value)
     {
         return float.IsFinite(value) ? MathF.Max(0f, value) : 1f;
+    }
+
+    private static float GetEffectiveBurnRate(float baseBurnRate, float fuelBurnRateMultiplier)
+    {
+        return MathF.Max(0f, baseBurnRate) * SanitizeMultiplier(fuelBurnRateMultiplier);
     }
 
     private void SetSourceEnabled(EntityUid uid, FrozenHeatSourceComponent source, bool enabled)

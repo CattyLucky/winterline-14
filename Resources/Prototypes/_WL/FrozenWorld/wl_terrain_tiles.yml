@@ -58,6 +58,14 @@
   - Constructed
   - Road
 
+- type: frozenFootSurface
+  id: WLFloorSnow
+  footContactPenaltyCelsius: 6
+
+- type: frozenFootSurface
+  id: WLFloorSnowDug
+  footContactPenaltyCelsius: 10
+
 - type: stack
   id: WLSnowFoundationTile
   name: wl-snow-foundation-tile

@@ -1,3 +1,4 @@
+using System;
 using Content.Server._WL.FrozenWorld.Components;
 using Content.Shared._WL.FrozenWorld;
 using Content.Shared._WL.FrozenWorld.UI;
@@ -126,12 +127,18 @@ public sealed partial class FrozenThermometerSystem : EntitySystem
                 ? severityValue
                 : 0f;
 
-            bodyParts[i] = new FrozenThermometerBodyPartState(part, rated, severity);
+            var isProtected = rated < exposure.BaseUnprotectedTemperatureCelsius - 0.01f;
+            bodyParts[i] = new FrozenThermometerBodyPartState(part, rated, severity, isProtected);
         }
 
         return new FrozenThermometerBoundUserInterfaceState(
+            true,
             KelvinToCelsius(snapshot.AmbientTemperature),
             snapshot.EnvironmentalTemperatureCelsius,
+            snapshot.UnclampedEnvironmentalTemperatureCelsius,
+            snapshot.IsEnvironmentalTemperatureClamped,
+            snapshot.MinEffectiveTemperatureCelsius,
+            snapshot.MaxEffectiveTemperatureCelsius,
             snapshot.StaticHeatBonus,
             snapshot.DynamicHeatBonus,
             snapshot.ShelterBonus,
@@ -147,13 +154,12 @@ public sealed partial class FrozenThermometerSystem : EntitySystem
 
     private static FrozenThermometerBoundUserInterfaceState BuildUnavailableState()
     {
-        var bodyParts = new FrozenThermometerBodyPartState[BodyParts.Length];
-        for (var i = 0; i < BodyParts.Length; i++)
-        {
-            bodyParts[i] = new FrozenThermometerBodyPartState(BodyParts[i], 0f, 0f);
-        }
-
         return new FrozenThermometerBoundUserInterfaceState(
+            false,
+            20f,
+            20f,
+            20f,
+            false,
             20f,
             20f,
             0f,
@@ -166,7 +172,7 @@ public sealed partial class FrozenThermometerSystem : EntitySystem
             FrozenColdStage.None,
             FrozenBodyPart.Torso,
             0f,
-            bodyParts);
+            Array.Empty<FrozenThermometerBodyPartState>());
     }
 
     private static float KelvinToCelsius(float kelvin)

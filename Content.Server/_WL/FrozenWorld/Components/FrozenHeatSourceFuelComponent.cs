@@ -5,7 +5,8 @@ namespace Content.Server._WL.FrozenWorld.Components;
 
 /// <summary>
 /// Makes a FrozenHeatSource consume physical fuel items from a normal storage/container.
-/// The heat source is enabled only while it has active burn time or burnable items inside the fuel container.
+/// The heat source is enabled only while it has active burn time.
+/// Burnable items inside the fuel container are only queued fuel; they do not heat by themselves.
 /// </summary>
 [RegisterComponent]
 public sealed partial class FrozenHeatSourceFuelComponent : Component
@@ -29,6 +30,13 @@ public sealed partial class FrozenHeatSourceFuelComponent : Component
     /// </summary>
     [DataField, ViewVariables(VVAccess.ReadWrite)]
     public float RemainingFuelSeconds;
+
+    /// <summary>
+    /// Nominal fuel seconds of the currently burning fuel unit at ignition time.
+    /// Used only for the active fuel progress bar; queued fuel is tracked separately.
+    /// </summary>
+    [ViewVariables]
+    public float ActiveFuelTotalSeconds;
 
     /// <summary>
     /// Base burn speed multiplier of this heater. 1 = one real second removes one fuel second.
@@ -71,8 +79,17 @@ public sealed partial class FrozenHeatSourceFuelComponent : Component
     [ViewVariables]
     public int LastFuelStackUnits;
 
+    /// <summary>
+    /// Nominal queued fuel seconds. Does not include this heater's BurnRate or the fuel burn-rate multipliers.
+    /// </summary>
     [ViewVariables]
     public float LastAvailableFuelSeconds;
+
+    /// <summary>
+    /// Real queued wall-clock seconds after this heater's BurnRate and each queued fuel burn-rate multiplier.
+    /// </summary>
+    [ViewVariables]
+    public float LastAvailableFuelRealSeconds;
 
     /// <summary>
     /// Runtime set of users for whom this heat source explicitly opened fuel storage.

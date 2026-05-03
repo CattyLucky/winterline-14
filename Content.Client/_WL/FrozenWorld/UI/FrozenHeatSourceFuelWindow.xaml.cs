@@ -25,24 +25,19 @@ public sealed partial class FrozenHeatSourceFuelWindow : DefaultWindow
             FrozenWorldUiTheme.BorderStrong,
             1);
 
+        HeatPanel.PanelOverride = FrozenWorldUiTheme.Panel(
+            FrozenWorldUiTheme.SurfacePanel,
+            FrozenWorldUiTheme.Border,
+            1,
+            14,
+            14,
+            14,
+            14);
+
         FuelPanel.PanelOverride = FrozenWorldUiTheme.Panel(
             FrozenWorldUiTheme.SurfacePanel,
             FrozenWorldUiTheme.Border,
             1);
-
-        HeatPanel.PanelOverride = FrozenWorldUiTheme.Panel(
-            FrozenWorldUiTheme.SurfacePanel,
-            FrozenWorldUiTheme.Border,
-            1);
-
-        HintPanel.PanelOverride = FrozenWorldUiTheme.Panel(
-            FrozenWorldUiTheme.SurfacePanelSoft,
-            FrozenWorldUiTheme.BorderSoft,
-            1,
-            10,
-            10,
-            8,
-            8);
 
         FuelReserveBar.BackgroundStyleBoxOverride = FrozenWorldUiTheme.ProgressBackground();
         FuelReserveBar.ForegroundStyleBoxOverride = FrozenWorldUiTheme.ProgressForeground(FrozenWorldUiTheme.HeatAccent);
@@ -57,23 +52,28 @@ public sealed partial class FrozenHeatSourceFuelWindow : DefaultWindow
 
         StatusLabel.Text = $"Состояние: {status}";
         StatusLabel.FontColorOverride = statusColor;
-        ActiveFuelLabel.Text = $"Активное топливо: {FormatPrototype(state.ActiveFuelPrototype)}";
 
-        RemainingLabel.Text = $"Горение: {FormatTime(state.RemainingFuelSeconds)} осталось";
-        QueueLabel.Text =
-            $"Очередь топлива: {state.FuelItemCount} предмет(ов), {state.FuelStackUnits} ед., запас {FormatTime(state.QueuedFuelSeconds)}";
-        LastFuelLabel.Text = $"Последнее топливо: {FormatPrototype(state.LastConsumedFuelPrototype)}";
+        HeatLabel.Text = $"ТЕПЛО: {FormatSigned(state.EffectiveLocalHeatBonus)}°C";
+        HeatLabel.FontColorOverride = state.Enabled
+            ? FrozenWorldUiTheme.HeatAccent
+            : FrozenWorldUiTheme.TextMuted;
 
-        HeatLabel.Text = $"Тепло: {FormatSigned(state.EffectiveHeatBonus)}°C  / база {FormatSigned(state.BaseHeatBonus)}°C";
-        TransferLabel.Text =
-            $"Передача тепла: x{state.EffectiveTransferEfficiency:0.##} / база x{state.BaseTransferEfficiency:0.##}";
-        RadiusLabel.Text = $"Радиус: {state.InnerRadius:0.#}–{state.OuterRadius:0.#} м";
-        BurnRateLabel.Text =
-            $"Скорость горения: x{state.BaseBurnRate * state.ActiveFuelBurnRateMultiplier:0.##} " +
-            $"(топливо x{state.ActiveFuelBurnRateMultiplier:0.##}, тепло x{state.ActiveFuelHeatBonusMultiplier:0.##})";
+        RemainingLabel.Text = state.Enabled
+            ? $"Горение: {FormatTime(state.RemainingFuelRealSeconds)} осталось"
+            : "Горение: нет активного топлива";
 
-        var totalFuel = MathF.Max(0f, state.RemainingFuelSeconds + state.QueuedFuelSeconds);
-        FuelReserveBar.Value = totalFuel <= 0f ? 0f : Math.Clamp(state.RemainingFuelSeconds / totalFuel, 0f, 1f);
+        var totalFuelRealSeconds = MathF.Max(0f, state.RemainingFuelRealSeconds + state.QueuedFuelRealSeconds);
+        TotalFuelLabel.Text = totalFuelRealSeconds > 0f
+            ? $"Запас топлива: {FormatTime(totalFuelRealSeconds)}"
+            : "Запас топлива: нет";
+
+        QueueLabel.Text = state.HasQueuedFuel
+            ? $"Топливо в отсеке: {state.FuelStackUnits} ед."
+            : "Топливо в отсеке: нет";
+
+        FuelReserveBar.Value = state.ActiveFuelTotalRealSeconds <= 0f
+            ? 0f
+            : Math.Clamp(state.RemainingFuelRealSeconds / state.ActiveFuelTotalRealSeconds, 0f, 1f);
 
         if (FuelReserveBar.ForegroundStyleBoxOverride is StyleBoxFlat foreground)
             foreground.BackgroundColor = state.Enabled
@@ -87,15 +87,10 @@ public sealed partial class FrozenHeatSourceFuelWindow : DefaultWindow
     private void ApplyLabelColors()
     {
         StatusLabel.FontColorOverride = FrozenWorldUiTheme.TextPrimary;
-        ActiveFuelLabel.FontColorOverride = FrozenWorldUiTheme.TextSecondary;
-        RemainingLabel.FontColorOverride = FrozenWorldUiTheme.TextPrimary;
-        QueueLabel.FontColorOverride = FrozenWorldUiTheme.TextSecondary;
-        LastFuelLabel.FontColorOverride = FrozenWorldUiTheme.TextMuted;
         HeatLabel.FontColorOverride = FrozenWorldUiTheme.TextPrimary;
-        TransferLabel.FontColorOverride = FrozenWorldUiTheme.TextSecondary;
-        RadiusLabel.FontColorOverride = FrozenWorldUiTheme.TextSecondary;
-        BurnRateLabel.FontColorOverride = FrozenWorldUiTheme.TextSecondary;
-        HintLabel.FontColorOverride = FrozenWorldUiTheme.TextMuted;
+        RemainingLabel.FontColorOverride = FrozenWorldUiTheme.TextPrimary;
+        TotalFuelLabel.FontColorOverride = FrozenWorldUiTheme.TextSecondary;
+        QueueLabel.FontColorOverride = FrozenWorldUiTheme.TextMuted;
     }
 
     private static string FormatTime(float seconds)
@@ -103,8 +98,12 @@ public sealed partial class FrozenHeatSourceFuelWindow : DefaultWindow
         seconds = MathF.Max(0f, seconds);
 
         var totalSeconds = (int)MathF.Round(seconds);
-        var minutes = totalSeconds / 60;
+        var hours = totalSeconds / 3600;
+        var minutes = totalSeconds / 60 % 60;
         var secs = totalSeconds % 60;
+
+        if (hours > 0)
+            return $"{hours:00}:{minutes:00}:{secs:00}";
 
         if (minutes <= 0)
             return $"{secs:00}с";
@@ -115,10 +114,5 @@ public sealed partial class FrozenHeatSourceFuelWindow : DefaultWindow
     private static string FormatSigned(float value)
     {
         return value >= 0f ? $"+{value:0.#}" : $"{value:0.#}";
-    }
-
-    private static string FormatPrototype(string? prototype)
-    {
-        return string.IsNullOrWhiteSpace(prototype) ? "—" : prototype;
     }
 }
