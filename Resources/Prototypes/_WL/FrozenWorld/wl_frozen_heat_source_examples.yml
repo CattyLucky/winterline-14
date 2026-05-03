@@ -6,6 +6,18 @@
   name: frozen campfire
   description: A reliable heat source for survival in the frozen wastes.
   components:
+  - type: Sprite
+    sprite: _WL/FrozenWorld/HeatSources/wl_campfire.rsi
+    layers:
+    - state: off
+      map: [ "fuel_state" ]
+  - type: Appearance
+  - type: GenericVisualizer
+    visuals:
+      enum.FrozenHeatSourceFuelVisuals.Burning:
+        fuel_state:
+          True: { state: on }
+          False: { state: off }
   - type: FrozenHeatSource
     enabled: false
     dynamic: false
@@ -48,6 +60,31 @@
   name: frozen heat generator
   description: A generator tuned to radiate strong local heat in extreme cold.
   components:
+  - type: Sprite
+    sprite: _WL/FrozenWorld/HeatSources/wl_generator_heater.rsi
+    snapCardinals: true
+    layers:
+    - state: off
+      map: [ "fuel_state" ]
+    - state: on_glow
+      map: [ "fuel_glow" ]
+      shader: unshaded
+      visible: false
+  - type: Appearance
+  - type: GenericVisualizer
+    visuals:
+      enum.FrozenHeatSourceFuelVisuals.Burning:
+        fuel_state:
+          True: { state: on }
+          False: { state: off }
+        fuel_glow:
+          True: { visible: true }
+          False: { visible: false }
+  - type: PointLight
+    radius: 3
+    energy: 2
+    color: "#FF8A3D"
+    castShadows: false
   - type: FrozenHeatSource
     enabled: false
     dynamic: false
@@ -90,6 +127,18 @@
   name: bonfire (WL fuel UI example)
   description: WL sample bonfire with FrozenWorld fuel control UI.
   components:
+  - type: Sprite
+    sprite: _WL/FrozenWorld/HeatSources/wl_bonfire.rsi
+    layers:
+    - state: off
+      map: [ "fuel_state" ]
+  - type: Appearance
+  - type: GenericVisualizer
+    visuals:
+      enum.FrozenHeatSourceFuelVisuals.Burning:
+        fuel_state:
+          True: { state: on }
+          False: { state: off }
   - type: FrozenHeatSource
     enabled: false
     dynamic: false
@@ -132,6 +181,29 @@
   name: fireplace (WL fuel UI example)
   description: WL sample fireplace with FrozenWorld fuel control UI.
   components:
+  - type: Sprite
+    sprite: _WL/FrozenWorld/HeatSources/wl_fireplace_heater.rsi
+    layers:
+    - state: off
+      map: [ "fuel_base" ]
+    - state: on
+      map: [ "fuel_fire" ]
+      shader: unshaded
+      visible: false
+    - state: on_glow
+      map: [ "fuel_glow" ]
+      shader: unshaded
+      visible: false
+  - type: Appearance
+  - type: GenericVisualizer
+    visuals:
+      enum.FrozenHeatSourceFuelVisuals.Burning:
+        fuel_fire:
+          True: { visible: true }
+          False: { visible: false }
+        fuel_glow:
+          True: { visible: true }
+          False: { visible: false }
   - type: FrozenHeatSource
     enabled: false
     dynamic: false

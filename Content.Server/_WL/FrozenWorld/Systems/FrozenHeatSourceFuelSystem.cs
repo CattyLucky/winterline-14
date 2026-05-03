@@ -2,11 +2,13 @@ using System;
 using System.Linq;
 using Content.Server._WL.FrozenWorld.Components;
 using Content.Server.Stack;
+using Content.Shared._WL.FrozenWorld;
 using Content.Shared._WL.FrozenWorld.Events;
 using Content.Shared.DoAfter;
 using Content.Shared.Interaction;
 using Content.Shared.Popups;
 using Content.Shared._WL.FrozenWorld.UI;
+using Content.Shared.Audio;
 using Content.Shared.Stacks;
 using Content.Shared.UserInterface;
 using Robust.Server.GameObjects;
@@ -30,8 +32,11 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
     [Dependency] private readonly FrozenDynamicHeatSourceSystem _dynamicHeat = default!;
     [Dependency] private readonly FrozenHeatFieldSystem _heatField = default!;
     [Dependency] private readonly FrozenHeatSourceFuelUiSystem _fuelUi = default!;
+    [Dependency] private readonly AppearanceSystem _appearance = default!;
     [Dependency] private readonly SharedContainerSystem _container = default!;
     [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
+    [Dependency] private readonly SharedAmbientSoundSystem _ambientSound = default!;
+    [Dependency] private readonly SharedPointLightSystem _pointLight = default!;
     [Dependency] private readonly SharedPopupSystem _popup = default!;
     [Dependency] private readonly StackSystem _stack = default!;
     [Dependency] private readonly UserInterfaceSystem _ui = default!;
@@ -105,7 +110,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
             }
         }
 
-        SetSourceEnabled(ent.Owner, source, IsBurning(ent.Comp));
+        SetSourceEnabled(ent.Owner, source, ent.Comp, IsBurning(ent.Comp));
         RefreshQueuedFuelStats(ent.Owner, ent.Comp);
         Dirty(ent.Owner, ent.Comp);
         _fuelUi.UpdateUiState(ent.Owner, ent.Comp, source);
@@ -127,7 +132,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
                 TryConsumeNextFuelUnit(uid, source, fuel);
             }
 
-            SetSourceEnabled(uid, source, IsBurning(fuel));
+            SetSourceEnabled(uid, source, fuel, IsBurning(fuel));
         }
 
         Dirty(uid, fuel);
@@ -285,7 +290,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         {
             if (fuel.RequiresIgnition)
             {
-                SetSourceEnabled(uid, source, false);
+                SetSourceEnabled(uid, source, fuel, false);
                 _fuelUi.UpdateUiState(uid, fuel, source);
                 return;
             }
@@ -305,7 +310,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
                 if (!fuel.AutoConsumeFuel || !TryConsumeNextFuelUnit(uid, source, fuel))
                 {
                     fuel.IsIgnited = false;
-                    SetSourceEnabled(uid, source, false);
+                    SetSourceEnabled(uid, source, fuel, false);
                     RefreshQueuedFuelStats(uid, fuel);
                     Dirty(uid, fuel);
                     _fuelUi.UpdateUiState(uid, fuel, source);
@@ -313,7 +318,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
                 }
             }
 
-            SetSourceEnabled(uid, source, true);
+            SetSourceEnabled(uid, source, fuel, true);
 
             var burnRate = GetEffectiveBurnRate(fuel.BurnRate, fuel.ActiveFuelBurnRateMultiplier);
             if (burnRate <= MinBurnRate)
@@ -335,7 +340,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
             ClearActiveFuel(uid, source, fuel);
         }
 
-        SetSourceEnabled(uid, source, IsBurning(fuel));
+        SetSourceEnabled(uid, source, fuel, IsBurning(fuel));
         Dirty(uid, fuel);
         _fuelUi.UpdateUiState(uid, fuel, source);
     }
@@ -387,7 +392,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
             if (!fuel.AutoConsumeFuel || !TryConsumeNextFuelUnit(uid, source, fuel))
             {
                 fuel.IsIgnited = false;
-                SetSourceEnabled(uid, source, false);
+                SetSourceEnabled(uid, source, fuel, false);
                 Dirty(uid, fuel);
                 _fuelUi.UpdateUiState(uid, fuel, source);
                 return false;
@@ -395,7 +400,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         }
 
         fuel.IsIgnited = true;
-        SetSourceEnabled(uid, source, IsBurning(fuel));
+        SetSourceEnabled(uid, source, fuel, IsBurning(fuel));
         Dirty(uid, fuel);
         _fuelUi.UpdateUiState(uid, fuel, source);
         return IsBurning(fuel);
@@ -413,7 +418,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
             return false;
 
         fuel.IsIgnited = false;
-        SetSourceEnabled(uid, source, false);
+        SetSourceEnabled(uid, source, fuel, false);
         Dirty(uid, fuel);
         _fuelUi.UpdateUiState(uid, fuel, source);
         return true;
@@ -581,6 +586,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
             source,
             fuel.ActiveFuelHeatBonusMultiplier,
             fuel.ActiveFuelTransferEfficiencyMultiplier);
+        UpdateBurningPresentation(uid, source, fuel);
     }
 
     private void ClearActiveFuel(EntityUid uid, FrozenHeatSourceComponent source, FrozenHeatSourceFuelComponent fuel)
@@ -643,17 +649,70 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         return MathF.Max(0f, baseBurnRate) * SanitizeMultiplier(fuelBurnRateMultiplier);
     }
 
-    private void SetSourceEnabled(EntityUid uid, FrozenHeatSourceComponent source, bool enabled)
+    private void SetSourceEnabled(
+        EntityUid uid,
+        FrozenHeatSourceComponent source,
+        FrozenHeatSourceFuelComponent fuel,
+        bool enabled)
     {
-        if (source.Enabled == enabled)
+        var changed = source.Enabled != enabled;
+        if (changed)
+        {
+            source.Enabled = enabled;
+            Dirty(uid, source);
+
+            if (source.Dynamic)
+                _dynamicHeat.InvalidateDynamicHeatIndex();
+            else
+                _heatField.InvalidateStaticHeatField();
+        }
+
+        UpdateBurningPresentation(uid, source, fuel);
+    }
+
+    private void UpdateBurningPresentation(
+        EntityUid uid,
+        FrozenHeatSourceComponent source,
+        FrozenHeatSourceFuelComponent fuel)
+    {
+        var burning = IsBurning(fuel);
+
+        if (TryComp<AppearanceComponent>(uid, out var appearance))
+            _appearance.SetData(uid, FrozenHeatSourceFuelVisuals.Burning, burning, appearance);
+
+        UpdatePointLight(uid, source, burning);
+        UpdateAmbientSound(uid, source, burning);
+    }
+
+    private void UpdatePointLight(EntityUid uid, FrozenHeatSourceComponent source, bool burning)
+    {
+        if (!TryComp<PointLightComponent>(uid, out var light))
             return;
 
-        source.Enabled = enabled;
-        Dirty(uid, source);
+        _pointLight.SetEnabled(uid, burning, light);
 
-        if (source.Dynamic)
-            _dynamicHeat.InvalidateDynamicHeatIndex();
-        else
-            _heatField.InvalidateStaticHeatField();
+        if (!burning)
+            return;
+
+        var radius = MathF.Max(0.1f, source.OuterRadius);
+        _pointLight.SetRadius(uid, radius, light);
+
+        var effectiveLocalHeat = MathF.Max(0f, source.EffectiveHeatBonus * source.EffectiveTransferEfficiency);
+        var energy = Math.Clamp(effectiveLocalHeat / 25f, 1f, 3f);
+        _pointLight.SetEnergy(uid, energy, light);
+    }
+
+    private void UpdateAmbientSound(EntityUid uid, FrozenHeatSourceComponent source, bool burning)
+    {
+        if (!TryComp<AmbientSoundComponent>(uid, out var ambient))
+            return;
+
+        _ambientSound.SetAmbience(uid, burning, ambient);
+
+        if (!burning)
+            return;
+
+        var range = MathF.Max(1f, source.OuterRadius);
+        _ambientSound.SetRange(uid, range, ambient);
     }
 }
