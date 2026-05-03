@@ -84,13 +84,18 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
             return;
         }
 
+        var oldStage = exposure.LastStage;
         var gainRate = exposure.ExposureGainRate * snapshot.ExposureGainMultiplier;
-        exposure.Exposure = MathF.Min(
-            exposure.MaxExposure,
-            exposure.Exposure + gainRate * snapshot.TotalColdSeverity * frameTime);
+        var maxExposure = MathF.Max(0f, exposure.MaxExposure);
+        exposure.Exposure = Math.Clamp(
+            exposure.Exposure + gainRate * snapshot.TotalColdSeverity * frameTime,
+            0f,
+            maxExposure);
 
         exposure.LastStage = GetColdStage(exposure);
         exposure.LastDamageAmount = 0f;
+        if (exposure.LastStage != oldStage)
+            exposure.DamageAccumulator = 0f;
 
         var (damageAmount, damageInterval) = GetStageDamage(exposure, exposure.LastStage);
         if (damageAmount > 0f && damageInterval > 0f)

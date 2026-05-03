@@ -43,6 +43,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
 
     private const float UpdateInterval = 1f;
     private const float MinBurnRate = 0.001f;
+    private const int MaxFuelUnitsConsumedPerUpdate = 16;
     private float _accumulator;
 
     public override void Initialize()
@@ -298,6 +299,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
 
         var remainingFrameTime = MathF.Max(0f, frameTime);
 
+        var consumedFuelUnits = 0;
         while (remainingFrameTime > 0f)
         {
             if (fuel.RemainingFuelSeconds <= 0f)
@@ -305,7 +307,15 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
                 fuel.RemainingFuelSeconds = 0f;
                 ClearActiveFuel(uid, source, fuel);
 
-                if (!fuel.AutoConsumeFuel || !TryConsumeNextFuelUnit(uid, source, fuel))
+                if (!fuel.AutoConsumeFuel || consumedFuelUnits >= MaxFuelUnitsConsumedPerUpdate)
+                {
+                    SetSourceEnabled(uid, source, fuel, false);
+                    RefreshQueuedFuelStats(uid, fuel);
+                    UpdateFuelUiIfOpen(uid, fuel, source);
+                    return;
+                }
+
+                if (!TryConsumeNextFuelUnit(uid, source, fuel))
                 {
                     fuel.IsIgnited = false;
                     SetSourceEnabled(uid, source, fuel, false);
@@ -313,6 +323,8 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
                     UpdateFuelUiIfOpen(uid, fuel, source);
                     return;
                 }
+
+                consumedFuelUnits++;
             }
 
             SetSourceEnabled(uid, source, fuel, true);
@@ -475,7 +487,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         var hasCandidate = false;
         var bestPriority = int.MinValue;
 
-        foreach (var contained in container.ContainedEntities.ToArray())
+        foreach (var contained in container.ContainedEntities)
         {
             if (!TryComp<FrozenFuelComponent>(contained, out var fuelItem))
                 continue;
@@ -618,7 +630,6 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
 
         source.CurrentFuelHeatBonusMultiplier = heatBonusMultiplier;
         source.CurrentFuelTransferEfficiencyMultiplier = transferEfficiencyMultiplier;
-        Dirty(uid, source);
 
         if (source.Dynamic)
             _dynamicHeat.InvalidateDynamicHeatIndex();
@@ -651,7 +662,6 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         if (changed)
         {
             source.Enabled = enabled;
-            Dirty(uid, source);
 
             if (source.Dynamic)
                 _dynamicHeat.InvalidateDynamicHeatIndex();

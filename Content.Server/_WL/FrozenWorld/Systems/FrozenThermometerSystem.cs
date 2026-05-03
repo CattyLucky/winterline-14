@@ -54,7 +54,6 @@ public sealed partial class FrozenThermometerSystem : EntitySystem
             {
                 thermometer.ActiveUser = null;
                 thermometer.UiUpdateAccumulator = 0f;
-                Dirty(uid, thermometer);
                 continue;
             }
 
@@ -86,7 +85,6 @@ public sealed partial class FrozenThermometerSystem : EntitySystem
 
         ent.Comp.ActiveUser = null;
         ent.Comp.UiUpdateAccumulator = 0f;
-        Dirty(ent.Owner, ent.Comp);
     }
 
     public void UpdateUiState(EntityUid thermometer, EntityUid user, FrozenThermometerComponent? component = null)
@@ -105,7 +103,6 @@ public sealed partial class FrozenThermometerSystem : EntitySystem
     {
         thermometer.ActiveUser = user;
         thermometer.UiUpdateAccumulator = 0f;
-        Dirty(thermometerUid, thermometer);
     }
 
     private FrozenThermometerBoundUserInterfaceState BuildState(EntityUid user)

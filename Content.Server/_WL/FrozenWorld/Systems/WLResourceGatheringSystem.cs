@@ -35,6 +35,12 @@ public sealed partial class WLResourceGatheringSystem : EntitySystem
             return;
         }
 
+        if (ent.Comp.ActiveGatherer is { } activeGatherer && Exists(activeGatherer))
+        {
+            _popup.PopupEntity(Loc.GetString("wl-resource-point-busy"), ent.Owner, args.User);
+            return;
+        }
+
         args.Handled = true;
 
         var doAfterArgs = new DoAfterArgs(
@@ -50,15 +56,32 @@ public sealed partial class WLResourceGatheringSystem : EntitySystem
             NeedHand = true,
         };
 
-        _doAfter.TryStartDoAfter(doAfterArgs);
+        if (_doAfter.TryStartDoAfter(doAfterArgs))
+            ent.Comp.ActiveGatherer = args.User;
     }
 
     private void OnDoAfter(Entity<WLResourcePointComponent> ent, ref WLResourceGatherDoAfterEvent args)
     {
-        if (args.Handled || args.Cancelled)
+        if (args.Handled)
             return;
 
         args.Handled = true;
+
+        if (ent.Comp.ActiveGatherer is { } activeGatherer && args.User != activeGatherer)
+            return;
+
+        ent.Comp.ActiveGatherer = null;
+
+        if (args.Cancelled)
+            return;
+
+        if (ent.Comp.Charges <= 0)
+        {
+            if (args.User is { } depletedUser)
+                _popup.PopupEntity(Loc.GetString("wl-resource-point-depleted"), ent.Owner, depletedUser);
+
+            return;
+        }
 
         ent.Comp.Charges--;
 

@@ -1,3 +1,4 @@
+using Content.Shared._WL.FrozenWorld;
 using Robust.Client.Graphics;
 using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controls;
@@ -91,16 +92,16 @@ internal static class FrozenWorldUiTheme
         };
     }
 
-    public static Color StageColor(string stage)
+    public static Color StageColor(FrozenColdStage stage)
     {
         return stage switch
         {
-            "None" => Success,
-            "Chilled" => ColdAccent,
-            "Freezing" => Warning,
-            "Hypothermia" => HeatAccent,
-            "SevereHypothermia" => Danger,
-            "Critical" => Critical,
+            FrozenColdStage.None => Success,
+            FrozenColdStage.Chilled => ColdAccent,
+            FrozenColdStage.Freezing => Warning,
+            FrozenColdStage.Hypothermia => HeatAccent,
+            FrozenColdStage.SevereHypothermia => Danger,
+            FrozenColdStage.Critical => Critical,
             _ => TextSecondary,
         };
     }

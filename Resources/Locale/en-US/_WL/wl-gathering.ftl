@@ -2,3 +2,4 @@
 
 wl-resource-point-depleted = There is nothing left here.
 wl-resource-point-gathered = You gather what you can.
+wl-resource-point-busy = Someone is already gathering here.

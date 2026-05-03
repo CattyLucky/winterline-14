@@ -54,7 +54,7 @@ public sealed partial class FrozenThermometerWindow : DefaultWindow
             $"ТЕМПЕРАТУРА СРЕДЫ: {FormatSigned(state.EnvironmentalTemperatureCelsius)}°C";
 
         var stageText = FormatStage(state.Stage);
-        var stageColor = FrozenWorldUiTheme.StageColor(state.Stage.ToString());
+        var stageColor = FrozenWorldUiTheme.StageColor(state.Stage);
 
         StageLabel.Text = $"Стадия: {stageText}";
         StageLabel.FontColorOverride = stageColor;
