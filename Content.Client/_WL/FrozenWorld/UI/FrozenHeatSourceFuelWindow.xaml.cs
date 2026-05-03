@@ -13,12 +13,14 @@ namespace Content.Client._WL.FrozenWorld.UI;
 public sealed partial class FrozenHeatSourceFuelWindow : DefaultWindow
 {
     public event Action? OpenStoragePressed;
+    public event Action? ToggleIgnitionPressed;
 
     public FrozenHeatSourceFuelWindow()
     {
         RobustXamlLoader.Load(this);
 
         OpenFuelStorageButton.OnPressed += _ => OpenStoragePressed?.Invoke();
+        ToggleIgnitionButton.OnPressed += _ => ToggleIgnitionPressed?.Invoke();
 
         StatusPanel.PanelOverride = FrozenWorldUiTheme.Panel(
             FrozenWorldUiTheme.SurfacePanelAlt,
@@ -47,11 +49,16 @@ public sealed partial class FrozenHeatSourceFuelWindow : DefaultWindow
 
     public void SetState(FrozenHeatSourceFuelBoundUserInterfaceState state)
     {
-        var status = state.Enabled ? "горит" : "потух";
+        var status = GetStatusText(state);
         var statusColor = state.Enabled ? FrozenWorldUiTheme.Success : FrozenWorldUiTheme.TextMuted;
 
         StatusLabel.Text = $"Состояние: {status}";
         StatusLabel.FontColorOverride = statusColor;
+
+        ToggleIgnitionButton.Text = GetToggleIgnitionButtonText(state);
+        ToggleIgnitionButton.Disabled = state.IsIgnited
+            ? !state.CanExtinguish
+            : !state.CanIgnite;
 
         HeatLabel.Text = $"ТЕПЛО: {FormatSigned(state.EffectiveLocalHeatBonus)}°C";
         HeatLabel.FontColorOverride = state.Enabled
@@ -60,7 +67,9 @@ public sealed partial class FrozenHeatSourceFuelWindow : DefaultWindow
 
         RemainingLabel.Text = state.Enabled
             ? $"Горение: {FormatTime(state.RemainingFuelRealSeconds)} осталось"
-            : "Горение: нет активного топлива";
+            : state.HasActiveFuel
+                ? "Горение: остановлено"
+                : "Горение: нет активного топлива";
 
         var totalFuelRealSeconds = MathF.Max(0f, state.RemainingFuelRealSeconds + state.QueuedFuelRealSeconds);
         TotalFuelLabel.Text = totalFuelRealSeconds > 0f
@@ -91,6 +100,28 @@ public sealed partial class FrozenHeatSourceFuelWindow : DefaultWindow
         RemainingLabel.FontColorOverride = FrozenWorldUiTheme.TextPrimary;
         TotalFuelLabel.FontColorOverride = FrozenWorldUiTheme.TextSecondary;
         QueueLabel.FontColorOverride = FrozenWorldUiTheme.TextMuted;
+    }
+
+    private static string GetToggleIgnitionButtonText(FrozenHeatSourceFuelBoundUserInterfaceState state)
+    {
+        if (state.IsIgnited)
+            return "Потушить";
+
+        if ((state.HasActiveFuel || state.HasQueuedFuel) && !state.CanIgnite)
+            return "Нужен розжиг";
+
+        return "Разжечь";
+    }
+
+    private static string GetStatusText(FrozenHeatSourceFuelBoundUserInterfaceState state)
+    {
+        if (state.Enabled)
+            return "горит";
+
+        if (state.HasActiveFuel || state.HasQueuedFuel)
+            return state.IsIgnited ? "запускается" : "не горит";
+
+        return "нет топлива";
     }
 
     private static string FormatTime(float seconds)

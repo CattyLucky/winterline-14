@@ -10,6 +10,11 @@
         <PanelContainer Name="StatusPanel" HorizontalExpand="True">
             <BoxContainer Orientation="Horizontal" HorizontalExpand="True">
                 <Label Name="StatusLabel" Text="Состояние: нет данных" HorizontalExpand="True" />
+                <Button Name="ToggleIgnitionButton"
+                        Text="Разжечь"
+                        MinWidth="105"
+                        HorizontalAlignment="Right" />
+                <Control MinSize="6 1" />
                 <Button Name="OpenFuelStorageButton"
                         Text="Топливный отсек"
                         MinWidth="145"

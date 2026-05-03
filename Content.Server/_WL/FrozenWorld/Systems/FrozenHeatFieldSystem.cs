@@ -48,7 +48,7 @@ public sealed partial class FrozenHeatFieldSystem : EntitySystem
 
         var cell = WorldToHeatCell(worldPos);
         return cells.TryGetValue(cell, out var data)
-            ? MathF.Max(0f, data.HeatBonus)
+            ? FrozenThermalMath.GetStackedHeatBonus(data.RawHeatSum, data.MaxSingleHeat)
             : 0f;
     }
 
@@ -96,7 +96,7 @@ public sealed partial class FrozenHeatFieldSystem : EntitySystem
                 continue;
 
             _staticSources[uid] = snapshot;
-            AddSourceContribution(snapshot);
+            AddSourceContribution(uid, snapshot);
         }
     }
 
@@ -117,11 +117,11 @@ public sealed partial class FrozenHeatFieldSystem : EntitySystem
                 if (SnapshotsClose(oldSnapshot, snapshot))
                     continue;
 
-                RemoveSourceContribution(oldSnapshot);
+                RemoveSourceContribution(uid, oldSnapshot);
             }
 
             _staticSources[uid] = snapshot;
-            AddSourceContribution(snapshot);
+            AddSourceContribution(uid, snapshot);
         }
 
         if (_staticSources.Count == seen.Count)
@@ -140,7 +140,7 @@ public sealed partial class FrozenHeatFieldSystem : EntitySystem
             if (!_staticSources.Remove(uid, out var snapshot))
                 continue;
 
-            RemoveSourceContribution(snapshot);
+            RemoveSourceContribution(uid, snapshot);
         }
     }
 
@@ -171,21 +171,21 @@ public sealed partial class FrozenHeatFieldSystem : EntitySystem
         return true;
     }
 
-    private void AddSourceContribution(FrozenStaticHeatSourceSnapshot snapshot)
+    private void AddSourceContribution(EntityUid uid, FrozenStaticHeatSourceSnapshot snapshot)
     {
-        RasterizeSource(snapshot, 1f);
+        RasterizeSource(uid, snapshot, true);
     }
 
-    private void RemoveSourceContribution(FrozenStaticHeatSourceSnapshot snapshot)
+    private void RemoveSourceContribution(EntityUid uid, FrozenStaticHeatSourceSnapshot snapshot)
     {
-        RasterizeSource(snapshot, -1f);
+        RasterizeSource(uid, snapshot, false);
     }
 
-    private void RasterizeSource(FrozenStaticHeatSourceSnapshot snapshot, float sign)
+    private void RasterizeSource(EntityUid uid, FrozenStaticHeatSourceSnapshot snapshot, bool add)
     {
         if (!_staticHeatByMap.TryGetValue(snapshot.MapUid, out var mapCells))
         {
-            if (sign < 0f)
+            if (!add)
                 return;
 
             mapCells = new Dictionary<Vector2i, FrozenHeatCell>();
@@ -193,26 +193,28 @@ public sealed partial class FrozenHeatFieldSystem : EntitySystem
         }
 
         RasterizeSource(
+            uid,
             mapCells,
             snapshot.Position,
             snapshot.InnerRadius,
             snapshot.OuterRadius,
             snapshot.HeatBonus,
             snapshot.TransferEfficiency,
-            sign);
+            add);
 
         if (mapCells.Count == 0)
             _staticHeatByMap.Remove(snapshot.MapUid);
     }
 
     private static void RasterizeSource(
+        EntityUid sourceUid,
         Dictionary<Vector2i, FrozenHeatCell> cells,
         Vector2 sourcePosition,
         float innerRadius,
         float outerRadius,
         float heatBonus,
         float transferEfficiency,
-        float sign)
+        bool add)
     {
         var minX = (int)MathF.Floor(sourcePosition.X - outerRadius);
         var maxX = (int)MathF.Floor(sourcePosition.X + outerRadius);
@@ -236,22 +238,25 @@ public sealed partial class FrozenHeatFieldSystem : EntitySystem
                 if (strength <= 0f)
                     continue;
 
-                var contribution = heatBonus * transferEfficiency * strength * sign;
+                var contribution = heatBonus * transferEfficiency * strength;
                 if (MathHelper.CloseTo(contribution, 0f))
                     continue;
 
                 if (!cells.TryGetValue(cell, out var data))
                 {
-                    if (sign < 0f)
+                    if (!add)
                         continue;
 
                     data = new FrozenHeatCell();
                     cells[cell] = data;
                 }
 
-                data.HeatBonus += contribution;
+                if (add)
+                    data.SetContribution(sourceUid, contribution);
+                else
+                    data.RemoveContribution(sourceUid);
 
-                if (data.HeatBonus <= 0.001f)
+                if (data.IsEmpty)
                     cells.Remove(cell);
             }
         }
@@ -277,7 +282,109 @@ public sealed partial class FrozenHeatFieldSystem : EntitySystem
 
     private sealed class FrozenHeatCell
     {
-        public float HeatBonus;
+        private bool _hasSingleContribution;
+        private EntityUid _singleContributionUid;
+        private float _singleContribution;
+        private Dictionary<EntityUid, float>? _contributions;
+
+        public float RawHeatSum { get; private set; }
+        public float MaxSingleHeat { get; private set; }
+        public bool IsEmpty => RawHeatSum <= 0.001f;
+
+        public void SetContribution(EntityUid uid, float contribution)
+        {
+            contribution = MathF.Max(0f, contribution);
+
+            if (_contributions != null)
+            {
+                if (_contributions.TryGetValue(uid, out var oldContribution))
+                    RawHeatSum -= oldContribution;
+
+                _contributions[uid] = contribution;
+                RawHeatSum += contribution;
+                RecalculateFromDictionary();
+                return;
+            }
+
+            if (!_hasSingleContribution)
+            {
+                _hasSingleContribution = true;
+                _singleContributionUid = uid;
+                _singleContribution = contribution;
+                RawHeatSum = contribution;
+                MaxSingleHeat = contribution;
+                return;
+            }
+
+            if (_singleContributionUid == uid)
+            {
+                _singleContribution = contribution;
+                RawHeatSum = contribution;
+                MaxSingleHeat = contribution;
+                return;
+            }
+
+            _contributions = new Dictionary<EntityUid, float>
+            {
+                [_singleContributionUid] = _singleContribution,
+                [uid] = contribution
+            };
+
+            _hasSingleContribution = false;
+            _singleContribution = 0f;
+            RecalculateFromDictionary();
+        }
+
+        public void RemoveContribution(EntityUid uid)
+        {
+            if (_contributions != null)
+            {
+                if (!_contributions.Remove(uid))
+                    return;
+
+                if (_contributions.Count == 1)
+                {
+                    foreach (var pair in _contributions)
+                    {
+                        _hasSingleContribution = true;
+                        _singleContributionUid = pair.Key;
+                        _singleContribution = pair.Value;
+                        RawHeatSum = pair.Value;
+                        MaxSingleHeat = pair.Value;
+                        break;
+                    }
+
+                    _contributions = null;
+                    return;
+                }
+
+                RecalculateFromDictionary();
+                return;
+            }
+
+            if (!_hasSingleContribution || _singleContributionUid != uid)
+                return;
+
+            _hasSingleContribution = false;
+            _singleContribution = 0f;
+            RawHeatSum = 0f;
+            MaxSingleHeat = 0f;
+        }
+
+        private void RecalculateFromDictionary()
+        {
+            RawHeatSum = 0f;
+            MaxSingleHeat = 0f;
+
+            if (_contributions == null)
+                return;
+
+            foreach (var contribution in _contributions.Values)
+            {
+                RawHeatSum += contribution;
+                MaxSingleHeat = MathF.Max(MaxSingleHeat, contribution);
+            }
+        }
     }
 
     private readonly record struct FrozenStaticHeatSourceSnapshot(

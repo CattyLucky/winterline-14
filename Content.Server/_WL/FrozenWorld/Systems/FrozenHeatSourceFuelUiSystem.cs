@@ -148,6 +148,7 @@ public sealed partial class FrozenHeatSourceFuelUiSystem : EntitySystem
         var outerRadius = source?.OuterRadius ?? 0f;
         var hasActiveFuel = fuel.RemainingFuelSeconds > 0f;
         var hasQueuedFuel = fuel.LastFuelStackUnits > 0;
+        var canIgnite = fuel.AllowUiIgnition && !fuel.IsIgnited && (hasActiveFuel || hasQueuedFuel);
         var effectiveBurnRate = MathF.Max(0f, fuel.BurnRate) * MathF.Max(0f, fuel.ActiveFuelBurnRateMultiplier);
         var remainingFuelRealSeconds = effectiveBurnRate > 0.001f
             ? fuel.RemainingFuelSeconds / effectiveBurnRate
@@ -159,6 +160,10 @@ public sealed partial class FrozenHeatSourceFuelUiSystem : EntitySystem
 
         return new FrozenHeatSourceFuelBoundUserInterfaceState(
             enabled,
+            fuel.IsIgnited,
+            fuel.RequiresIgnition,
+            fuel.CanExtinguish,
+            canIgnite,
             hasActiveFuel,
             hasQueuedFuel,
             fuel.RemainingFuelSeconds,

@@ -1,0 +1,39 @@
+# /// WL Change
+# FrozenWorld ignition items for manual heat-source lighting.
+
+- type: entity
+  id: WLIgnitionLighter
+  parent: CheapLighter
+  name: survival lighter
+  description: A simple lighter adapted for FrozenWorld campfire ignition.
+  components:
+  - type: FrozenIgnitionSource
+    igniteSpeedMultiplier: 1
+    requiresLit: true
+    consumeOnUse: false
+
+- type: entity
+  id: WLIgnitionMatchstick
+  parent: Matchstick
+  name: survival match
+  description: A dry match for fast one-time ignition in extreme cold.
+  components:
+  - type: FrozenIgnitionSource
+    igniteSpeedMultiplier: 1.2
+    requiresLit: true
+    consumeOnUse: true
+
+- type: entity
+  id: WLFirestarterStone
+  parent: OreBase
+  name: firestarter stone
+  description: A brittle spark stone used to start a fire once.
+  components:
+  - type: Sprite
+    state: coal
+  - type: Item
+    size: Small
+  - type: FrozenIgnitionSource
+    igniteSpeedMultiplier: 1.2
+    requiresLit: false
+    consumeOnUse: true

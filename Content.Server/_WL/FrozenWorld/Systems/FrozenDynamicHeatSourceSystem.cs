@@ -39,7 +39,8 @@ public sealed partial class FrozenDynamicHeatSourceSystem : EntitySystem
 
         var centerChunk = WorldToChunk(worldPos);
         var chunkRange = Math.Max(1, (int)MathF.Ceiling(mapIndex.MaxOuterRadius / ChunkSize) + 1);
-        var heatBonus = 0f;
+        var rawHeatSum = 0f;
+        var maxSingleHeat = 0f;
 
         for (var x = centerChunk.X - chunkRange; x <= centerChunk.X + chunkRange; x++)
         {
@@ -64,12 +65,17 @@ public sealed partial class FrozenDynamicHeatSourceSystem : EntitySystem
                     if (strength <= 0f)
                         continue;
 
-                    heatBonus += source.HeatBonus * source.TransferEfficiency * strength;
+                    var contribution = source.HeatBonus * source.TransferEfficiency * strength;
+                    if (contribution <= 0f)
+                        continue;
+
+                    rawHeatSum += contribution;
+                    maxSingleHeat = MathF.Max(maxSingleHeat, contribution);
                 }
             }
         }
 
-        return heatBonus;
+        return FrozenThermalMath.GetStackedHeatBonus(rawHeatSum, maxSingleHeat);
     }
 
     public void InvalidateDynamicHeatIndex()

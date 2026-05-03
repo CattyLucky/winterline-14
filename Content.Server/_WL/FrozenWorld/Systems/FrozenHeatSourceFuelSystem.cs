@@ -2,8 +2,16 @@ using System;
 using System.Linq;
 using Content.Server._WL.FrozenWorld.Components;
 using Content.Server.Stack;
+using Content.Shared._WL.FrozenWorld.Events;
+using Content.Shared.DoAfter;
+using Content.Shared.Interaction;
+using Content.Shared.Popups;
+using Content.Shared._WL.FrozenWorld.UI;
 using Content.Shared.Stacks;
+using Content.Shared.UserInterface;
+using Robust.Server.GameObjects;
 using Robust.Shared.Containers;
+using Robust.Shared.GameObjects;
 using Robust.Shared.Maths;
 
 namespace Content.Server._WL.FrozenWorld.Systems;
@@ -23,7 +31,10 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
     [Dependency] private readonly FrozenHeatFieldSystem _heatField = default!;
     [Dependency] private readonly FrozenHeatSourceFuelUiSystem _fuelUi = default!;
     [Dependency] private readonly SharedContainerSystem _container = default!;
+    [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
+    [Dependency] private readonly SharedPopupSystem _popup = default!;
     [Dependency] private readonly StackSystem _stack = default!;
+    [Dependency] private readonly UserInterfaceSystem _ui = default!;
 
     private const float UpdateInterval = 1f;
     private const float MinBurnRate = 0.001f;
@@ -36,6 +47,13 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         SubscribeLocalEvent<FrozenHeatSourceFuelComponent, MapInitEvent>(OnFuelSourceMapInit);
         SubscribeLocalEvent<FrozenHeatSourceFuelComponent, EntInsertedIntoContainerMessage>(OnFuelContainerModified);
         SubscribeLocalEvent<FrozenHeatSourceFuelComponent, EntRemovedFromContainerMessage>(OnFuelContainerModified);
+        SubscribeLocalEvent<FrozenHeatSourceFuelComponent, InteractUsingEvent>(OnInteractUsing);
+        SubscribeLocalEvent<FrozenHeatSourceFuelComponent, FrozenHeatSourceIgniteDoAfterEvent>(OnIgniteDoAfter);
+
+        Subs.BuiEvents<FrozenHeatSourceFuelComponent>(FrozenWorldUiKey.HeatSourceFuel, subs =>
+        {
+            subs.Event<FrozenHeatSourceFuelToggleIgnitionMessage>(OnToggleIgnitionMessage);
+        });
     }
 
     public override void Update(float frameTime)
@@ -70,16 +88,24 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         if (!TryComp<FrozenHeatSourceComponent>(ent.Owner, out var source))
             return;
 
-        if (ent.Comp.RemainingFuelSeconds <= 0f)
+        if (ent.Comp.RemainingFuelSeconds > 0f)
+        {
+            // Preserve already-active fuel across map load/reload.
+            ent.Comp.IsIgnited = true;
+        }
+        else
         {
             ent.Comp.RemainingFuelSeconds = 0f;
             ClearActiveFuel(ent.Owner, source, ent.Comp);
 
-            if (ent.Comp.AutoConsumeFuel)
+            if (!ent.Comp.RequiresIgnition && ent.Comp.AutoConsumeFuel)
+            {
+                ent.Comp.IsIgnited = true;
                 TryConsumeNextFuelUnit(ent.Owner, source, ent.Comp);
+            }
         }
 
-        SetSourceEnabled(ent.Owner, source, ent.Comp.RemainingFuelSeconds > 0f);
+        SetSourceEnabled(ent.Owner, source, IsBurning(ent.Comp));
         RefreshQueuedFuelStats(ent.Owner, ent.Comp);
         Dirty(ent.Owner, ent.Comp);
         _fuelUi.UpdateUiState(ent.Owner, ent.Comp, source);
@@ -92,12 +118,159 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
 
         RefreshQueuedFuelStats(uid, fuel);
 
-        // Queued fuel in Storage is not active heat. The source heats only while a unit is actually burning.
+        // Queued fuel in Storage is not active heat. The source heats only while it is ignited and has active fuel.
         if (TryComp<FrozenHeatSourceComponent>(uid, out var source))
-            SetSourceEnabled(uid, source, fuel.RemainingFuelSeconds > 0f);
+        {
+            if (!fuel.RequiresIgnition && fuel.AutoConsumeFuel && fuel.RemainingFuelSeconds <= 0f)
+            {
+                fuel.IsIgnited = true;
+                TryConsumeNextFuelUnit(uid, source, fuel);
+            }
+
+            SetSourceEnabled(uid, source, IsBurning(fuel));
+        }
 
         Dirty(uid, fuel);
         _fuelUi.UpdateUiState(uid, fuel, source);
+    }
+
+    private void OnInteractUsing(EntityUid uid, FrozenHeatSourceFuelComponent fuel, InteractUsingEvent args)
+    {
+        if (args.Handled)
+            return;
+
+        if (!fuel.RequiresIgnition || !fuel.CanIgniteWithItem)
+            return;
+
+        if (!TryComp<FrozenIgnitionSourceComponent>(args.Used, out var ignition))
+            return;
+
+        args.Handled = true;
+
+        if (!IsIgnitionSourceUsable(args.Used, ignition))
+        {
+            _popup.PopupEntity("Сначала зажгите предмет розжига.", uid, args.User);
+            return;
+        }
+
+        if (!TryComp<FrozenHeatSourceComponent>(uid, out var source))
+            return;
+
+        if (fuel.IsIgnited)
+        {
+            _popup.PopupEntity("Уже горит.", uid, args.User);
+            return;
+        }
+
+        EnsureFuelContainer(uid, fuel);
+        RefreshQueuedFuelStats(uid, fuel);
+
+        if (!HasAvailableFuel(fuel))
+        {
+            _popup.PopupEntity("Сначала добавьте топливо.", uid, args.User);
+            _fuelUi.UpdateUiState(uid, fuel, source);
+            return;
+        }
+
+        var speedMultiplier = MathF.Max(0.05f, ignition.IgniteSpeedMultiplier);
+        var delay = MathF.Max(0.1f, fuel.IgniteDelay / speedMultiplier);
+
+        var doAfterArgs = new DoAfterArgs(
+            EntityManager,
+            args.User,
+            delay,
+            new FrozenHeatSourceIgniteDoAfterEvent(),
+            uid,
+            target: uid,
+            used: args.Used)
+        {
+            BreakOnMove = true,
+            BreakOnDamage = true,
+            NeedHand = true,
+        };
+
+        if (!_doAfter.TryStartDoAfter(doAfterArgs))
+            return;
+
+        _popup.PopupEntity("Вы начинаете разжигать источник тепла...", uid, args.User);
+    }
+
+    private void OnIgniteDoAfter(EntityUid uid, FrozenHeatSourceFuelComponent fuel, FrozenHeatSourceIgniteDoAfterEvent args)
+    {
+        if (args.Handled || args.Cancelled)
+            return;
+
+        args.Handled = true;
+
+        if (args.User is not { Valid: true } user)
+            return;
+
+        if (!TryComp<FrozenHeatSourceComponent>(uid, out var source))
+            return;
+
+        if (fuel.IsIgnited)
+        {
+            _popup.PopupEntity("Уже горит.", uid, user);
+            return;
+        }
+
+        EnsureFuelContainer(uid, fuel);
+        RefreshQueuedFuelStats(uid, fuel);
+
+        if (!HasAvailableFuel(fuel))
+        {
+            _popup.PopupEntity("Сначала добавьте топливо.", uid, user);
+            _fuelUi.UpdateUiState(uid, fuel, source);
+            return;
+        }
+
+        if (args.Used is not { Valid: true } used || !TryComp<FrozenIgnitionSourceComponent>(used, out var ignition))
+        {
+            _popup.PopupEntity("Нечем разжечь.", uid, user);
+            return;
+        }
+
+        if (!IsIgnitionSourceUsable(used, ignition))
+        {
+            _popup.PopupEntity("Предмет розжига больше не горит.", uid, user);
+            return;
+        }
+
+        if (!TryIgnite(uid, fuel, source))
+        {
+            _popup.PopupEntity("Не удалось разжечь.", uid, user);
+            return;
+        }
+
+        ConsumeIgnitionSource(used, ignition);
+        _popup.PopupEntity("Источник тепла разгорелся.", uid, user);
+    }
+
+    private void OnToggleIgnitionMessage(EntityUid uid, FrozenHeatSourceFuelComponent fuel, FrozenHeatSourceFuelToggleIgnitionMessage args)
+    {
+        if (args.Actor is not { Valid: true } actor)
+            return;
+
+        if (!_ui.IsUiOpen(uid, FrozenWorldUiKey.HeatSourceFuel, actor))
+            return;
+
+        if (!TryComp<FrozenHeatSourceComponent>(uid, out var source))
+            return;
+
+        if (fuel.IsIgnited)
+        {
+            TryExtinguish(uid, fuel, source);
+            return;
+        }
+
+        if (!fuel.AllowUiIgnition)
+        {
+            _popup.PopupEntity("Нужен предмет для розжига.", uid, actor);
+            _fuelUi.UpdateUiState(uid, fuel, source);
+            return;
+        }
+
+        TryIgnite(uid, fuel, source);
     }
 
     private void UpdateFuelSource(
@@ -107,6 +280,18 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         float frameTime)
     {
         EnsureFuelContainer(uid, fuel);
+
+        if (!fuel.IsIgnited)
+        {
+            if (fuel.RequiresIgnition)
+            {
+                SetSourceEnabled(uid, source, false);
+                _fuelUi.UpdateUiState(uid, fuel, source);
+                return;
+            }
+
+            fuel.IsIgnited = true;
+        }
 
         var remainingFrameTime = MathF.Max(0f, frameTime);
 
@@ -119,6 +304,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
 
                 if (!fuel.AutoConsumeFuel || !TryConsumeNextFuelUnit(uid, source, fuel))
                 {
+                    fuel.IsIgnited = false;
                     SetSourceEnabled(uid, source, false);
                     RefreshQueuedFuelStats(uid, fuel);
                     Dirty(uid, fuel);
@@ -149,9 +335,88 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
             ClearActiveFuel(uid, source, fuel);
         }
 
-        SetSourceEnabled(uid, source, fuel.RemainingFuelSeconds > 0f);
+        SetSourceEnabled(uid, source, IsBurning(fuel));
         Dirty(uid, fuel);
         _fuelUi.UpdateUiState(uid, fuel, source);
+    }
+
+    private static bool HasAvailableFuel(FrozenHeatSourceFuelComponent fuel)
+    {
+        return fuel.RemainingFuelSeconds > 0f || fuel.LastFuelStackUnits > 0;
+    }
+
+    private bool IsIgnitionSourceUsable(EntityUid used, FrozenIgnitionSourceComponent ignition)
+    {
+        if (!ignition.RequiresLit)
+            return true;
+
+        return TryComp<PointLightComponent>(used, out var light) && light.Enabled;
+    }
+
+    private void ConsumeIgnitionSource(EntityUid used, FrozenIgnitionSourceComponent ignition)
+    {
+        if (!ignition.ConsumeOnUse || !Exists(used))
+            return;
+
+        if (TryComp<StackComponent>(used, out var stack))
+        {
+            if (!stack.Unlimited && stack.Count > 0)
+                _stack.TryUse((used, stack), 1);
+
+            return;
+        }
+
+        QueueDel(used);
+    }
+
+    public bool TryIgnite(
+        EntityUid uid,
+        FrozenHeatSourceFuelComponent? fuel = null,
+        FrozenHeatSourceComponent? source = null)
+    {
+        if (!Resolve(uid, ref fuel, false) || !Resolve(uid, ref source, false))
+            return false;
+
+        EnsureFuelContainer(uid, fuel);
+        RefreshQueuedFuelStats(uid, fuel);
+
+        if (fuel.RemainingFuelSeconds <= 0f)
+        {
+            ClearActiveFuel(uid, source, fuel);
+
+            if (!fuel.AutoConsumeFuel || !TryConsumeNextFuelUnit(uid, source, fuel))
+            {
+                fuel.IsIgnited = false;
+                SetSourceEnabled(uid, source, false);
+                Dirty(uid, fuel);
+                _fuelUi.UpdateUiState(uid, fuel, source);
+                return false;
+            }
+        }
+
+        fuel.IsIgnited = true;
+        SetSourceEnabled(uid, source, IsBurning(fuel));
+        Dirty(uid, fuel);
+        _fuelUi.UpdateUiState(uid, fuel, source);
+        return IsBurning(fuel);
+    }
+
+    public bool TryExtinguish(
+        EntityUid uid,
+        FrozenHeatSourceFuelComponent? fuel = null,
+        FrozenHeatSourceComponent? source = null)
+    {
+        if (!Resolve(uid, ref fuel, false) || !Resolve(uid, ref source, false))
+            return false;
+
+        if (!fuel.CanExtinguish)
+            return false;
+
+        fuel.IsIgnited = false;
+        SetSourceEnabled(uid, source, false);
+        Dirty(uid, fuel);
+        _fuelUi.UpdateUiState(uid, fuel, source);
+        return true;
     }
 
     private bool TryConsumeNextFuelUnit(
@@ -361,6 +626,11 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
             _dynamicHeat.InvalidateDynamicHeatIndex();
         else
             _heatField.InvalidateStaticHeatField();
+    }
+
+    private static bool IsBurning(FrozenHeatSourceFuelComponent fuel)
+    {
+        return fuel.IsIgnited && fuel.RemainingFuelSeconds > 0f;
     }
 
     private static float SanitizeMultiplier(float value)

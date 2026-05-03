@@ -20,6 +20,7 @@ public sealed class FrozenHeatSourceFuelBoundUserInterface : BoundUserInterface
 
         _window = this.CreateWindow<FrozenHeatSourceFuelWindow>();
         _window.OpenStoragePressed += OnOpenStoragePressed;
+        _window.ToggleIgnitionPressed += OnToggleIgnitionPressed;
 
         if (_lastState != null)
             _window.SetState(_lastState);
@@ -28,7 +29,10 @@ public sealed class FrozenHeatSourceFuelBoundUserInterface : BoundUserInterface
     protected override void Dispose(bool disposing)
     {
         if (disposing && _window != null)
+        {
             _window.OpenStoragePressed -= OnOpenStoragePressed;
+            _window.ToggleIgnitionPressed -= OnToggleIgnitionPressed;
+        }
 
         base.Dispose(disposing);
     }
@@ -47,5 +51,10 @@ public sealed class FrozenHeatSourceFuelBoundUserInterface : BoundUserInterface
     private void OnOpenStoragePressed()
     {
         SendMessage(new FrozenHeatSourceFuelOpenStorageMessage());
+    }
+
+    private void OnToggleIgnitionPressed()
+    {
+        SendMessage(new FrozenHeatSourceFuelToggleIgnitionMessage());
     }
 }

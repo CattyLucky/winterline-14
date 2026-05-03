@@ -36,6 +36,9 @@
         ents: [ ]
   - type: FrozenHeatSourceFuel
     fuelContainerId: storagebase
+    requiresIgnition: true
+    canIgniteWithItem: true
+    allowUiIgnition: false
     burnRate: 1
     autoConsumeFuel: true
 
@@ -75,6 +78,9 @@
         ents: [ ]
   - type: FrozenHeatSourceFuel
     fuelContainerId: storagebase
+    requiresIgnition: true
+    canIgniteWithItem: true
+    allowUiIgnition: true
     burnRate: 1
     autoConsumeFuel: true
 
@@ -93,6 +99,9 @@
     transferEfficiency: 1
   - type: FrozenHeatSourceFuel
     fuelContainerId: storagebase
+    requiresIgnition: true
+    canIgniteWithItem: true
+    allowUiIgnition: false
     burnRate: 1
     autoConsumeFuel: true
   - type: Storage
@@ -132,6 +141,9 @@
     transferEfficiency: 1
   - type: FrozenHeatSourceFuel
     fuelContainerId: storagebase
+    requiresIgnition: true
+    canIgniteWithItem: true
+    allowUiIgnition: false
     burnRate: 1
     autoConsumeFuel: true
   - type: Storage

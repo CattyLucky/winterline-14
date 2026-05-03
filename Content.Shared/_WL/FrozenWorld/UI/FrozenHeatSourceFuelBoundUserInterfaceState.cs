@@ -12,6 +12,10 @@ namespace Content.Shared._WL.FrozenWorld.UI;
 public sealed class FrozenHeatSourceFuelBoundUserInterfaceState : BoundUserInterfaceState
 {
     public readonly bool Enabled;
+    public readonly bool IsIgnited;
+    public readonly bool RequiresIgnition;
+    public readonly bool CanExtinguish;
+    public readonly bool CanIgnite;
     public readonly bool HasActiveFuel;
     public readonly bool HasQueuedFuel;
 
@@ -70,6 +74,10 @@ public sealed class FrozenHeatSourceFuelBoundUserInterfaceState : BoundUserInter
 
     public FrozenHeatSourceFuelBoundUserInterfaceState(
         bool enabled,
+        bool isIgnited,
+        bool requiresIgnition,
+        bool canExtinguish,
+        bool canIgnite,
         bool hasActiveFuel,
         bool hasQueuedFuel,
         float remainingFuelSeconds,
@@ -96,6 +104,10 @@ public sealed class FrozenHeatSourceFuelBoundUserInterfaceState : BoundUserInter
         string? lastConsumedFuelPrototype)
     {
         Enabled = enabled;
+        IsIgnited = isIgnited;
+        RequiresIgnition = requiresIgnition;
+        CanExtinguish = canExtinguish;
+        CanIgnite = canIgnite;
         HasActiveFuel = hasActiveFuel;
         HasQueuedFuel = hasQueuedFuel;
         RemainingFuelSeconds = remainingFuelSeconds;

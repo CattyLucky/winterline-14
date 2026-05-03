@@ -39,6 +39,47 @@ public sealed partial class FrozenHeatSourceFuelComponent : Component
     public float ActiveFuelTotalSeconds;
 
     /// <summary>
+    /// If true, queued fuel does not start burning until the source is explicitly ignited/started.
+    /// Keep enabled for campfires, furnaces and generators that should have a visible off/on state.
+    /// </summary>
+    [DataField]
+    public bool RequiresIgnition = true;
+
+    /// <summary>
+    /// Runtime burn-state flag. Queued fuel alone does not mean the source is burning.
+    /// </summary>
+    [DataField, ViewVariables(VVAccess.ReadWrite)]
+    public bool IsIgnited;
+
+    /// <summary>
+    /// If true, the UI/action layer may manually stop the source.
+    /// Stopping pauses the currently active fuel instead of deleting it.
+    /// </summary>
+    [DataField]
+    public bool CanExtinguish = true;
+
+    /// <summary>
+    /// Time in seconds required to ignite this source with an ignition item.
+    /// </summary>
+    [DataField]
+    public float IgniteDelay = 2f;
+
+    /// <summary>
+    /// If true, players can ignite this source by using an item with FrozenIgnitionSourceComponent on it.
+    /// Keep enabled for campfires and other sources that should require a physical ignition item.
+    /// </summary>
+    [DataField]
+    public bool CanIgniteWithItem = true;
+
+    /// <summary>
+    /// If true, the fuel UI may start this source without an ignition item.
+    /// Keep false for campfires; enable for generators or machines with their own starter button.
+    /// Extinguishing is still controlled by CanExtinguish.
+    /// </summary>
+    [DataField]
+    public bool AllowUiIgnition;
+
+    /// <summary>
     /// Base burn speed multiplier of this heater. 1 = one real second removes one fuel second.
     /// Values above 1 make the heater consume fuel faster; below 1 make it more efficient.
     /// </summary>
