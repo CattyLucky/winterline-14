@@ -113,7 +113,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         SetSourceEnabled(ent.Owner, source, ent.Comp, IsBurning(ent.Comp));
         RefreshQueuedFuelStats(ent.Owner, ent.Comp);
         Dirty(ent.Owner, ent.Comp);
-        _fuelUi.UpdateUiState(ent.Owner, ent.Comp, source);
+        UpdateFuelUiIfOpen(ent.Owner, ent.Comp, source);
     }
 
     private void OnFuelContainerModified(EntityUid uid, FrozenHeatSourceFuelComponent fuel, ContainerModifiedMessage args)
@@ -136,7 +136,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         }
 
         Dirty(uid, fuel);
-        _fuelUi.UpdateUiState(uid, fuel, source);
+        UpdateFuelUiIfOpen(uid, fuel, source);
     }
 
     private void OnInteractUsing(EntityUid uid, FrozenHeatSourceFuelComponent fuel, InteractUsingEvent args)
@@ -173,7 +173,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         if (!HasAvailableFuel(fuel))
         {
             _popup.PopupEntity("Сначала добавьте топливо.", uid, args.User);
-            _fuelUi.UpdateUiState(uid, fuel, source);
+            UpdateFuelUiIfOpen(uid, fuel, source);
             return;
         }
 
@@ -225,7 +225,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         if (!HasAvailableFuel(fuel))
         {
             _popup.PopupEntity("Сначала добавьте топливо.", uid, user);
-            _fuelUi.UpdateUiState(uid, fuel, source);
+            UpdateFuelUiIfOpen(uid, fuel, source);
             return;
         }
 
@@ -271,7 +271,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         if (!fuel.AllowUiIgnition)
         {
             _popup.PopupEntity("Нужен предмет для розжига.", uid, actor);
-            _fuelUi.UpdateUiState(uid, fuel, source);
+            UpdateFuelUiIfOpen(uid, fuel, source);
             return;
         }
 
@@ -291,7 +291,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
             if (fuel.RequiresIgnition)
             {
                 SetSourceEnabled(uid, source, fuel, false);
-                _fuelUi.UpdateUiState(uid, fuel, source);
+                UpdateFuelUiIfOpen(uid, fuel, source);
                 return;
             }
 
@@ -313,7 +313,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
                     SetSourceEnabled(uid, source, fuel, false);
                     RefreshQueuedFuelStats(uid, fuel);
                     Dirty(uid, fuel);
-                    _fuelUi.UpdateUiState(uid, fuel, source);
+                    UpdateFuelUiIfOpen(uid, fuel, source);
                     return;
                 }
             }
@@ -342,7 +342,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
 
         SetSourceEnabled(uid, source, fuel, IsBurning(fuel));
         Dirty(uid, fuel);
-        _fuelUi.UpdateUiState(uid, fuel, source);
+        UpdateFuelUiIfOpen(uid, fuel, source);
     }
 
     private static bool HasAvailableFuel(FrozenHeatSourceFuelComponent fuel)
@@ -394,7 +394,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
                 fuel.IsIgnited = false;
                 SetSourceEnabled(uid, source, fuel, false);
                 Dirty(uid, fuel);
-                _fuelUi.UpdateUiState(uid, fuel, source);
+                UpdateFuelUiIfOpen(uid, fuel, source);
                 return false;
             }
         }
@@ -402,7 +402,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         fuel.IsIgnited = true;
         SetSourceEnabled(uid, source, fuel, IsBurning(fuel));
         Dirty(uid, fuel);
-        _fuelUi.UpdateUiState(uid, fuel, source);
+        UpdateFuelUiIfOpen(uid, fuel, source);
         return IsBurning(fuel);
     }
 
@@ -420,7 +420,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         fuel.IsIgnited = false;
         SetSourceEnabled(uid, source, fuel, false);
         Dirty(uid, fuel);
-        _fuelUi.UpdateUiState(uid, fuel, source);
+        UpdateFuelUiIfOpen(uid, fuel, source);
         return true;
     }
 
@@ -466,7 +466,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         SetActiveFuel(uid, source, fuel, fuelItem, fuel.LastConsumedFuelPrototype);
         RefreshQueuedFuelStats(uid, fuel);
         Dirty(uid, fuel);
-        _fuelUi.UpdateUiState(uid, fuel, source);
+        UpdateFuelUiIfOpen(uid, fuel, source);
         return true;
     }
 
@@ -714,5 +714,16 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
 
         var range = MathF.Max(1f, source.OuterRadius);
         _ambientSound.SetRange(uid, range, ambient);
+    }
+
+    private void UpdateFuelUiIfOpen(
+        EntityUid uid,
+        FrozenHeatSourceFuelComponent fuel,
+        FrozenHeatSourceComponent? source = null)
+    {
+        if (!_ui.IsUiOpen(uid, FrozenWorldUiKey.HeatSourceFuel))
+            return;
+
+        _fuelUi.UpdateUiState(uid, fuel, source);
     }
 }

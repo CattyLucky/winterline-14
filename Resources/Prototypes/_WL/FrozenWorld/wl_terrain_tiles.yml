@@ -7,7 +7,6 @@
   weather: true
   mobAcceleration: 1
   mobFriction: 1
-  wlSpeedModifier: 0.50
   wlTerrainTags:
   - Snow
   - DeepSnow
@@ -21,7 +20,6 @@
   weather: true
   mobAcceleration: 1
   mobFriction: 1
-  wlSpeedModifier: 0.75
   wlTerrainTags:
   - Snow
   - PackedSnow
@@ -40,7 +38,6 @@
   weather: true
   mobAcceleration: 1
   mobFriction: 1
-  wlSpeedModifier: 0.75
   wlTerrainTags:
   - Foundation
   - PackedSnow
@@ -58,13 +55,20 @@
   - Constructed
   - Road
 
-- type: frozenFootSurface
+- type: frozenSurface
   id: WLFloorSnow
+  speedModifier: 0.50
   footContactPenaltyCelsius: 6
 
-- type: frozenFootSurface
+- type: frozenSurface
   id: WLFloorSnowDug
+  speedModifier: 0.75
   footContactPenaltyCelsius: 10
+
+- type: frozenSurface
+  id: WLPlatingSnowFoundation
+  speedModifier: 0.75
+  footContactPenaltyCelsius: 0
 
 - type: stack
   id: WLSnowFoundationTile

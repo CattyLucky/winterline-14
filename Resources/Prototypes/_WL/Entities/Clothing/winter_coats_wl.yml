@@ -64,3 +64,6 @@
     ratedTemperatureCelsius: -24
     coverage:
     - Feet
+  - type: FrozenFootwear
+    surfaceColdPenaltyMultiplier: 0.25
+    surfaceSpeedPenaltyMultiplier: 0.5

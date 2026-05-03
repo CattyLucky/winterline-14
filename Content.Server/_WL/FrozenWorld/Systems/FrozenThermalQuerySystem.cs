@@ -2,15 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Content.Server._WL.FrozenWorld.Components;
+using Content.Shared._WL.FrozenWorld.Components;
+using Content.Shared._WL.FrozenWorld.Systems;
 using Content.Server.Inventory;
 using Content.Shared._WL.FrozenWorld.Prototypes;
 using Content.Shared.Atmos;
 using Content.Shared.Inventory;
-using Content.Shared.Maps;
-using Robust.Shared.Map;
-using Robust.Shared.Map.Components;
 using Robust.Shared.Maths;
-using Robust.Shared.Prototypes;
 using Content.Shared._WL.FrozenWorld;
 
 namespace Content.Server._WL.FrozenWorld.Systems;
@@ -33,10 +31,8 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
 {
     [Dependency] private readonly FrozenHeatFieldSystem _heatField = default!;
     [Dependency] private readonly FrozenDynamicHeatSourceSystem _dynamicHeat = default!;
+    [Dependency] private readonly FrozenSurfaceProtectionSystem _protection = default!;
     [Dependency] private readonly InventorySystem _inventory = default!;
-    [Dependency] private readonly SharedMapSystem _map = default!;
-    [Dependency] private readonly ITileDefinitionManager _tileDef = default!;
-    [Dependency] private readonly IPrototypeManager _proto = default!;
 
     private static readonly string[] InsulationInventorySlots =
     {
@@ -95,16 +91,16 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
             out var ambientTemperatureAtPosition);
 
         var environmentalTemperatureCelsius = KelvinToCelsius(environmentalTemperature);
-        var unclampedEnvironmentalTemperature = GetUnclampedEnvironmentalTemperature(
-            ambientTemperatureAtPosition,
-            staticHeatBonus,
-            dynamicHeatBonus,
-            shelterBonus,
-            world);
+        var effectiveLocalHeatBonus = staticHeatBonus + dynamicHeatBonus;
+        var maxLocalOffset = MathF.Max(0f, world.MaxLocalTemperatureOffset);
+        if (maxLocalOffset > 0f)
+            effectiveLocalHeatBonus = Math.Clamp(effectiveLocalHeatBonus, -maxLocalOffset, maxLocalOffset);
+
+        var unclampedEnvironmentalTemperature = ambientTemperatureAtPosition + effectiveLocalHeatBonus + shelterBonus;
         var unclampedEnvironmentalTemperatureCelsius = KelvinToCelsius(unclampedEnvironmentalTemperature);
-        var isEnvironmentalTemperatureClamped = MathF.Abs(environmentalTemperature - unclampedEnvironmentalTemperature) > 0.01f;
         var minEffectiveTemperatureCelsius = KelvinToCelsius(world.MinEffectiveTemperature);
         var maxEffectiveTemperatureCelsius = KelvinToCelsius(world.MaxEffectiveTemperature);
+        var isEnvironmentalTemperatureClamped = !MathHelper.CloseTo(unclampedEnvironmentalTemperature, environmentalTemperature);
 
         var partRatings = GetBodyPartRatings(uid, exposure);
         var footContactPenaltyCelsius = GetFootContactPenaltyCelsius(uid);
@@ -211,21 +207,6 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
         return staticHeatBonus + dynamicHeatBonus;
     }
 
-    private static float GetUnclampedEnvironmentalTemperature(
-        float ambientTemperature,
-        float staticHeatBonus,
-        float dynamicHeatBonus,
-        float shelterBonus,
-        FrozenWorldComponent world)
-    {
-        var localHeatBonus = staticHeatBonus + dynamicHeatBonus;
-        var maxOffset = MathF.Max(0f, world.MaxLocalTemperatureOffset);
-        if (maxOffset > 0f)
-            localHeatBonus = Math.Clamp(localHeatBonus, -maxOffset, maxOffset);
-
-        return ambientTemperature + localHeatBonus + shelterBonus;
-    }
-
     public void GetLocalHeatBonusesAt(EntityUid mapUid, Vector2 worldPos, out float staticHeatBonus, out float dynamicHeatBonus)
     {
         staticHeatBonus = _heatField.GetStaticHeatBonusAt(mapUid, worldPos);
@@ -302,26 +283,32 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
 
     private float GetFootContactPenaltyCelsius(EntityUid uid)
     {
-        if (!TryComp(uid, out TransformComponent? xform))
+        if (!TryComp<FrozenSurfaceTrackerComponent>(uid, out var tracker))
             return 0f;
 
-        if (xform.GridUid is not { } gridUid)
+        if (!tracker.HasSurface)
             return 0f;
 
-        if (!TryComp<MapGridComponent>(gridUid, out var grid))
+        var rawPenalty = MathF.Max(0f, tracker.FootContactPenaltyCelsius);
+        if (rawPenalty <= 0f)
             return 0f;
 
-        var indices = _map.TileIndicesFor(gridUid, grid, xform.Coordinates);
-        if (!_map.TryGetTileRef(gridUid, grid, indices, out var tile))
-            return 0f;
+        return rawPenalty * GetSurfaceColdPenaltyMultiplier(uid);
+    }
 
-        var tileDef = _tileDef[tile.Tile.TypeId];
+    private float GetSurfaceColdPenaltyMultiplier(EntityUid uid)
+    {
+        if (!TryComp<FrozenSurfaceProtectionComponent>(uid, out var protection))
+        {
+            _protection.Recalculate(uid);
+            if (!TryComp<FrozenSurfaceProtectionComponent>(uid, out protection))
+                return 1f;
+        }
 
-        // The prototype id intentionally matches the tile id.
-        // This keeps tile balance in YAML and avoids hardcoded snow/ice ids in this system.
-        return _proto.TryIndex<FrozenFootSurfacePrototype>(tileDef.ID, out var surface)
-            ? surface.FootContactPenaltyCelsius
-            : 0f;
+        if (!float.IsFinite(protection.ColdPenaltyMultiplier))
+            return 1f;
+
+        return MathF.Max(0f, protection.ColdPenaltyMultiplier);
     }
 
     private static float GetTotalColdSeverity(
