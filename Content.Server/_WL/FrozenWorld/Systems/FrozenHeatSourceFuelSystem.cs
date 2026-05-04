@@ -153,7 +153,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
 
         if (!IsIgnitionSourceUsable(args.Used, ignition))
         {
-            _popup.PopupEntity("Сначала зажгите предмет розжига.", uid, args.User);
+            _popup.PopupEntity(Loc.GetString("wl-heat-source-ignition-item-not-lit"), uid, args.User);
             return;
         }
 
@@ -162,7 +162,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
 
         if (fuel.IsIgnited)
         {
-            _popup.PopupEntity("Уже горит.", uid, args.User);
+            _popup.PopupEntity(Loc.GetString("wl-heat-source-already-burning"), uid, args.User);
             return;
         }
 
@@ -171,7 +171,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
 
         if (!HasAvailableFuel(fuel))
         {
-            _popup.PopupEntity("Сначала добавьте топливо.", uid, args.User);
+            _popup.PopupEntity(Loc.GetString("wl-heat-source-no-fuel"), uid, args.User);
             UpdateFuelUiIfOpen(uid, fuel, source);
             return;
         }
@@ -196,7 +196,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         if (!_doAfter.TryStartDoAfter(doAfterArgs))
             return;
 
-        _popup.PopupEntity("Вы начинаете разжигать источник тепла...", uid, args.User);
+        _popup.PopupEntity(Loc.GetString("wl-heat-source-igniting-start"), uid, args.User);
     }
 
     private void OnIgniteDoAfter(EntityUid uid, FrozenHeatSourceFuelComponent fuel, FrozenHeatSourceIgniteDoAfterEvent args)
@@ -214,7 +214,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
 
         if (fuel.IsIgnited)
         {
-            _popup.PopupEntity("Уже горит.", uid, user);
+            _popup.PopupEntity(Loc.GetString("wl-heat-source-already-burning"), uid, user);
             return;
         }
 
@@ -223,31 +223,31 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
 
         if (!HasAvailableFuel(fuel))
         {
-            _popup.PopupEntity("Сначала добавьте топливо.", uid, user);
+            _popup.PopupEntity(Loc.GetString("wl-heat-source-no-fuel"), uid, user);
             UpdateFuelUiIfOpen(uid, fuel, source);
             return;
         }
 
         if (args.Used is not { Valid: true } used || !TryComp<FrozenIgnitionSourceComponent>(used, out var ignition))
         {
-            _popup.PopupEntity("Нечем разжечь.", uid, user);
+            _popup.PopupEntity(Loc.GetString("wl-heat-source-no-ignition-tool"), uid, user);
             return;
         }
 
         if (!IsIgnitionSourceUsable(used, ignition))
         {
-            _popup.PopupEntity("Предмет розжига больше не горит.", uid, user);
+            _popup.PopupEntity(Loc.GetString("wl-heat-source-ignition-item-not-lit-anymore"), uid, user);
             return;
         }
 
         if (!TryIgnite(uid, fuel, source))
         {
-            _popup.PopupEntity("Не удалось разжечь.", uid, user);
+            _popup.PopupEntity(Loc.GetString("wl-heat-source-ignite-failed"), uid, user);
             return;
         }
 
         ConsumeIgnitionSource(used, ignition);
-        _popup.PopupEntity("Источник тепла разгорелся.", uid, user);
+        _popup.PopupEntity(Loc.GetString("wl-heat-source-ignite-success"), uid, user);
     }
 
     private void OnToggleIgnitionMessage(EntityUid uid, FrozenHeatSourceFuelComponent fuel, FrozenHeatSourceFuelToggleIgnitionMessage args)
@@ -269,7 +269,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
 
         if (!fuel.AllowUiIgnition)
         {
-            _popup.PopupEntity("Нужен предмет для розжига.", uid, actor);
+            _popup.PopupEntity(Loc.GetString("wl-heat-source-needs-ignition-tool"), uid, actor);
             UpdateFuelUiIfOpen(uid, fuel, source);
             return;
         }

@@ -1,7 +1,6 @@
 <ui:FrozenThermometerWindow
     xmlns="https://spacestation14.io"
     xmlns:ui="clr-namespace:Content.Client._WL.FrozenWorld.UI"
-    Title="Термометр"
     SetSize="720 620"
     Resizable="True"
     MinWidth="680"
@@ -9,7 +8,7 @@
     <BoxContainer Orientation="Vertical" Margin="12 12 12 12">
         <PanelContainer Name="TemperaturePanel" HorizontalExpand="True">
             <BoxContainer Orientation="Vertical">
-                <Label Name="EnvironmentalTemperatureLabel" Text="ТЕМПЕРАТУРА СРЕДЫ: —" />
+                <Label Name="EnvironmentalTemperatureLabel" Text="—" />
             </BoxContainer>
         </PanelContainer>
 
@@ -17,12 +16,12 @@
 
         <PanelContainer Name="ExposurePanel" HorizontalExpand="True">
             <BoxContainer Orientation="Vertical">
-                <Label Name="StageLabel" Text="Стадия: —" />
-                <Label Name="ExposureLabel" Text="Переохлаждение: —" />
+                <Label Name="StageLabel" Text="—" />
+                <Label Name="ExposureLabel" Text="—" />
                 <ProgressBar Name="ExposureBar" MinSize="0 20" MaxValue="1" />
                 <Control MinSize="1 6" />
-                <Label Name="SeverityLabel" Text="Опасность холода: —" />
-                <Label Name="WeakestPartLabel" Text="Слабое место: —" />
+                <Label Name="SeverityLabel" Text="—" />
+                <Label Name="WeakestPartLabel" Text="—" />
             </BoxContainer>
         </PanelContainer>
 
@@ -30,7 +29,7 @@
 
         <PanelContainer Name="BodyPartsPanel" HorizontalExpand="True" VerticalExpand="True">
             <BoxContainer Orientation="Vertical">
-                <Label Name="BodyPartsHeaderLabel" Text="Защита по частям тела" />
+                <Label Name="BodyPartsHeaderLabel" Text="—" />
                 <ScrollContainer VerticalExpand="True">
                     <BoxContainer Name="BodyPartsContainer" Orientation="Vertical" />
                 </ScrollContainer>

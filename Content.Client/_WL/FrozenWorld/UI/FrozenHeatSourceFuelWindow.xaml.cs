@@ -6,6 +6,7 @@ using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controls;
 using Robust.Client.UserInterface.CustomControls;
 using Robust.Client.UserInterface.XAML;
+using Robust.Shared.Localization;
 
 namespace Content.Client._WL.FrozenWorld.UI;
 
@@ -18,6 +19,9 @@ public sealed partial class FrozenHeatSourceFuelWindow : DefaultWindow
     public FrozenHeatSourceFuelWindow()
     {
         RobustXamlLoader.Load(this);
+
+        Title = Loc.GetString("wl-fuel-window-title");
+        OpenFuelStorageButton.Text = Loc.GetString("wl-fuel-window-open-storage");
 
         OpenFuelStorageButton.OnPressed += _ => OpenStoragePressed?.Invoke();
         ToggleIgnitionButton.OnPressed += _ => ToggleIgnitionPressed?.Invoke();
@@ -49,36 +53,39 @@ public sealed partial class FrozenHeatSourceFuelWindow : DefaultWindow
 
     public void SetState(FrozenHeatSourceFuelBoundUserInterfaceState state)
     {
-        var status = GetStatusText(state);
         var statusColor = state.Enabled ? FrozenWorldUiTheme.Success : FrozenWorldUiTheme.TextMuted;
 
-        StatusLabel.Text = $"Состояние: {status}";
+        StatusLabel.Text = Loc.GetString(
+            "wl-fuel-window-status",
+            ("status", Loc.GetString(GetStatusKey(state))));
         StatusLabel.FontColorOverride = statusColor;
 
-        ToggleIgnitionButton.Text = GetToggleIgnitionButtonText(state);
+        ToggleIgnitionButton.Text = Loc.GetString(GetToggleIgnitionKey(state));
         ToggleIgnitionButton.Disabled = state.IsIgnited
             ? !state.CanExtinguish
             : !state.CanIgnite;
 
-        HeatLabel.Text = $"ТЕПЛО: {FormatSigned(state.EffectiveLocalHeatBonus)}°C";
+        HeatLabel.Text = Loc.GetString(
+            "wl-fuel-window-heat",
+            ("value", FormatSigned(state.EffectiveLocalHeatBonus)));
         HeatLabel.FontColorOverride = state.Enabled
             ? FrozenWorldUiTheme.HeatAccent
             : FrozenWorldUiTheme.TextMuted;
 
         RemainingLabel.Text = state.Enabled
-            ? $"Горение: {FormatTime(state.RemainingFuelRealSeconds)} осталось"
+            ? Loc.GetString("wl-fuel-window-burning", ("time", FormatTime(state.RemainingFuelRealSeconds)))
             : state.HasActiveFuel
-                ? "Горение: остановлено"
-                : "Горение: нет активного топлива";
+                ? Loc.GetString("wl-fuel-window-burning-stopped")
+                : Loc.GetString("wl-fuel-window-burning-no-active");
 
         var totalFuelRealSeconds = MathF.Max(0f, state.RemainingFuelRealSeconds + state.QueuedFuelRealSeconds);
         TotalFuelLabel.Text = totalFuelRealSeconds > 0f
-            ? $"Запас топлива: {FormatTime(totalFuelRealSeconds)}"
-            : "Запас топлива: нет";
+            ? Loc.GetString("wl-fuel-window-total-fuel", ("time", FormatTime(totalFuelRealSeconds)))
+            : Loc.GetString("wl-fuel-window-total-fuel-empty");
 
         QueueLabel.Text = state.HasQueuedFuel
-            ? $"Топливо в отсеке: {state.FuelStackUnits} ед."
-            : "Топливо в отсеке: нет";
+            ? Loc.GetString("wl-fuel-window-queue", ("count", state.FuelStackUnits))
+            : Loc.GetString("wl-fuel-window-queue-empty");
 
         FuelReserveBar.Value = state.ActiveFuelTotalRealSeconds <= 0f
             ? 0f
@@ -102,26 +109,26 @@ public sealed partial class FrozenHeatSourceFuelWindow : DefaultWindow
         QueueLabel.FontColorOverride = FrozenWorldUiTheme.TextMuted;
     }
 
-    private static string GetToggleIgnitionButtonText(FrozenHeatSourceFuelBoundUserInterfaceState state)
+    private static string GetToggleIgnitionKey(FrozenHeatSourceFuelBoundUserInterfaceState state)
     {
         if (state.IsIgnited)
-            return "Потушить";
+            return "wl-fuel-window-extinguish";
 
         if ((state.HasActiveFuel || state.HasQueuedFuel) && !state.CanIgnite)
-            return "Нужен розжиг";
+            return "wl-fuel-window-needs-ignition";
 
-        return "Разжечь";
+        return "wl-fuel-window-ignite";
     }
 
-    private static string GetStatusText(FrozenHeatSourceFuelBoundUserInterfaceState state)
+    private static string GetStatusKey(FrozenHeatSourceFuelBoundUserInterfaceState state)
     {
         if (state.Enabled)
-            return "горит";
+            return "wl-fuel-window-status-burning";
 
         if (state.HasActiveFuel || state.HasQueuedFuel)
-            return state.IsIgnited ? "запускается" : "не горит";
+            return state.IsIgnited ? "wl-fuel-window-status-igniting" : "wl-fuel-window-status-stopped";
 
-        return "нет топлива";
+        return "wl-fuel-window-status-no-fuel";
     }
 
     private static string FormatTime(float seconds)
@@ -135,9 +142,6 @@ public sealed partial class FrozenHeatSourceFuelWindow : DefaultWindow
 
         if (hours > 0)
             return $"{hours:00}:{minutes:00}:{secs:00}";
-
-        if (minutes <= 0)
-            return $"{secs:00}с";
 
         return $"{minutes:00}:{secs:00}";
     }

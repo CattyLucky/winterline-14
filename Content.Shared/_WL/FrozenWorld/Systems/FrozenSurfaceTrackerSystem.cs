@@ -33,7 +33,8 @@ public sealed partial class FrozenSurfaceTrackerSystem : EntitySystem
         if (!ResetTracker(ent.Owner, tracker))
             return;
 
-        RaiseLocalEvent(ent.Owner, new FrozenSurfaceTrackerChangedEvent());
+        var ev = new FrozenSurfaceTrackerChangedEvent();
+        RaiseLocalEvent(ent.Owner, ref ev);
     }
 
     private void OnMove(Entity<FrozenSurfaceAffectedComponent> ent, ref MoveEvent args)
@@ -58,7 +59,8 @@ public sealed partial class FrozenSurfaceTrackerSystem : EntitySystem
             if (!ResetTracker(uid, tracker))
                 return;
 
-            RaiseLocalEvent(uid, new FrozenSurfaceTrackerChangedEvent());
+            var resetEvent = new FrozenSurfaceTrackerChangedEvent();
+            RaiseLocalEvent(uid, ref resetEvent);
             return;
         }
 
@@ -94,7 +96,8 @@ public sealed partial class FrozenSurfaceTrackerSystem : EntitySystem
         tracker.HasSurface = hasSurface;
         tracker.IsInitialized = true;
 
-        RaiseLocalEvent(uid, new FrozenSurfaceTrackerChangedEvent());
+        var updatedEvent = new FrozenSurfaceTrackerChangedEvent();
+        RaiseLocalEvent(uid, ref updatedEvent);
     }
 
     private bool ResetTracker(EntityUid uid, FrozenSurfaceTrackerComponent tracker)

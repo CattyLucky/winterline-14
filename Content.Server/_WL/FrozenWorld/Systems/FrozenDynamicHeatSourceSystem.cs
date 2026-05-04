@@ -88,15 +88,29 @@ public sealed partial class FrozenDynamicHeatSourceSystem : EntitySystem
         if (_timing.CurTime < _nextIndexRebuild)
             return;
 
-        _dynamicHeatByMap = BuildDynamicHeatIndex();
+        RebuildDynamicHeatIndex();
         _nextIndexRebuild = _timing.CurTime + DynamicIndexRebuildInterval;
     }
 
-    private Dictionary<EntityUid, FrozenDynamicHeatMapIndex> BuildDynamicHeatIndex()
+    /// <summary>
+    /// Rebuilds per-map indices in place. Reuses the outer dictionary, the per-map index
+    /// objects, the per-chunk dictionaries, and the per-chunk source lists between rebuilds.
+    /// Only structural growth (a new map, a new occupied chunk) allocates; the steady state
+    /// is GC-free.
+    /// </summary>
+    private void RebuildDynamicHeatIndex()
     {
-        var result = new Dictionary<EntityUid, FrozenDynamicHeatMapIndex>();
-        var query = EntityQueryEnumerator<FrozenHeatSourceComponent, TransformComponent>();
+        // Reset existing entries: clear lists (preserves capacity), zero MaxOuterRadius.
+        // We deliberately keep empty per-chunk lists in SourcesByChunk — they cost nothing
+        // and avoid re-allocation when a heat source returns to the same chunk later.
+        foreach (var mapIndex in _dynamicHeatByMap.Values)
+        {
+            foreach (var sources in mapIndex.SourcesByChunk.Values)
+                sources.Clear();
+            mapIndex.MaxOuterRadius = 0f;
+        }
 
+        var query = EntityQueryEnumerator<FrozenHeatSourceComponent, TransformComponent>();
         while (query.MoveNext(out _, out var source, out var xform))
         {
             if (!source.Enabled || !source.Dynamic)
@@ -113,10 +127,10 @@ public sealed partial class FrozenDynamicHeatSourceSystem : EntitySystem
             var position = xform.WorldPosition;
             var chunk = WorldToChunk(position);
 
-            if (!result.TryGetValue(mapUid, out var mapIndex))
+            if (!_dynamicHeatByMap.TryGetValue(mapUid, out var mapIndex))
             {
                 mapIndex = new FrozenDynamicHeatMapIndex();
-                result[mapUid] = mapIndex;
+                _dynamicHeatByMap[mapUid] = mapIndex;
             }
 
             if (!mapIndex.SourcesByChunk.TryGetValue(chunk, out var sources))
@@ -134,8 +148,6 @@ public sealed partial class FrozenDynamicHeatSourceSystem : EntitySystem
 
             mapIndex.MaxOuterRadius = MathF.Max(mapIndex.MaxOuterRadius, outerRadius);
         }
-
-        return result;
     }
 
     private static Vector2i WorldToChunk(Vector2 worldPos)

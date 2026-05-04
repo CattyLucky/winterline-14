@@ -233,7 +233,23 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         gravity.Inherent = true;
         Dirty(planetGridUid, gravity);
 
-        EnsureComp<GridAtmosphereComponent>(planetGridUid);
+        // Frozen world atmos is "frozen" by design: gameplay temperature is owned by
+        // FrozenThermalQuerySystem (AmbientTemperature + zone bands + heat field), and
+        // tile atmos is only kept around so that breathing, internals and SS14 sub-systems
+        // that read tile gas (greenhouses, condensation, etc.) continue to work.
+        //
+        // We disable AtmosphereSystem simulation on the planet grid so it does NOT:
+        //  - diffuse gases between tiles,
+        //  - equalize pressure (monstermos),
+        //  - run superconductivity, which would slowly drag tile temperature toward
+        //    its neighbours and fight FrozenWorldAtmosphereTemperatureSystem rewrites,
+        //  - propagate hotspots.
+        //
+        // Tile gas mixture is initially seeded by WLApplyStaticGridAtmosphere(...) (called
+        // by FrozenWorldSystem.Configure), and tile temperature can still be rewritten on
+        // demand via SetAmbientTemperature(...) — the rewrite will simply stick because
+        // there is no simulation to undo it.
+        _atmos.WLDisableGridAtmosphereSimulation(planetGridUid);
 
         var gasOverlay = EnsureComp<GasTileOverlayComponent>(planetGridUid);
         Dirty(planetGridUid, gasOverlay);

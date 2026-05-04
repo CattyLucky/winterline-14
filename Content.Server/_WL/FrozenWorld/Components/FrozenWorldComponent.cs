@@ -68,7 +68,17 @@ public sealed partial class FrozenWorldComponent : Component
     public float LastAppliedAtmosphereTemperature = float.NaN;
 
     /// <summary>
-    /// Whether the frozen world grid uses pre-seeded static atmosphere.
+    /// Whether <see cref="FrozenWorldAtmosphereTemperatureSystem"/> is allowed to rewrite
+    /// tile atmosphere temperature on the planet grid when AmbientTemperature changes.
+    ///
+    /// IMPORTANT: this flag does NOT, by itself, make the atmosphere "frozen". The grid
+    /// atmosphere is taken offline in <see cref="FrozenWorldSystem.ConfigurePlanetGrid"/>
+    /// by setting <see cref="GridAtmosphereComponent.Simulated"/> to false. That is the
+    /// switch that disables gas diffusion, monstermos and superconductivity.
+    ///
+    /// This flag is a separate concern: it controls whether OUR system pushes new
+    /// AmbientTemperature values into tile atmos at all. Set to false on a profile that
+    /// wants to keep the seeded tile temperature forever (e.g. a non-changing biome).
     /// </summary>
     [DataField]
     public bool StaticAtmosphere = true;

@@ -7,15 +7,27 @@ using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controls;
 using Robust.Client.UserInterface.CustomControls;
 using Robust.Client.UserInterface.XAML;
+using Robust.Shared.Localization;
 
 namespace Content.Client._WL.FrozenWorld.UI;
 
 [GenerateTypedNameReferences]
 public sealed partial class FrozenThermometerWindow : DefaultWindow
 {
+    // Body part rows are reused between SetState calls to avoid pressuring the GC and
+    // re-laying out the panel ~2x per second while the window is open. The pool is
+    // sized for the maximum possible body part count (one per FrozenBodyPart enum value);
+    // unused rows are simply hidden.
+    private const int MaxBodyPartRows = 7;
+    private readonly BodyPartRow[] _bodyPartRows = new BodyPartRow[MaxBodyPartRows];
+    private Label _emptyBodyPartLabel = default!;
+
     public FrozenThermometerWindow()
     {
         RobustXamlLoader.Load(this);
+
+        Title = Loc.GetString("wl-thermometer-title");
+        BodyPartsHeaderLabel.Text = Loc.GetString("wl-thermometer-body-parts-header");
 
         TemperaturePanel.PanelOverride = FrozenWorldUiTheme.Panel(
             FrozenWorldUiTheme.SurfacePanelAlt,
@@ -40,6 +52,60 @@ public sealed partial class FrozenThermometerWindow : DefaultWindow
         ExposureBar.ForegroundStyleBoxOverride = FrozenWorldUiTheme.ProgressForeground(FrozenWorldUiTheme.ColdAccent);
 
         ApplyStaticLabelColors();
+        InitializeBodyPartRows();
+    }
+
+    private void InitializeBodyPartRows()
+    {
+        for (var i = 0; i < MaxBodyPartRows; i++)
+        {
+            // Each row owns its own StyleBoxFlat so we can mutate BorderColor on update
+            // without going through FrozenWorldUiTheme.Panel(...) every tick.
+            var panelStyle = (StyleBoxFlat)FrozenWorldUiTheme.Panel(
+                FrozenWorldUiTheme.SurfacePanelSoft,
+                FrozenWorldUiTheme.BorderSoft,
+                1,
+                10,
+                10,
+                7,
+                7);
+
+            var panel = new PanelContainer
+            {
+                HorizontalExpand = true,
+                PanelOverride = panelStyle,
+                Margin = new Thickness(0, 0, 0, 5),
+                Visible = false,
+            };
+
+            var line = new BoxContainer
+            {
+                Orientation = BoxContainer.LayoutOrientation.Horizontal,
+                HorizontalExpand = true,
+            };
+
+            var name = FrozenWorldUiTheme.MakeValueLabel(string.Empty);
+            name.SetWidth = 130;
+
+            var rated = FrozenWorldUiTheme.MakeMutedLabel(string.Empty);
+            rated.SetWidth = 275;
+
+            var severity = FrozenWorldUiTheme.MakeMutedLabel(string.Empty);
+            severity.HorizontalExpand = true;
+
+            line.AddChild(name);
+            line.AddChild(rated);
+            line.AddChild(severity);
+            panel.AddChild(line);
+
+            BodyPartsContainer.AddChild(panel);
+
+            _bodyPartRows[i] = new BodyPartRow(panel, panelStyle, name, rated, severity);
+        }
+
+        _emptyBodyPartLabel = FrozenWorldUiTheme.MakeMutedLabel(Loc.GetString("wl-thermometer-body-empty"));
+        _emptyBodyPartLabel.Visible = false;
+        BodyPartsContainer.AddChild(_emptyBodyPartLabel);
     }
 
     public void SetState(FrozenThermometerBoundUserInterfaceState state)
@@ -50,17 +116,20 @@ public sealed partial class FrozenThermometerWindow : DefaultWindow
             return;
         }
 
-        EnvironmentalTemperatureLabel.Text =
-            $"ТЕМПЕРАТУРА СРЕДЫ: {FormatSigned(state.EnvironmentalTemperatureCelsius)}°C";
+        EnvironmentalTemperatureLabel.Text = Loc.GetString(
+            "wl-thermometer-env-temp",
+            ("value", FormatSigned(state.EnvironmentalTemperatureCelsius)));
 
         var stageText = FormatStage(state.Stage);
         var stageColor = FrozenWorldUiTheme.StageColor(state.Stage);
 
-        StageLabel.Text = $"Стадия: {stageText}";
+        StageLabel.Text = Loc.GetString("wl-thermometer-stage", ("stage", stageText));
         StageLabel.FontColorOverride = stageColor;
 
-        ExposureLabel.Text =
-            $"Переохлаждение: {state.Exposure:0.#} / {state.MaxExposure:0.#}";
+        ExposureLabel.Text = Loc.GetString(
+            "wl-thermometer-exposure",
+            ("current", state.Exposure.ToString("0.#")),
+            ("max", state.MaxExposure.ToString("0.#")));
 
         var exposureRatio = state.MaxExposure <= 0f
             ? 0f
@@ -71,87 +140,79 @@ public sealed partial class FrozenThermometerWindow : DefaultWindow
         if (ExposureBar.ForegroundStyleBoxOverride is StyleBoxFlat foreground)
             foreground.BackgroundColor = stageColor.WithAlpha(0.9f);
 
-        SeverityLabel.Text =
-            $"Опасность холода: {state.TotalColdSeverity:0.00}";
+        SeverityLabel.Text = Loc.GetString(
+            "wl-thermometer-severity",
+            ("value", state.TotalColdSeverity.ToString("0.00")));
 
-        WeakestPartLabel.Text =
-            $"Слабое место: {FormatBodyPart(state.WeakestBodyPart)} ({state.WeakestBodyPartSeverity:0.00})";
+        WeakestPartLabel.Text = Loc.GetString(
+            "wl-thermometer-weakest",
+            ("part", FormatBodyPart(state.WeakestBodyPart)),
+            ("severity", state.WeakestBodyPartSeverity.ToString("0.00")));
 
         PopulateBodyParts(state.BodyParts);
     }
 
     private void PopulateBodyParts(FrozenThermometerBodyPartState[] bodyParts)
     {
-        BodyPartsContainer.RemoveAllChildren();
-
         if (bodyParts.Length == 0)
         {
-            BodyPartsContainer.AddChild(FrozenWorldUiTheme.MakeMutedLabel("Нет данных по частям тела."));
+            HideAllBodyPartRows();
+            _emptyBodyPartLabel.Visible = true;
             return;
         }
 
-        foreach (var part in bodyParts)
+        _emptyBodyPartLabel.Visible = false;
+
+        var count = Math.Min(bodyParts.Length, MaxBodyPartRows);
+
+        for (var i = 0; i < count; i++)
         {
-            var row = new PanelContainer
-            {
-                HorizontalExpand = true,
-                PanelOverride = FrozenWorldUiTheme.Panel(
-                    FrozenWorldUiTheme.SurfacePanelSoft,
-                    GetSeverityColor(part.ColdSeverity).WithAlpha(0.8f),
-                    1,
-                    10,
-                    10,
-                    7,
-                    7),
-                Margin = new Thickness(0, 0, 0, 5),
-            };
+            var part = bodyParts[i];
+            var row = _bodyPartRows[i];
 
-            var line = new BoxContainer
-            {
-                Orientation = BoxContainer.LayoutOrientation.Horizontal,
-                HorizontalExpand = true,
-            };
+            row.Name.Text = FormatBodyPart(part.BodyPart);
 
-            var name = FrozenWorldUiTheme.MakeValueLabel(FormatBodyPart(part.BodyPart));
-            name.SetWidth = 130;
+            row.Rated.Text = part.IsProtected
+                ? Loc.GetString("wl-thermometer-body-protected", ("value", FormatSigned(part.RatedTemperatureCelsius)))
+                : Loc.GetString("wl-thermometer-body-unprotected");
 
-            var protectionText = part.IsProtected
-                ? $"защита до температуры {FormatSigned(part.RatedTemperatureCelsius)}°C"
-                : "без защиты";
+            var severityColor = GetSeverityColor(part.ColdSeverity);
+            row.Severity.Text = Loc.GetString(
+                "wl-thermometer-body-severity",
+                ("value", part.ColdSeverity.ToString("0.00")));
+            row.Severity.FontColorOverride = severityColor;
 
-            var rated = FrozenWorldUiTheme.MakeMutedLabel(protectionText);
-            rated.SetWidth = 275;
-
-            var severity = FrozenWorldUiTheme.MakeMutedLabel($"холод: {part.ColdSeverity:0.00}");
-            severity.FontColorOverride = GetSeverityColor(part.ColdSeverity);
-            severity.HorizontalExpand = true;
-
-            line.AddChild(name);
-            line.AddChild(rated);
-            line.AddChild(severity);
-            row.AddChild(line);
-
-            BodyPartsContainer.AddChild(row);
+            row.PanelStyle.BorderColor = severityColor.WithAlpha(0.8f);
+            row.Panel.Visible = true;
         }
+
+        for (var i = count; i < MaxBodyPartRows; i++)
+            _bodyPartRows[i].Panel.Visible = false;
+    }
+
+    private void HideAllBodyPartRows()
+    {
+        for (var i = 0; i < MaxBodyPartRows; i++)
+            _bodyPartRows[i].Panel.Visible = false;
     }
 
     private void SetUnavailableState()
     {
-        EnvironmentalTemperatureLabel.Text = "ТЕМПЕРАТУРА СРЕДЫ: НЕТ ДАННЫХ";
+        EnvironmentalTemperatureLabel.Text = Loc.GetString("wl-thermometer-env-temp-na");
 
-        StageLabel.Text = "Стадия: нет данных";
+        StageLabel.Text = Loc.GetString("wl-thermometer-stage-na");
         StageLabel.FontColorOverride = FrozenWorldUiTheme.TextSecondary;
 
-        ExposureLabel.Text = "Переохлаждение: нет данных";
+        ExposureLabel.Text = Loc.GetString("wl-thermometer-exposure-na");
         ExposureBar.Value = 0f;
         if (ExposureBar.ForegroundStyleBoxOverride is StyleBoxFlat foreground)
             foreground.BackgroundColor = FrozenWorldUiTheme.TextSecondary.WithAlpha(0.6f);
 
-        SeverityLabel.Text = "Опасность холода: нет данных";
-        WeakestPartLabel.Text = "Слабое место: нет данных";
+        SeverityLabel.Text = Loc.GetString("wl-thermometer-severity-na");
+        WeakestPartLabel.Text = Loc.GetString("wl-thermometer-weakest-na");
 
-        BodyPartsContainer.RemoveAllChildren();
-        BodyPartsContainer.AddChild(FrozenWorldUiTheme.MakeMutedLabel("Нет данных по частям тела."));
+        HideAllBodyPartRows();
+        _emptyBodyPartLabel.Visible = true;
     }
 
     private void ApplyStaticLabelColors()
@@ -187,12 +248,12 @@ public sealed partial class FrozenThermometerWindow : DefaultWindow
     {
         return stage switch
         {
-            FrozenColdStage.None => "нет",
-            FrozenColdStage.Chilled => "озноб",
-            FrozenColdStage.Freezing => "замерзание",
-            FrozenColdStage.Hypothermia => "переохлаждение",
-            FrozenColdStage.SevereHypothermia => "сильное переохлаждение",
-            FrozenColdStage.Critical => "критическое состояние",
+            FrozenColdStage.None => Loc.GetString("wl-cold-stage-none"),
+            FrozenColdStage.Chilled => Loc.GetString("wl-cold-stage-chilled"),
+            FrozenColdStage.Freezing => Loc.GetString("wl-cold-stage-freezing"),
+            FrozenColdStage.Hypothermia => Loc.GetString("wl-cold-stage-hypothermia"),
+            FrozenColdStage.SevereHypothermia => Loc.GetString("wl-cold-stage-severe-hypothermia"),
+            FrozenColdStage.Critical => Loc.GetString("wl-cold-stage-critical"),
             _ => stage.ToString(),
         };
     }
@@ -201,14 +262,25 @@ public sealed partial class FrozenThermometerWindow : DefaultWindow
     {
         return bodyPart switch
         {
-            FrozenBodyPart.Torso => "Торс",
-            FrozenBodyPart.Arms => "Руки",
-            FrozenBodyPart.Legs => "Ноги",
-            FrozenBodyPart.Head => "Голова",
-            FrozenBodyPart.Face => "Лицо",
-            FrozenBodyPart.Hands => "Кисти",
-            FrozenBodyPart.Feet => "Ступни",
+            FrozenBodyPart.Torso => Loc.GetString("wl-body-part-torso"),
+            FrozenBodyPart.Arms => Loc.GetString("wl-body-part-arms"),
+            FrozenBodyPart.Legs => Loc.GetString("wl-body-part-legs"),
+            FrozenBodyPart.Head => Loc.GetString("wl-body-part-head"),
+            FrozenBodyPart.Face => Loc.GetString("wl-body-part-face"),
+            FrozenBodyPart.Hands => Loc.GetString("wl-body-part-hands"),
+            FrozenBodyPart.Feet => Loc.GetString("wl-body-part-feet"),
             _ => bodyPart.ToString(),
         };
     }
+
+    /// <summary>
+    /// Cached references to a single body-part row's controls. Created once during
+    /// window construction and reused on every <see cref="SetState"/> call.
+    /// </summary>
+    private sealed record BodyPartRow(
+        PanelContainer Panel,
+        StyleBoxFlat PanelStyle,
+        Label Name,
+        Label Rated,
+        Label Severity);
 }
