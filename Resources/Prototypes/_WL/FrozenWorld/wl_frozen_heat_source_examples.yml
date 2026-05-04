@@ -6,10 +6,53 @@
   name: frozen campfire
   description: A reliable heat source for survival in the frozen wastes.
   components:
+  - type: Sprite
+    sprite: _WL/FrozenWorld/HeatSources/wl_campfire.rsi
+    layers:
+    - state: off
+      map: [ "fuel_state" ]
+  - type: Appearance
+  - type: GenericVisualizer
+    visuals:
+      enum.FrozenHeatSourceFuelVisuals.Burning:
+        fuel_state:
+          True: { state: on }
+          False: { state: off }
   - type: FrozenHeatSource
-    radius: 4
-    temperatureDelta: 45
+    enabled: false
+    dynamic: false
+    innerRadius: 1.5
+    outerRadius: 4
+    heatBonus: 45
     transferEfficiency: 1
+  - type: Storage
+    openOnActivate: false
+    showVerb: false
+    grid:
+    - 0,0,2,1
+    maxItemSize: Normal
+    whitelist:
+      components:
+      - FrozenFuel
+  - type: UserInterface
+    interfaces:
+      enum.StorageUiKey.Key:
+        type: StorageBoundUserInterface
+      enum.FrozenWorldUiKey.HeatSourceFuel:
+        type: FrozenHeatSourceFuelBoundUserInterface
+  - type: ActivatableUI
+    key: enum.FrozenWorldUiKey.HeatSourceFuel
+  - type: ContainerContainer
+    containers:
+      storagebase: !type:Container
+        ents: [ ]
+  - type: FrozenHeatSourceFuel
+    fuelContainerId: storagebase
+    requiresIgnition: true
+    canIgniteWithItem: true
+    allowUiIgnition: false
+    burnRate: 1
+    autoConsumeFuel: true
 
 - type: entity
   id: WLGeneratorHeatSource
@@ -17,7 +60,182 @@
   name: frozen heat generator
   description: A generator tuned to radiate strong local heat in extreme cold.
   components:
+  - type: Sprite
+    sprite: _WL/FrozenWorld/HeatSources/wl_generator_heater.rsi
+    snapCardinals: true
+    layers:
+    - state: off
+      map: [ "fuel_state" ]
+    - state: on_glow
+      map: [ "fuel_glow" ]
+      shader: unshaded
+      visible: false
+  - type: Appearance
+  - type: GenericVisualizer
+    visuals:
+      enum.FrozenHeatSourceFuelVisuals.Burning:
+        fuel_state:
+          True: { state: on }
+          False: { state: off }
+        fuel_glow:
+          True: { visible: true }
+          False: { visible: false }
+  - type: PointLight
+    radius: 3
+    energy: 2
+    color: "#FF8A3D"
+    castShadows: false
   - type: FrozenHeatSource
-    radius: 10
-    temperatureDelta: 55
+    enabled: false
+    dynamic: false
+    innerRadius: 4
+    outerRadius: 10
+    heatBonus: 55
     transferEfficiency: 1
+  - type: Storage
+    openOnActivate: false
+    showVerb: false
+    grid:
+    - 0,0,3,2
+    maxItemSize: Normal
+    whitelist:
+      components:
+      - FrozenFuel
+  - type: UserInterface
+    interfaces:
+      enum.StorageUiKey.Key:
+        type: StorageBoundUserInterface
+      enum.FrozenWorldUiKey.HeatSourceFuel:
+        type: FrozenHeatSourceFuelBoundUserInterface
+  - type: ActivatableUI
+    key: enum.FrozenWorldUiKey.HeatSourceFuel
+  - type: ContainerContainer
+    containers:
+      storagebase: !type:Container
+        ents: [ ]
+  - type: FrozenHeatSourceFuel
+    fuelContainerId: storagebase
+    requiresIgnition: true
+    canIgniteWithItem: true
+    allowUiIgnition: true
+    burnRate: 1
+    autoConsumeFuel: true
+
+- type: entity
+  id: WLBonfireFuelUiExample
+  parent: Bonfire
+  name: bonfire (WL fuel UI example)
+  description: WL sample bonfire with FrozenWorld fuel control UI.
+  components:
+  - type: Sprite
+    sprite: _WL/FrozenWorld/HeatSources/wl_bonfire.rsi
+    layers:
+    - state: off
+      map: [ "fuel_state" ]
+  - type: Appearance
+  - type: GenericVisualizer
+    visuals:
+      enum.FrozenHeatSourceFuelVisuals.Burning:
+        fuel_state:
+          True: { state: on }
+          False: { state: off }
+  - type: FrozenHeatSource
+    enabled: false
+    dynamic: false
+    innerRadius: 2
+    outerRadius: 5
+    heatBonus: 42
+    transferEfficiency: 1
+  - type: FrozenHeatSourceFuel
+    fuelContainerId: storagebase
+    requiresIgnition: true
+    canIgniteWithItem: true
+    allowUiIgnition: false
+    burnRate: 1
+    autoConsumeFuel: true
+  - type: Storage
+    openOnActivate: false
+    showVerb: false
+    grid:
+    - 0,0,2,1
+    maxItemSize: Normal
+    whitelist:
+      components:
+      - FrozenFuel
+  - type: UserInterface
+    interfaces:
+      enum.StorageUiKey.Key:
+        type: StorageBoundUserInterface
+      enum.FrozenWorldUiKey.HeatSourceFuel:
+        type: FrozenHeatSourceFuelBoundUserInterface
+  - type: ActivatableUI
+    key: enum.FrozenWorldUiKey.HeatSourceFuel
+  - type: ContainerContainer
+    containers:
+      storagebase: !type:Container
+        ents: [ ]
+
+- type: entity
+  id: WLFireplaceFuelUiExample
+  parent: Fireplace
+  name: fireplace (WL fuel UI example)
+  description: WL sample fireplace with FrozenWorld fuel control UI.
+  components:
+  - type: Sprite
+    sprite: _WL/FrozenWorld/HeatSources/wl_fireplace_heater.rsi
+    layers:
+    - state: off
+      map: [ "fuel_base" ]
+    - state: on
+      map: [ "fuel_fire" ]
+      shader: unshaded
+      visible: false
+    - state: on_glow
+      map: [ "fuel_glow" ]
+      shader: unshaded
+      visible: false
+  - type: Appearance
+  - type: GenericVisualizer
+    visuals:
+      enum.FrozenHeatSourceFuelVisuals.Burning:
+        fuel_fire:
+          True: { visible: true }
+          False: { visible: false }
+        fuel_glow:
+          True: { visible: true }
+          False: { visible: false }
+  - type: FrozenHeatSource
+    enabled: false
+    dynamic: false
+    innerRadius: 2
+    outerRadius: 5
+    heatBonus: 45
+    transferEfficiency: 1
+  - type: FrozenHeatSourceFuel
+    fuelContainerId: storagebase
+    requiresIgnition: true
+    canIgniteWithItem: true
+    allowUiIgnition: false
+    burnRate: 1
+    autoConsumeFuel: true
+  - type: Storage
+    openOnActivate: false
+    showVerb: false
+    grid:
+    - 0,0,2,1
+    maxItemSize: Normal
+    whitelist:
+      components:
+      - FrozenFuel
+  - type: UserInterface
+    interfaces:
+      enum.StorageUiKey.Key:
+        type: StorageBoundUserInterface
+      enum.FrozenWorldUiKey.HeatSourceFuel:
+        type: FrozenHeatSourceFuelBoundUserInterface
+  - type: ActivatableUI
+    key: enum.FrozenWorldUiKey.HeatSourceFuel
+  - type: ContainerContainer
+    containers:
+      storagebase: !type:Container
+        ents: [ ]

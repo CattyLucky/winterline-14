@@ -26,9 +26,6 @@ public sealed partial class FrozenWorldProfilePrototype : IPrototype
     [DataField]
     public Color MapLightColor = Color.White;
 
-    [DataField]
-    public float SafeZonePadding = 8f;
-
     /// <summary>
     /// Global ambient world temperature in Kelvin. 243.15 K is about -30 C.
     /// </summary>

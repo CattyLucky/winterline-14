@@ -13,6 +13,19 @@
     state: wood
   - type: Item
     size: Small
+  - type: Stack
+    stackType: WLFrozenBranchStack
+    count: 1
+  - type: Material
+  - type: PhysicalComposition
+    materialComposition:
+      Wood: 100
+  - type: FrozenFuel
+    fuelSeconds: 40
+    priority: 10
+    heatBonusMultiplier: 0.9
+    transferEfficiencyMultiplier: 0.9
+    burnRateMultiplier: 1.25
 
 - type: entity
   id: WLLooseScrap
@@ -26,6 +39,13 @@
     color: "#8a8a7a"
   - type: Item
     size: Small
+  - type: Stack
+    stackType: WLLooseScrapStack
+    count: 1
+  - type: Material
+  - type: PhysicalComposition
+    materialComposition:
+      Steel: 100
 
 - type: entity
   id: WLTornCloth
@@ -38,3 +58,16 @@
     state: cloth
   - type: Item
     size: Small
+  - type: Stack
+    stackType: WLTornClothStack
+    count: 1
+  - type: Material
+  - type: PhysicalComposition
+    materialComposition:
+      Cloth: 100
+  - type: FrozenFuel
+    fuelSeconds: 12
+    priority: 0
+    heatBonusMultiplier: 0.7
+    transferEfficiencyMultiplier: 0.8
+    burnRateMultiplier: 1.5

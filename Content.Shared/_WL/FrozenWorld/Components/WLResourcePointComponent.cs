@@ -44,6 +44,12 @@ public sealed partial class WLResourcePointComponent : Component
     /// </summary>
     [DataField]
     public EntProtoId? DepletedPrototype;
+
+    /// <summary>
+    /// Current gatherer while a DoAfter is running. Runtime only; prevents parallel harvests.
+    /// </summary>
+    [ViewVariables]
+    public EntityUid? ActiveGatherer;
 }
 
 [DataDefinition]

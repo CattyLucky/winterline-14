@@ -5,8 +5,10 @@ using Robust.Shared.Maths;
 namespace Content.Server._WL.FrozenWorld.Systems;
 
 /// <summary>
-/// Keeps FrozenWorld static atmosphere synchronized with AmbientTemperature via events.
-/// Affects gas analyzer / tile atmosphere only. Does not apply cold damage.
+/// Owns global FrozenWorld ambient temperature and throttled synchronization to tile atmosphere.
+///
+/// AmbientTemperature is the gameplay value used by FrozenThermalQuerySystem and can change often.
+/// Tile atmosphere sync is expensive because it can touch the whole planet grid, so it is delayed and thresholded.
 /// </summary>
 public sealed partial class FrozenWorldAtmosphereTemperatureSystem : EntitySystem
 {
@@ -19,6 +21,21 @@ public sealed partial class FrozenWorldAtmosphereTemperatureSystem : EntitySyste
         SubscribeLocalEvent<FrozenWorldComponent, FrozenAmbientTemperatureChangedEvent>(OnAmbientTemperatureChanged);
     }
 
+    public override void Update(float frameTime)
+    {
+        base.Update(frameTime);
+
+        var query = EntityQueryEnumerator<FrozenWorldComponent>();
+        while (query.MoveNext(out var uid, out var world))
+        {
+            UpdateAtmosphereTemperatureSync(uid, world, frameTime);
+        }
+    }
+
+    /// <summary>
+    /// Changes gameplay ambient temperature immediately.
+    /// This does not immediately rewrite grid tile atmosphere; that is handled by throttled sync in Update().
+    /// </summary>
     public void SetAmbientTemperature(EntityUid mapUid, float temperature, FrozenWorldComponent? world = null)
     {
         if (!Resolve(mapUid, ref world))
@@ -28,12 +45,15 @@ public sealed partial class FrozenWorldAtmosphereTemperatureSystem : EntitySyste
             return;
 
         world.AmbientTemperature = temperature;
+        MarkAtmosphereTemperatureDirty(world);
         RaiseLocalEvent(mapUid, new FrozenAmbientTemperatureChangedEvent(temperature));
     }
 
     private void OnFrozenWorldStartup(Entity<FrozenWorldComponent> ent, ref ComponentStartup args)
     {
-        ApplyStaticAtmosphereTemperature(ent.Comp, ent.Comp.AmbientTemperature);
+        // Map-loaded components may already have a grid reference, while runtime-created components are configured later
+        // by FrozenWorldSystem. Mark dirty but let the throttled sync decide when an atmos write is actually needed.
+        ent.Comp.AtmosphereTemperatureDirty = true;
     }
 
     private void OnAmbientTemperatureChanged(Entity<FrozenWorldComponent> ent, ref FrozenAmbientTemperatureChangedEvent args)
@@ -41,19 +61,57 @@ public sealed partial class FrozenWorldAtmosphereTemperatureSystem : EntitySyste
         if (!MathHelper.CloseTo(ent.Comp.AmbientTemperature, args.Temperature))
             ent.Comp.AmbientTemperature = args.Temperature;
 
-        ApplyStaticAtmosphereTemperature(ent.Comp, ent.Comp.AmbientTemperature);
+        MarkAtmosphereTemperatureDirty(ent.Comp);
     }
 
-    private void ApplyStaticAtmosphereTemperature(FrozenWorldComponent world, float temperature)
+    private void UpdateAtmosphereTemperatureSync(EntityUid mapUid, FrozenWorldComponent world, float frameTime)
     {
-        if (!world.StaticAtmosphere || world.PlanetGrid is not { } gridUid || !Exists(gridUid))
+        if (!world.StaticAtmosphere)
             return;
 
-        if (MathHelper.CloseTo(world.LastAppliedAtmosphereTemperature, temperature))
+        if (!world.AtmosphereTemperatureDirty && !float.IsNaN(world.LastAppliedAtmosphereTemperature))
             return;
 
-        _atmos.WLSetGridAtmosphereTemperature(gridUid, temperature);
-        world.LastAppliedAtmosphereTemperature = temperature;
+        world.AtmosphereTemperatureAccumulator += frameTime;
+
+        var interval = MathF.Max(0.1f, world.AtmosphereTemperatureUpdateInterval);
+        if (world.AtmosphereTemperatureAccumulator < interval)
+            return;
+
+        world.AtmosphereTemperatureAccumulator = 0f;
+        TryApplyQueuedAtmosphereTemperature(mapUid, world);
+    }
+
+    private void TryApplyQueuedAtmosphereTemperature(EntityUid mapUid, FrozenWorldComponent world)
+    {
+        if (world.PlanetGrid is not { } gridUid || !Exists(gridUid))
+            return;
+
+        if (!ShouldApplyAtmosphereTemperature(world))
+        {
+            // The queued gameplay ambient change is too small to justify a full grid-atmos rewrite.
+            // Future changes will mark this dirty again.
+            world.AtmosphereTemperatureDirty = false;
+            return;
+        }
+
+        _atmos.WLSetGridAtmosphereTemperature(gridUid, world.AmbientTemperature);
+        world.LastAppliedAtmosphereTemperature = world.AmbientTemperature;
+        world.AtmosphereTemperatureDirty = false;
+    }
+
+    private static bool ShouldApplyAtmosphereTemperature(FrozenWorldComponent world)
+    {
+        if (float.IsNaN(world.LastAppliedAtmosphereTemperature))
+            return true;
+
+        var minDelta = MathF.Max(0f, world.AtmosphereTemperatureSyncMinDelta);
+        return MathF.Abs(world.LastAppliedAtmosphereTemperature - world.AmbientTemperature) >= minDelta;
+    }
+
+    private static void MarkAtmosphereTemperatureDirty(FrozenWorldComponent world)
+    {
+        world.AtmosphereTemperatureDirty = true;
     }
 }
 

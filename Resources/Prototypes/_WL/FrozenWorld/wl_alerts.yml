@@ -3,15 +3,65 @@
 # Категория WLColdExposure — независима от ванильной Temperature, не перекрывается TemperatureSystem.
 
 - type: alert
+  id: WLFrostbiteChilled
+  category: WLColdExposure
+  icons:
+  - sprite: /Textures/_WL/Interface/Alerts/wl_frostbite.rsi
+    state: cold1
+  name: wl-alert-frostbite-chilled-name
+  description: wl-alert-frostbite-chilled-desc
+
+- type: alert
+  id: WLFrostbiteFreezing
+  category: WLColdExposure
+  icons:
+  - sprite: /Textures/_WL/Interface/Alerts/wl_frostbite.rsi
+    state: cold2
+  name: wl-alert-frostbite-freezing-name
+  description: wl-alert-frostbite-freezing-desc
+
+- type: alert
+  id: WLFrostbiteHypothermia
+  category: WLColdExposure
+  icons:
+  - sprite: /Textures/_WL/Interface/Alerts/wl_frostbite.rsi
+    state: cold3
+  name: wl-alert-frostbite-hypothermia-name
+  description: wl-alert-frostbite-hypothermia-desc
+
+- type: alert
+  id: WLFrostbiteSevereHypothermia
+  category: WLColdExposure
+  icons:
+  - sprite: /Textures/_WL/Interface/Alerts/wl_frostbite.rsi
+    state: cold4
+  name: wl-alert-frostbite-severe-name
+  description: wl-alert-frostbite-severe-desc
+
+- type: alert
+  id: WLFrostbiteCritical
+  category: WLColdExposure
+  icons:
+  - sprite: /Textures/_WL/Interface/Alerts/wl_frostbite.rsi
+    state: cold5
+  name: wl-alert-frostbite-critical-name
+  description: wl-alert-frostbite-critical-desc
+
+# Compatibility fallback for legacy references.
+- type: alert
   id: WLFrostbite
   category: WLColdExposure
-  maxSeverity: 3
+  maxSeverity: 5
   icons:
-  - sprite: /Textures/Interface/Alerts/temperature.rsi
+  - sprite: /Textures/_WL/Interface/Alerts/wl_frostbite.rsi
     state: cold1
-  - sprite: /Textures/Interface/Alerts/temperature.rsi
+  - sprite: /Textures/_WL/Interface/Alerts/wl_frostbite.rsi
     state: cold2
-  - sprite: /Textures/Interface/Alerts/temperature.rsi
+  - sprite: /Textures/_WL/Interface/Alerts/wl_frostbite.rsi
     state: cold3
+  - sprite: /Textures/_WL/Interface/Alerts/wl_frostbite.rsi
+    state: cold4
+  - sprite: /Textures/_WL/Interface/Alerts/wl_frostbite.rsi
+    state: cold5
   name: wl-alert-frostbite-name
   description: wl-alert-frostbite-desc

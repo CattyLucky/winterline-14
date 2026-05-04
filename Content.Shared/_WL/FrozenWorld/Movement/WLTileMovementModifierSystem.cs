@@ -1,21 +1,25 @@
-using Content.Shared.Maps;
+using System;
+using System.Collections.Generic;
+using Content.Shared._WL.FrozenWorld.Components;
+using Content.Shared._WL.FrozenWorld.Events;
+using Content.Shared._WL.FrozenWorld.Systems;
 using Content.Shared.Movement.Components;
 using Content.Shared.Movement.Systems;
-using Robust.Shared.Map;
-using Robust.Shared.Map.Components;
 
 namespace Content.Shared._WL.FrozenWorld.Movement;
 
 /// <summary>
-/// Applies WL movement modifiers from tile prototypes.
-/// Data lives on ContentTileDefinition:
-/// wlSpeedModifier / wlWalkSpeedModifier / wlSprintSpeedModifier.
+/// Applies FrozenWorld terrain movement penalties.
+///
+/// This system no longer queries tiles or inventory directly on movement refresh.
+/// It consumes two cached components:
+/// - FrozenSurfaceTrackerComponent: raw current tile data.
+/// - FrozenSurfaceProtectionComponent: cached footwear/body protection multipliers.
 /// </summary>
 public sealed partial class WLTileMovementModifierSystem : EntitySystem
 {
-    [Dependency] private readonly SharedMapSystem _map = default!;
-    [Dependency] private readonly ITileDefinitionManager _tileDefs = default!;
     [Dependency] private readonly MovementSpeedModifierSystem _movement = default!;
+    [Dependency] private readonly FrozenSurfaceProtectionSystem _protection = default!;
 
     private readonly Dictionary<EntityUid, TileMovementState> _states = new();
 
@@ -26,14 +30,21 @@ public sealed partial class WLTileMovementModifierSystem : EntitySystem
         SubscribeLocalEvent<MovementSpeedModifierComponent, ComponentStartup>(OnStartup);
         SubscribeLocalEvent<MovementSpeedModifierComponent, ComponentShutdown>(OnShutdown);
         SubscribeLocalEvent<MovementSpeedModifierComponent, RefreshMovementSpeedModifiersEvent>(OnRefreshMovement);
-        SubscribeLocalEvent<MovementSpeedModifierComponent, MoveEvent>(OnMove);
+
+        SubscribeLocalEvent<FrozenSurfaceTrackerComponent, FrozenSurfaceTrackerChangedEvent>(OnSurfaceTrackerChanged);
+        SubscribeLocalEvent<FrozenSurfaceProtectionComponent, FrozenSurfaceProtectionChangedEvent>(OnSurfaceProtectionChanged);
     }
 
     private void OnStartup(Entity<MovementSpeedModifierComponent> ent, ref ComponentStartup args)
     {
+        if (!HasComp<FrozenSurfaceAffectedComponent>(ent.Owner))
+        {
+            _states.Remove(ent.Owner);
+            return;
+        }
+
         var state = BuildState(ent.Owner);
         _states[ent.Owner] = state;
-
         _movement.RefreshMovementSpeedModifiers(ent.Owner, ent.Comp);
     }
 
@@ -44,6 +55,12 @@ public sealed partial class WLTileMovementModifierSystem : EntitySystem
 
     private void OnRefreshMovement(Entity<MovementSpeedModifierComponent> ent, ref RefreshMovementSpeedModifiersEvent args)
     {
+        if (!HasComp<FrozenSurfaceAffectedComponent>(ent.Owner))
+        {
+            _states.Remove(ent.Owner);
+            return;
+        }
+
         if (!_states.TryGetValue(ent.Owner, out var state))
         {
             state = BuildState(ent.Owner);
@@ -53,82 +70,94 @@ public sealed partial class WLTileMovementModifierSystem : EntitySystem
         args.ModifySpeed(state.WalkModifier, state.SprintModifier);
     }
 
-    private void OnMove(Entity<MovementSpeedModifierComponent> ent, ref MoveEvent args)
+    private void OnSurfaceTrackerChanged(Entity<FrozenSurfaceTrackerComponent> ent, ref FrozenSurfaceTrackerChangedEvent args)
     {
-        if (!TryGetCurrentTile(ent.Owner, out var gridUid, out var tileIndices))
-            return;
+        RefreshMovementIfChanged(ent.Owner);
+    }
 
-        if (_states.TryGetValue(ent.Owner, out var oldState) &&
-            oldState.GridUid == gridUid &&
-            oldState.TileIndices == tileIndices)
+    private void OnSurfaceProtectionChanged(Entity<FrozenSurfaceProtectionComponent> ent, ref FrozenSurfaceProtectionChangedEvent args)
+    {
+        RefreshMovementIfChanged(ent.Owner);
+    }
+
+    private void RefreshMovementIfChanged(EntityUid uid)
+    {
+        if (!TryComp<MovementSpeedModifierComponent>(uid, out var move))
         {
+            _states.Remove(uid);
             return;
         }
 
-        var newState = BuildState(ent.Owner, gridUid, tileIndices);
-
-        if (_states.TryGetValue(ent.Owner, out oldState) &&
-            oldState.WalkModifier.Equals(newState.WalkModifier) &&
-            oldState.SprintModifier.Equals(newState.SprintModifier))
+        if (!HasComp<FrozenSurfaceAffectedComponent>(uid))
         {
-            _states[ent.Owner] = newState;
+            if (!_states.TryGetValue(uid, out var removedState))
+                return;
+
+            _states.Remove(uid);
+            if (!removedState.Equals(TileMovementState.Default))
+                _movement.RefreshMovementSpeedModifiers(uid, move);
+
             return;
         }
 
-        _states[ent.Owner] = newState;
-        _movement.RefreshMovementSpeedModifiers(ent.Owner, ent.Comp);
+        var newState = BuildState(uid);
+        if (_states.TryGetValue(uid, out var oldState) && oldState.Equals(newState))
+            return;
+
+        _states[uid] = newState;
+        _movement.RefreshMovementSpeedModifiers(uid, move);
     }
 
     private TileMovementState BuildState(EntityUid uid)
     {
-        if (!TryGetCurrentTile(uid, out var gridUid, out var tileIndices))
+        if (!HasComp<FrozenSurfaceAffectedComponent>(uid))
             return TileMovementState.Default;
 
-        return BuildState(uid, gridUid, tileIndices);
-    }
-
-    private TileMovementState BuildState(EntityUid uid, EntityUid gridUid, Vector2i tileIndices)
-    {
-        if (!TryComp<MapGridComponent>(gridUid, out var grid))
+        if (!TryComp<FrozenSurfaceTrackerComponent>(uid, out var tracker) || !tracker.IsInitialized || !tracker.HasSurface)
             return TileMovementState.Default;
 
-        var tile = _map.GetTileRef(gridUid, grid, tileIndices);
-        var definition = _tileDefs[tile.Tile.TypeId];
-
-        if (definition is not ContentTileDefinition tileDef)
-            return new TileMovementState(gridUid, tileIndices, 1f, 1f);
-
-        var baseModifier = tileDef.WLSpeedModifier ?? 1f;
-        var walkModifier = tileDef.WLWalkSpeedModifier ?? baseModifier;
-        var sprintModifier = tileDef.WLSprintSpeedModifier ?? baseModifier;
-
-        return new TileMovementState(gridUid, tileIndices, walkModifier, sprintModifier);
+        var speedPenaltyMultiplier = GetSurfaceSpeedPenaltyMultiplier(uid);
+        var walkModifier = ApplySurfaceSpeedPenalty(tracker.WalkSpeedModifier, speedPenaltyMultiplier);
+        var sprintModifier = ApplySurfaceSpeedPenalty(tracker.SprintSpeedModifier, speedPenaltyMultiplier);
+        return new TileMovementState(walkModifier, sprintModifier);
     }
 
-    private bool TryGetCurrentTile(EntityUid uid, out EntityUid gridUid, out Vector2i tileIndices)
+    private float GetSurfaceSpeedPenaltyMultiplier(EntityUid uid)
     {
-        gridUid = default;
-        tileIndices = default;
+        if (!TryComp<FrozenSurfaceProtectionComponent>(uid, out var protection))
+        {
+            _protection.Recalculate(uid);
+            if (!TryComp<FrozenSurfaceProtectionComponent>(uid, out protection))
+                return 1f;
+        }
 
-        var xform = Transform(uid);
-
-        if (xform.GridUid is not { } currentGridUid)
-            return false;
-
-        if (!TryComp<MapGridComponent>(currentGridUid, out var grid))
-            return false;
-
-        tileIndices = _map.TileIndicesFor(currentGridUid, grid, xform.Coordinates);
-        gridUid = currentGridUid;
-        return true;
+        return SanitizePenaltyMultiplier(protection.SpeedPenaltyMultiplier);
     }
 
-    private readonly record struct TileMovementState(
-        EntityUid? GridUid,
-        Vector2i TileIndices,
-        float WalkModifier,
-        float SprintModifier)
+    private static float ApplySurfaceSpeedPenalty(float surfaceSpeedModifier, float penaltyMultiplier)
     {
-        public static readonly TileMovementState Default = new(null, default, 1f, 1f);
+        if (!float.IsFinite(surfaceSpeedModifier))
+            return 1f;
+
+        var clampedSpeed = Math.Clamp(surfaceSpeedModifier, 0.05f, 2f);
+        if (clampedSpeed >= 1f)
+            return clampedSpeed;
+
+        var penalty = 1f - clampedSpeed;
+        var finalPenalty = penalty * SanitizePenaltyMultiplier(penaltyMultiplier);
+        return Math.Clamp(1f - finalPenalty, 0.05f, 2f);
+    }
+
+    private static float SanitizePenaltyMultiplier(float value)
+    {
+        if (!float.IsFinite(value))
+            return 1f;
+
+        return MathF.Max(0f, value);
+    }
+
+    private readonly record struct TileMovementState(float WalkModifier, float SprintModifier)
+    {
+        public static readonly TileMovementState Default = new(1f, 1f);
     }
 }

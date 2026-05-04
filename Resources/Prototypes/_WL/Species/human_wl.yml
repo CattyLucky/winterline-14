@@ -20,16 +20,24 @@
     coldDamageThreshold: 0
     damageCap: 0
   - type: FrozenColdExposure
-    safeTemperature: 283.15      # +10°C — безопасно, exposure падает
-    extremeTemperature: 233.15   # -40°C — максимальный набор exposure
-    exposureGainRate: 1.0
-    recoveryRate: 3.0
-    damageThreshold: 60
     maxExposure: 100
-    damageInterval: 2
-    minDamagePerTick: 0.5
-    maxDamagePerTick: 2.0
+    baseUnprotectedTemperatureCelsius: 5
+    fullDeficitTemperatureCelsius: 30
+    exposureGainRate: 1.0
+    recoveryRate: 1.5
     damageType: Cold
+    chilledThreshold: 20
+    freezingThreshold: 40
+    hypothermiaThreshold: 60
+    severeHypothermiaThreshold: 80
+    criticalThreshold: 95
+    hypothermiaDamage: 0.5
+    hypothermiaDamageInterval: 4
+    severeHypothermiaDamage: 1.0
+    severeHypothermiaDamageInterval: 3
+    criticalDamage: 2.0
+    criticalDamageInterval: 2
+  - type: FrozenSurfaceAffected
 
 - type: species
   id: HumanWL

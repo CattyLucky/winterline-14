@@ -24,7 +24,7 @@ public sealed partial class FrozenWorldZoneEntry
 {
     /// <summary>
     /// Human-readable zone id, used only for logs and balancing.
-    /// Examples: BaseSafe, NearField, WorkField, ExpeditionField.
+    /// Examples: SpawnField, NearField, WorkField, ExpeditionField.
     /// </summary>
     [DataField(required: true)]
     public string Id = string.Empty;
@@ -40,6 +40,13 @@ public sealed partial class FrozenWorldZoneEntry
     /// </summary>
     [DataField(required: true)]
     public float MaxDistance;
+
+    /// <summary>
+    /// Ambient temperature offset for this zone in Kelvin/Celsius degrees.
+    /// Positive values are warmer, negative values are colder.
+    /// </summary>
+    [DataField]
+    public float AmbientTemperatureOffset;
 
     /// <summary>
     /// Attempts for weighted extra spawns after minimum counts are placed.

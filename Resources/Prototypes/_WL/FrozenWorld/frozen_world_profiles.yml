@@ -4,7 +4,6 @@
   baseName: Frostland Colony Base
   biome: WLIceWasteland
   mapLightColor: '#D7EFFF'
-  safeZonePadding: 8
   atmosphereTemperature: 243.15
   zonePreset: FrostRimDefaultZones
   gasMoles:

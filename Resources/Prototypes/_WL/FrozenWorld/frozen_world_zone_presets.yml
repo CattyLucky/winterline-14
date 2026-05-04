@@ -4,14 +4,10 @@
 - type: frozenWorldZonePreset
   id: FrostRimDefaultZones
   zones:
-  - id: BaseSafe
-    minDistance: 0
-    maxDistance: 8
-    spawnAttempts: 0
-
   - id: SpawnField
     minDistance: 8
     maxDistance: 35
+    ambientTemperatureOffset: 0
     spawnAttempts: 50
     spawns:
     - prototype: WLFrozenBranchPileDebug
@@ -36,6 +32,7 @@
   - id: NearField
     minDistance: 40
     maxDistance: 100
+    ambientTemperatureOffset: -4
     spawnAttempts: 60
     spawns:
     - prototype: WLSmallCoalOutcropDebug
@@ -60,6 +57,7 @@
   - id: WorkField
     minDistance: 100
     maxDistance: 180
+    ambientTemperatureOffset: -9
     spawnAttempts: 80
     spawns:
     - prototype: WLCoalOutcropDebug
@@ -84,6 +82,7 @@
   - id: ExpeditionField
     minDistance: 180
     maxDistance: 300
+    ambientTemperatureOffset: -15
     spawnAttempts: 100
     spawns:
     - prototype: WLLargeCoalVeinDebug

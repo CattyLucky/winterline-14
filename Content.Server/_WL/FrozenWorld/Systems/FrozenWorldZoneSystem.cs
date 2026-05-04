@@ -54,6 +54,7 @@ public sealed partial class FrozenWorldZoneSystem : EntitySystem
         var baseBounds = world.Comp.BaseBounds;
         var random = new Random(world.Comp.Seed ^ GetStableHash(preset.ID));
         var occupied = new List<Box2>();
+        UpdateTemperatureBands(world.Comp, preset);
 
         foreach (var zone in preset.Zones)
         {
@@ -282,5 +283,20 @@ public sealed partial class FrozenWorldZoneSystem : EntitySystem
 
             return hash;
         }
+    }
+
+    private static void UpdateTemperatureBands(FrozenWorldComponent world, FrozenWorldZonePresetPrototype preset)
+    {
+        world.TemperatureBands.Clear();
+
+        foreach (var zone in preset.Zones)
+        {
+            if (zone.MaxDistance <= zone.MinDistance)
+                continue;
+
+            world.TemperatureBands.Add(new FrozenWorldTemperatureBand(zone.MinDistance, zone.MaxDistance, zone.AmbientTemperatureOffset));
+        }
+
+        world.TemperatureBands.Sort(static (a, b) => b.MinDistance.CompareTo(a.MinDistance));
     }
 }

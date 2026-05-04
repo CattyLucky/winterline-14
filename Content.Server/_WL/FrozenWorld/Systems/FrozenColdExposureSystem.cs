@@ -1,34 +1,31 @@
 using System;
-using System.Numerics;
 using Content.Server._WL.FrozenWorld.Components;
 using Content.Shared.Alert;
-using Content.Shared.Atmos;
 using Content.Shared.Damage;
 using Content.Shared.Damage.Prototypes;
 using Content.Shared.Damage.Systems;
 using Content.Shared.FixedPoint;
-using Robust.Shared.Timing;
 using Robust.Shared.Prototypes;
+using Content.Shared._WL.FrozenWorld;
 
 namespace Content.Server._WL.FrozenWorld.Systems;
 
 /// <summary>
-/// Applies gameplay cold exposure from FrozenWorld ambient/effective temperature.
-/// AmbientTemperature + local FrozenHeatSource = EffectiveTemperature.
+/// Applies gameplay cold exposure from FrozenWorld environmental temperature and clothing coverage.
+///
+/// This system owns only exposure state, cold damage and alerts.
+/// It does not calculate world/local temperature directly; use FrozenThermalQuerySystem for that.
 /// </summary>
 public sealed partial class FrozenColdExposureSystem : EntitySystem
 {
     [Dependency] private readonly AlertsSystem _alerts = default!;
     [Dependency] private readonly DamageableSystem _damage = default!;
     [Dependency] private readonly IPrototypeManager _proto = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
+    [Dependency] private readonly FrozenThermalQuerySystem _thermal = default!;
 
     private const float UpdateInterval = 1f;
-    private static readonly TimeSpan HeatSourceSnapshotTtl = TimeSpan.FromSeconds(1);
 
     private float _accumulator;
-    private TimeSpan _nextHeatSourceSnapshotRebuild;
-    private Dictionary<EntityUid, List<FrozenHeatSourceSnapshot>> _cachedHeatSourcesByMap = new();
 
     public override void Update(float frameTime)
     {
@@ -40,53 +37,74 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
 
         var dt = _accumulator;
         _accumulator = 0f;
-        var heatSourcesByMap = GetHeatSourceSnapshot();
 
         var query = EntityQueryEnumerator<FrozenColdExposureComponent>();
         while (query.MoveNext(out var uid, out var exposure))
         {
-            var xform = Transform(uid);
-
-            if (xform.MapUid is not { } mapUid)
+            if (!_thermal.TryGetSnapshot(uid, exposure, out var snapshot))
             {
+                exposure.LastStage = FrozenColdStage.None;
                 ClearColdAlert(uid, exposure);
                 continue;
             }
 
-            if (!TryComp<FrozenWorldComponent>(mapUid, out var world))
-            {
-                ClearColdAlert(uid, exposure);
-                continue;
-            }
-
-            var effectiveTemperature = GetEffectiveTemperatureAt(mapUid, xform.WorldPosition, world, heatSourcesByMap);
-            exposure.LastEffectiveTemperature = effectiveTemperature;
-            UpdateExposure(uid, exposure, effectiveTemperature, dt);
+            StoreLastSnapshot(exposure, snapshot);
+            UpdateExposure(uid, exposure, snapshot, dt);
         }
     }
 
-    private void UpdateExposure(EntityUid uid, FrozenColdExposureComponent exposure, float effectiveTemperature, float frameTime)
+    private static void StoreLastSnapshot(FrozenColdExposureComponent exposure, FrozenThermalSnapshot snapshot)
     {
-        if (effectiveTemperature >= exposure.SafeTemperature)
+        exposure.LastEnvironmentalTemperature = snapshot.EnvironmentalTemperature;
+        exposure.LastEnvironmentalTemperatureCelsius = snapshot.EnvironmentalTemperatureCelsius;
+        exposure.LastAmbientTemperature = snapshot.AmbientTemperature;
+        exposure.LastStaticHeatBonus = snapshot.StaticHeatBonus;
+        exposure.LastDynamicHeatBonus = snapshot.DynamicHeatBonus;
+        exposure.LastShelterBonus = snapshot.ShelterBonus;
+        exposure.LastFootContactPenaltyCelsius = snapshot.FootContactPenaltyCelsius;
+        exposure.LastWeakestBodyPart = snapshot.WeakestBodyPart;
+        exposure.LastWeakestBodyPartSeverity = snapshot.WeakestBodyPartSeverity;
+        exposure.LastExposureGainMultiplier = snapshot.ExposureGainMultiplier;
+        exposure.LastRecoveryMultiplier = snapshot.RecoveryMultiplier;
+        exposure.LastColdDamageMultiplier = snapshot.ColdDamageMultiplier;
+        exposure.LastColdSeverity = snapshot.TotalColdSeverity;
+    }
+
+    private void UpdateExposure(EntityUid uid, FrozenColdExposureComponent exposure, FrozenThermalSnapshot snapshot, float frameTime)
+    {
+        if (snapshot.TotalColdSeverity <= 0f)
         {
-            exposure.Exposure = MathF.Max(0f, exposure.Exposure - exposure.RecoveryRate * frameTime);
+            var recoveryRate = exposure.RecoveryRate * snapshot.RecoveryMultiplier;
+            exposure.Exposure = MathF.Max(0f, exposure.Exposure - recoveryRate * frameTime);
             exposure.DamageAccumulator = 0f;
-            UpdateColdAlert(uid, exposure, effectiveTemperature);
+            exposure.LastColdSeverity = 0f;
+            exposure.LastDamageAmount = 0f;
+            exposure.LastStage = GetColdStage(exposure);
+            UpdateColdAlert(uid, exposure);
             return;
         }
 
-        var temperatureRange = MathF.Max(1f, exposure.SafeTemperature - exposure.ExtremeTemperature);
-        var severity = Math.Clamp((exposure.SafeTemperature - effectiveTemperature) / temperatureRange, 0f, 1f);
+        var oldStage = exposure.LastStage;
+        var gainRate = exposure.ExposureGainRate * snapshot.ExposureGainMultiplier;
+        var maxExposure = MathF.Max(0f, exposure.MaxExposure);
+        exposure.Exposure = Math.Clamp(
+            exposure.Exposure + gainRate * snapshot.TotalColdSeverity * frameTime,
+            0f,
+            maxExposure);
 
-        exposure.Exposure = MathF.Min(exposure.MaxExposure, exposure.Exposure + exposure.ExposureGainRate * severity * frameTime);
+        exposure.LastStage = GetColdStage(exposure);
+        exposure.LastDamageAmount = 0f;
+        if (exposure.LastStage != oldStage)
+            exposure.DamageAccumulator = 0f;
 
-        if (exposure.Exposure >= exposure.DamageThreshold)
+        var (damageAmount, damageInterval) = GetStageDamage(exposure, exposure.LastStage);
+        if (damageAmount > 0f && damageInterval > 0f)
         {
             exposure.DamageAccumulator += frameTime;
-            if (exposure.DamageAccumulator >= exposure.DamageInterval)
+            if (exposure.DamageAccumulator >= damageInterval)
             {
                 exposure.DamageAccumulator = 0f;
-                ApplyColdDamage(uid, exposure);
+                ApplyColdDamage(uid, exposure, snapshot, damageAmount);
             }
         }
         else
@@ -94,16 +112,21 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
             exposure.DamageAccumulator = 0f;
         }
 
-        UpdateColdAlert(uid, exposure, effectiveTemperature);
+        UpdateColdAlert(uid, exposure);
     }
 
-    private void ApplyColdDamage(EntityUid uid, FrozenColdExposureComponent exposure)
+    private void ApplyColdDamage(EntityUid uid, FrozenColdExposureComponent exposure, FrozenThermalSnapshot snapshot, float baseAmount)
     {
         if (!_proto.TryIndex<DamageTypePrototype>(exposure.DamageType, out var damageType))
             return;
 
-        var damageSeverity = Math.Clamp((exposure.Exposure - exposure.DamageThreshold) / MathF.Max(1f, exposure.MaxExposure - exposure.DamageThreshold), 0f, 1f);
-        var amount = Lerp(exposure.MinDamagePerTick, exposure.MaxDamagePerTick, damageSeverity);
+        // If the character is now warm enough, stage remains for alert/recovery, but damage stops immediately.
+        if (snapshot.TotalColdSeverity <= 0f)
+            return;
+
+        var amount = baseAmount * snapshot.ColdDamageMultiplier;
+        exposure.LastDamageAmount = amount;
+
         if (amount <= 0f)
             return;
 
@@ -111,20 +134,21 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
         _damage.TryChangeDamage(uid, damage, ignoreResistances: false, interruptsDoAfters: true, origin: uid);
     }
 
-    private void UpdateColdAlert(EntityUid uid, FrozenColdExposureComponent exposure, float effectiveTemperature)
+    private void UpdateColdAlert(EntityUid uid, FrozenColdExposureComponent exposure)
     {
-        var severity = GetColdAlertSeverity(exposure, effectiveTemperature);
-        if (severity <= 0)
+        var stage = exposure.LastStage;
+        if (stage == FrozenColdStage.None)
         {
             ClearColdAlert(uid, exposure);
             return;
         }
 
+        var severity = (short) stage;
         if (exposure.LastAlertSeverity == severity)
             return;
 
         exposure.LastAlertSeverity = severity;
-        _alerts.ShowAlert(uid, exposure.ColdAlert, severity);
+        _alerts.ShowAlert(uid, GetAlertForStage(exposure, stage), severity);
     }
 
     private void ClearColdAlert(EntityUid uid, FrozenColdExposureComponent exposure)
@@ -133,115 +157,52 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
             return;
 
         exposure.LastAlertSeverity = 0;
-        _alerts.ClearAlert(uid, exposure.ColdAlert);
+        _alerts.ClearAlertCategory(uid, exposure.ColdAlertCategory);
     }
 
-    private static short GetColdAlertSeverity(FrozenColdExposureComponent exposure, float effectiveTemperature)
+    private static ProtoId<AlertPrototype> GetAlertForStage(FrozenColdExposureComponent exposure, FrozenColdStage stage)
     {
-        if (effectiveTemperature >= exposure.SafeTemperature && exposure.Exposure <= 0.01f)
-            return 0;
-
-        if (exposure.Exposure >= exposure.DamageThreshold)
-            return 3;
-
-        if (exposure.Exposure >= exposure.DamageThreshold * 0.5f)
-            return 2;
-
-        if (effectiveTemperature < exposure.SafeTemperature || exposure.Exposure > 0.01f)
-            return 1;
-
-        return 0;
-    }
-
-    public float GetEffectiveTemperatureAt(EntityUid mapUid, Vector2 worldPos)
-    {
-        if (!TryComp<FrozenWorldComponent>(mapUid, out var world))
-            return Atmospherics.T20C;
-
-        return GetEffectiveTemperatureAt(mapUid, worldPos, world);
-    }
-
-    public float GetEffectiveTemperatureAt(EntityUid mapUid, Vector2 worldPos, FrozenWorldComponent world)
-    {
-        var heatSourcesByMap = GetHeatSourceSnapshot();
-        return GetEffectiveTemperatureAt(mapUid, worldPos, world, heatSourcesByMap);
-    }
-
-    private float GetEffectiveTemperatureAt(
-        EntityUid mapUid,
-        Vector2 worldPos,
-        FrozenWorldComponent world,
-        Dictionary<EntityUid, List<FrozenHeatSourceSnapshot>> heatSourcesByMap)
-    {
-        var temperature = world.AmbientTemperature;
-
-        if (!heatSourcesByMap.TryGetValue(mapUid, out var sources))
-            return temperature;
-
-        for (var i = 0; i < sources.Count; i++)
+        return stage switch
         {
-            var source = sources[i];
-            var sourcePos = source.Position;
-            var radius = MathF.Max(0.01f, source.Radius);
-            var radiusSq = radius * radius;
-            var distSq = Vector2.DistanceSquared(worldPos, sourcePos);
-
-            if (distSq > radiusSq)
-                continue;
-
-            var dist = MathF.Sqrt(distSq);
-            var falloff = 1f - dist / radius;
-            temperature += source.TemperatureDelta * falloff * source.TransferEfficiency;
-        }
-
-        return temperature;
+            FrozenColdStage.Chilled => exposure.ChilledAlert,
+            FrozenColdStage.Freezing => exposure.FreezingAlert,
+            FrozenColdStage.Hypothermia => exposure.HypothermiaAlert,
+            FrozenColdStage.SevereHypothermia => exposure.SevereHypothermiaAlert,
+            FrozenColdStage.Critical => exposure.CriticalAlert,
+            _ => exposure.ColdAlert,
+        };
     }
 
-    private Dictionary<EntityUid, List<FrozenHeatSourceSnapshot>> BuildHeatSourceSnapshot()
+    private static FrozenColdStage GetColdStage(FrozenColdExposureComponent exposure)
     {
-        var result = new Dictionary<EntityUid, List<FrozenHeatSourceSnapshot>>();
-        var query = EntityQueryEnumerator<FrozenHeatSourceComponent, TransformComponent>();
+        var value = Math.Clamp(exposure.Exposure, 0f, MathF.Max(0f, exposure.MaxExposure));
 
-        while (query.MoveNext(out _, out var source, out var xform))
+        if (value >= exposure.CriticalThreshold)
+            return FrozenColdStage.Critical;
+
+        if (value >= exposure.SevereHypothermiaThreshold)
+            return FrozenColdStage.SevereHypothermia;
+
+        if (value >= exposure.HypothermiaThreshold)
+            return FrozenColdStage.Hypothermia;
+
+        if (value >= exposure.FreezingThreshold)
+            return FrozenColdStage.Freezing;
+
+        if (value >= exposure.ChilledThreshold)
+            return FrozenColdStage.Chilled;
+
+        return FrozenColdStage.None;
+    }
+
+    private static (float Damage, float Interval) GetStageDamage(FrozenColdExposureComponent exposure, FrozenColdStage stage)
+    {
+        return stage switch
         {
-            if (xform.MapUid is not { } mapUid)
-                continue;
-
-            if (!result.TryGetValue(mapUid, out var sources))
-            {
-                sources = new List<FrozenHeatSourceSnapshot>();
-                result[mapUid] = sources;
-            }
-
-            sources.Add(new FrozenHeatSourceSnapshot(
-                xform.WorldPosition,
-                source.Radius,
-                source.TemperatureDelta,
-                source.TransferEfficiency));
-        }
-
-        return result;
-    }
-
-    private Dictionary<EntityUid, List<FrozenHeatSourceSnapshot>> GetHeatSourceSnapshot()
-    {
-        if (_timing.CurTime >= _nextHeatSourceSnapshotRebuild)
-        {
-            _cachedHeatSourcesByMap = BuildHeatSourceSnapshot();
-            _nextHeatSourceSnapshotRebuild = _timing.CurTime + HeatSourceSnapshotTtl;
-        }
-
-        return _cachedHeatSourcesByMap;
-    }
-
-    private readonly record struct FrozenHeatSourceSnapshot(
-        Vector2 Position,
-        float Radius,
-        float TemperatureDelta,
-        float TransferEfficiency);
-
-    private static float Lerp(float a, float b, float t)
-    {
-        return a + (b - a) * Math.Clamp(t, 0f, 1f);
+            FrozenColdStage.Hypothermia => (exposure.HypothermiaDamage, exposure.HypothermiaDamageInterval),
+            FrozenColdStage.SevereHypothermia => (exposure.SevereHypothermiaDamage, exposure.SevereHypothermiaDamageInterval),
+            FrozenColdStage.Critical => (exposure.CriticalDamage, exposure.CriticalDamageInterval),
+            _ => (0f, 0f),
+        };
     }
 }

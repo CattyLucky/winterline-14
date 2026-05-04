@@ -1,0 +1,44 @@
+<ui:FrozenHeatSourceFuelWindow
+    xmlns="https://spacestation14.io"
+    xmlns:ui="clr-namespace:Content.Client._WL.FrozenWorld.UI"
+    SetSize="540 320"
+    Resizable="True"
+    MinWidth="480"
+    MinHeight="280">
+    <BoxContainer Orientation="Vertical" Margin="12 12 12 12">
+        <PanelContainer Name="StatusPanel" HorizontalExpand="True">
+            <BoxContainer Orientation="Horizontal" HorizontalExpand="True">
+                <Label Name="StatusLabel" Text="—" HorizontalExpand="True" />
+                <Button Name="ToggleIgnitionButton"
+                        Text="—"
+                        MinWidth="105"
+                        HorizontalAlignment="Right" />
+                <Control MinSize="6 1" />
+                <Button Name="OpenFuelStorageButton"
+                        Text="—"
+                        MinWidth="145"
+                        HorizontalAlignment="Right" />
+            </BoxContainer>
+        </PanelContainer>
+
+        <Control MinSize="1 8" />
+
+        <PanelContainer Name="HeatPanel" HorizontalExpand="True">
+            <BoxContainer Orientation="Vertical">
+                <Label Name="HeatLabel" Text="—" />
+            </BoxContainer>
+        </PanelContainer>
+
+        <Control MinSize="1 8" />
+
+        <PanelContainer Name="FuelPanel" HorizontalExpand="True">
+            <BoxContainer Orientation="Vertical">
+                <Label Name="RemainingLabel" Text="—" />
+                <ProgressBar Name="FuelReserveBar" MinSize="0 20" MaxValue="1" />
+                <Control MinSize="1 6" />
+                <Label Name="TotalFuelLabel" Text="—" />
+                <Label Name="QueueLabel" Text="—" />
+            </BoxContainer>
+        </PanelContainer>
+    </BoxContainer>
+</ui:FrozenHeatSourceFuelWindow>
