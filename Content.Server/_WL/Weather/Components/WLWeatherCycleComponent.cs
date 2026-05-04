@@ -1,17 +1,18 @@
-using Content.Server.Weather.Systems;
+using Content.Server._WL.Weather.Systems;
+using Content.Server._WL.FrozenWorld.Systems;
 using Content.Shared.Prototypes;
 using Robust.Shared.GameObjects;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization.TypeSerializers.Implementations.Custom;
 
-namespace Content.Server.Weather.Components;
+namespace Content.Server._WL.Weather.Components;
 
 /// <summary>
 /// /// WL Change
 /// Cycles weather on the current map using a configurable sequence.
 /// </summary>
 [RegisterComponent, AutoGenerateComponentPause]
-[Access(typeof(WLWeatherCycleSystem))]
+[Access(typeof(WLWeatherCycleSystem), typeof(FrozenWorldSystem))]
 public sealed partial class WLWeatherCycleComponent : Component
 {
     /// <summary>

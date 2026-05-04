@@ -5,6 +5,9 @@
   biome: WLIceWasteland
   mapLightColor: '#D7EFFF'
   atmosphereTemperature: 243.15
+  lightCyclePreset: WLFrostRimDefaultLightCycle
+  enableWeatherCycle: true
+  weatherCyclePreset: WLFrostRimDefaultWeatherCycle
   zonePreset: FrostRimDefaultZones
   gasMoles:
   - 21.0

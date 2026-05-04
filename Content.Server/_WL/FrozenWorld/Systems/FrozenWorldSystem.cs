@@ -6,11 +6,13 @@ using Content.Server.Shuttles.Components;
 using Content.Server.Shuttles.Systems;
 using Content.Server.Station.Components;
 using Content.Server.Station.Events;
+using Content.Server._WL.Weather.Components;
 using Content.Shared._WL.FrozenWorld.Prototypes;
 using Content.Shared.Atmos;
 using Content.Shared.Atmos.Components;
 using Content.Shared.Gravity;
 using Content.Shared.Light.Components;
+using Content.Shared.Light.EntitySystems;
 using Content.Shared.Parallax.Biomes;
 using Content.Shared.Pinpointer;
 using Content.Shared.Shuttles.Components;
@@ -21,6 +23,7 @@ using Robust.Shared.Maths;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
 using Content.Server.Atmos.Components;
+using Robust.Shared.Map;
 
 namespace Content.Server._WL.FrozenWorld.Systems;
 
@@ -42,6 +45,7 @@ public sealed partial class FrozenWorldSystem : EntitySystem
     [Dependency] private readonly IRobustRandom _random = default!;
     [Dependency] private readonly ShuttleSystem _shuttles = default!;
     [Dependency] private readonly FrozenWorldZoneSystem _zones = default!;
+    [Dependency] private readonly FrozenWorldClimateSystem _climate = default!;
 
     private readonly HashSet<EntityUid> _configuredStations = new();
 
@@ -110,7 +114,13 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         _meta.SetEntityName(mapUid.Value, profile.MapName);
         _meta.SetEntityName(planetGridUid, profile.BaseName);
 
-        ConfigureMapEntity(mapUid.Value, profile.MapLightColor);
+        if (!_proto.TryIndex(profile.LightCyclePreset, out FrozenWorldLightCyclePresetPrototype? lightCyclePreset))
+        {
+            Log.Error($"Unable to find frozen world light-cycle preset '{profile.LightCyclePreset}' for profile '{profile.ID}'.");
+            return;
+        }
+
+        ConfigureMapEntity(mapUid.Value, profile, lightCyclePreset);
 
         var biomeComp = ConfigurePlanetGrid(planetGridUid, _proto.Index(profile.Biome), seed);
         if (biomeComp == null)
@@ -139,7 +149,20 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         worldComp.BaseBounds = baseBounds;
         worldComp.BaseBoundsWorld = baseBounds.Translated(planetXform.WorldPosition);
         worldComp.BaseStamped = true;
+        worldComp.BaseAmbientTemperature = profile.AmbientTemperature;
         worldComp.AmbientTemperature = profile.AmbientTemperature;
+        worldComp.DayNightTemperatureOffset = 0f;
+        worldComp.DayNightPhase = 0f;
+        worldComp.WeatherTemperatureOffset = 0f;
+        worldComp.ShelteredWeatherTemperatureOffset = 0f;
+        worldComp.WeatherExposureGainMultiplier = 1f;
+        worldComp.ShelteredWeatherExposureGainMultiplier = 1f;
+        worldComp.WeatherRecoveryMultiplier = 1f;
+        worldComp.ShelteredWeatherRecoveryMultiplier = 1f;
+        worldComp.WeatherColdDamageMultiplier = 1f;
+        worldComp.ShelteredWeatherColdDamageMultiplier = 1f;
+        worldComp.ActiveWeatherName = null;
+        worldComp.WeatherIntensity = 0f;
 
         // The grid was just seeded by WLApplyStaticGridAtmosphere(atmosphereMixture), so tile atmos already matches
         // the initial ambient temperature. Do not mark it dirty or immediately rewrite the whole grid again.
@@ -152,6 +175,8 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         baseComp.Profile = profileId;
 
         _zones.GenerateZones(planetGridUid, (mapUid.Value, worldComp), profile);
+        _climate.RecalculateNow(mapUid.Value, worldComp);
+        TrySetupWeatherController(mapUid.Value, profile);
 
         _configuredStations.Add(station.Owner);
 
@@ -186,16 +211,35 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         return true;
     }
 
-    private void ConfigureMapEntity(EntityUid mapUid, Color mapLightColor)
+    private void ConfigureMapEntity(EntityUid mapUid, FrozenWorldProfilePrototype profile, FrozenWorldLightCyclePresetPrototype lightPreset)
     {
         var light = EnsureComp<MapLightComponent>(mapUid);
-        light.AmbientLightColor = mapLightColor;
+        light.AmbientLightColor = profile.MapLightColor;
         Dirty(mapUid, light);
 
         EnsureComp<RoofComponent>(mapUid);
-        EnsureComp<LightCycleComponent>(mapUid);
+
+        var lightCycle = EnsureComp<LightCycleComponent>(mapUid);
+        lightCycle.OriginalColor = profile.MapLightColor;
+        if (lightPreset.ConfigureLightCycle)
+        {
+            lightCycle.Enabled = lightPreset.LightCycleEnabled;
+            lightCycle.Duration = SanitizeCycleDuration(lightPreset.LightCycleDuration);
+            lightCycle.InitialOffset = lightPreset.RandomizeLightCycleOffset;
+            lightCycle.Offset = lightPreset.RandomizeLightCycleOffset
+                ? _random.Next(lightCycle.Duration)
+                : NormalizeCycleOffset(lightPreset.LightCycleOffset, lightCycle.Duration);
+        }
+        Dirty(mapUid, lightCycle);
+
+        var offsetEv = new LightCycleOffsetEvent(lightCycle.Offset);
+        RaiseLocalEvent(mapUid, ref offsetEv);
+
         EnsureComp<SunShadowComponent>(mapUid);
-        EnsureComp<SunShadowCycleComponent>(mapUid);
+        var sunShadowCycle = EnsureComp<SunShadowCycleComponent>(mapUid);
+        sunShadowCycle.Duration = lightCycle.Duration;
+        sunShadowCycle.Offset = lightCycle.Offset;
+        Dirty(mapUid, sunShadowCycle);
     }
 
     private BiomeComponent? ConfigurePlanetGrid(EntityUid planetGridUid, BiomeTemplatePrototype biomeTemplate, int seed)
@@ -221,6 +265,7 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         _shuttles.Disable(planetGridUid);
         RemoveShuttleIdentity(planetGridUid);
         RemoveImplicitRoof(planetGridUid);
+        EnsureComp<RoofComponent>(planetGridUid);
 
         var biome = EnsureComp<BiomeComponent>(planetGridUid);
         _biome.SetSeed(planetGridUid, biome, seed, false);
@@ -316,6 +361,54 @@ public sealed partial class FrozenWorldSystem : EntitySystem
 
         Log.Info($"Frozen world map atmosphere configured: ambientTemperature={profile.AmbientTemperature:F1}K, totalMoles={mixture.TotalMoles:F2}, pressure={mixture.Pressure:F2}kPa.");
         return mixture;
+    }
+
+    private static TimeSpan SanitizeCycleDuration(TimeSpan duration)
+    {
+        return duration > TimeSpan.Zero ? duration : TimeSpan.FromMinutes(30);
+    }
+
+    private static TimeSpan NormalizeCycleOffset(TimeSpan offset, TimeSpan duration)
+    {
+        duration = SanitizeCycleDuration(duration);
+        var durationTicks = duration.Ticks;
+        if (durationTicks <= 0)
+            return TimeSpan.Zero;
+
+        var ticks = offset.Ticks % durationTicks;
+        if (ticks < 0)
+            ticks += durationTicks;
+
+        return TimeSpan.FromTicks(ticks);
+    }
+
+    private void TrySetupWeatherController(EntityUid mapUid, FrozenWorldProfilePrototype profile)
+    {
+        if (!profile.EnableWeatherCycle)
+            return;
+
+        if (!_proto.TryIndex(profile.WeatherCyclePreset, out var cyclePreset))
+        {
+            Log.Error($"WL weather cycle preset '{profile.WeatherCyclePreset}' does not exist.");
+            return;
+        }
+
+        if (cyclePreset.Cycle.Count == 0)
+            return;
+
+        var weatherCycle = EnsureComp<WLWeatherCycleComponent>(mapUid);
+        weatherCycle.Cycle = new List<EntProtoId>(cyclePreset.Cycle);
+        weatherCycle.StepDelay = cyclePreset.StepDelay;
+        weatherCycle.StepDelays = cyclePreset.StepDelays != null
+            ? new List<TimeSpan>(cyclePreset.StepDelays)
+            : null;
+        weatherCycle.StartIndex = cyclePreset.StartIndex;
+        weatherCycle.ApplyOnMapInit = cyclePreset.ApplyOnMapInit;
+        weatherCycle.CurrentIndex = 0;
+        weatherCycle.NextSwitch = TimeSpan.Zero;
+        weatherCycle.ActiveWeatherEffect = null;
+
+        Log.Info($"Configured WL weather cycle preset '{profile.WeatherCyclePreset}' from profile '{profile.ID}' on map {ToPrettyString(mapUid)}.");
     }
 
 }

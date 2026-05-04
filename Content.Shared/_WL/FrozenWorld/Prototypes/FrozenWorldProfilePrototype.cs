@@ -1,3 +1,4 @@
+using System;
 using Content.Shared.Parallax.Biomes;
 using Robust.Shared.Maths;
 using Robust.Shared.Prototypes;
@@ -37,4 +38,22 @@ public sealed partial class FrozenWorldProfilePrototype : IPrototype
 
     [DataField]
     public ProtoId<FrozenWorldZonePresetPrototype> ZonePreset = "FrostRimDefaultZones";
+
+    /// <summary>
+    /// Day/night + light-cycle preset id. Keeps cycle and gameplay temperature curve outside profile body.
+    /// </summary>
+    [DataField]
+    public ProtoId<FrozenWorldLightCyclePresetPrototype> LightCyclePreset = "WLFrostRimDefaultLightCycle";
+
+    /// <summary>
+    /// Enables WL weather cycling on the frozen world map.
+    /// </summary>
+    [DataField]
+    public bool EnableWeatherCycle = true;
+
+    /// <summary>
+    /// Weather cycle preset id. Keeps weather routing data outside the map profile body.
+    /// </summary>
+    [DataField]
+    public ProtoId<WLWeatherCyclePresetPrototype> WeatherCyclePreset = "WLFrostRimDefaultWeatherCycle";
 }

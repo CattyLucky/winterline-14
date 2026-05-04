@@ -33,18 +33,82 @@ public sealed partial class FrozenWorldComponent : Component
     public bool BaseStamped;
 
     /// <summary>
-    /// Single global ambient temperature of the frozen world in Kelvin.
-    /// Used by survival exposure immediately. Local heat sources do not mutate this value.
+    /// Base ambient temperature of the frozen world in Kelvin, before day/night and weather.
+    /// This is authored by FrozenWorldProfilePrototype.atmosphereTemperature.
+    /// </summary>
+    [DataField]
+    public float BaseAmbientTemperature = 243.15f;
+
+    /// <summary>
+    /// Gameplay ambient temperature in Kelvin after global day/night modifier,
+    /// before per-position weather, zone bands and local heat sources.
     /// </summary>
     [DataField]
     public float AmbientTemperature = 243.15f;
+
+    /// <summary>
+    /// Current day/night temperature delta derived from official LightCycleComponent.
+    /// Delta in Kelvin/Celsius units.
+    /// </summary>
+    [DataField]
+    public float DayNightTemperatureOffset;
+
+    /// <summary>
+    /// Current official LightCycle phase used by FrozenWorldClimateSystem. 0..1.
+    /// </summary>
+    [DataField]
+    public float DayNightPhase;
+
+    /// <summary>
+    /// Outdoor weather temperature delta from active WeatherStatusEffect entities.
+    /// Delta in Kelvin/Celsius units.
+    /// </summary>
+    [DataField]
+    public float WeatherTemperatureOffset;
+
+    /// <summary>
+    /// Weather temperature delta applied on tiles where official weather is blocked.
+    /// Usually 0 unless a weather modifier has BlockedByRoof = false.
+    /// </summary>
+    [DataField]
+    public float ShelteredWeatherTemperatureOffset;
+
+    [DataField]
+    public float WeatherExposureGainMultiplier = 1f;
+
+    [DataField]
+    public float ShelteredWeatherExposureGainMultiplier = 1f;
+
+    [DataField]
+    public float WeatherRecoveryMultiplier = 1f;
+
+    [DataField]
+    public float ShelteredWeatherRecoveryMultiplier = 1f;
+
+    [DataField]
+    public float WeatherColdDamageMultiplier = 1f;
+
+    [DataField]
+    public float ShelteredWeatherColdDamageMultiplier = 1f;
+
+    /// <summary>
+    /// Strongest active weather modifier display name.
+    /// </summary>
+    [DataField]
+    public string? ActiveWeatherName;
+
+    /// <summary>
+    /// Strength of the strongest active weather effect after startup/shutdown fade. 0..1.
+    /// </summary>
+    [DataField]
+    public float WeatherIntensity;
 
     /// <summary>
     /// Minimum environmental gameplay temperature after world/local heat modifiers.
     /// This is a safety clamp for survival calculations, not atmos gas temperature.
     /// </summary>
     [DataField]
-    public float MinEffectiveTemperature = 203.15f;
+    public float MinEffectiveTemperature = -226.85f; // -500C
 
     /// <summary>
     /// Maximum environmental gameplay temperature after world/local heat modifiers.

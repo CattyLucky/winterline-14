@@ -1,0 +1,10 @@
+- type: wlWeatherCyclePreset
+  id: WLFrostRimDefaultWeatherCycle
+  cycle:
+  - WLWeatherSnowfallLight
+  - WLWeatherSnowfallMedium
+  - WLWeatherHail
+  - WLWeatherSnowfallHeavy
+  stepDelay: 60s
+  startIndex: 0
+  applyOnMapInit: true

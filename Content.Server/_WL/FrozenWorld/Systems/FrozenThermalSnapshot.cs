@@ -26,7 +26,14 @@ public readonly record struct FrozenThermalSnapshot(
     FrozenBodyPartValues PartColdSeverity,
     float ExposureGainMultiplier,
     float RecoveryMultiplier,
-    float ColdDamageMultiplier)
+    float ColdDamageMultiplier,
+    float WeatherTemperatureOffset,
+    bool WeatherAffectsPosition,
+    string? ActiveWeatherName,
+    float WeatherIntensity,
+    float BaseAmbientTemperature,
+    float DayNightTemperatureOffset,
+    float DayNightPhase)
 {
     public float LocalHeatBonus => StaticHeatBonus + DynamicHeatBonus;
 }

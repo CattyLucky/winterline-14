@@ -29,4 +29,5 @@ public sealed partial class StationFrozenWorldComponent : Component
     /// </summary>
     [DataField]
     public int? Seed;
+
 }
