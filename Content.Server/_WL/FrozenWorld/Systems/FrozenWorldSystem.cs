@@ -7,6 +7,7 @@ using Content.Server.Shuttles.Systems;
 using Content.Server.Station.Components;
 using Content.Server.Station.Events;
 using Content.Server._WL.Weather.Components;
+using Content.Server._WL.Weather.Systems;
 using Content.Shared._WL.FrozenWorld.Prototypes;
 using Content.Shared.Atmos;
 using Content.Shared.Atmos.Components;
@@ -46,6 +47,7 @@ public sealed partial class FrozenWorldSystem : EntitySystem
     [Dependency] private readonly ShuttleSystem _shuttles = default!;
     [Dependency] private readonly FrozenWorldZoneSystem _zones = default!;
     [Dependency] private readonly FrozenWorldClimateSystem _climate = default!;
+    [Dependency] private readonly WLWeatherCycleSystem _weatherCycle = default!;
 
     private readonly HashSet<EntityUid> _configuredStations = new();
 
@@ -175,8 +177,8 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         baseComp.Profile = profileId;
 
         _zones.GenerateZones(planetGridUid, (mapUid.Value, worldComp), profile);
-        _climate.RecalculateNow(mapUid.Value, worldComp);
         TrySetupWeatherController(mapUid.Value, profile);
+        _climate.RecalculateNow(mapUid.Value, worldComp);
 
         _configuredStations.Add(station.Owner);
 
@@ -397,16 +399,19 @@ public sealed partial class FrozenWorldSystem : EntitySystem
             return;
 
         var weatherCycle = EnsureComp<WLWeatherCycleComponent>(mapUid);
-        weatherCycle.Cycle = new List<EntProtoId>(cyclePreset.Cycle);
+        weatherCycle.Cycle = new List<string>(cyclePreset.Cycle);
         weatherCycle.StepDelay = cyclePreset.StepDelay;
         weatherCycle.StepDelays = cyclePreset.StepDelays != null
             ? new List<TimeSpan>(cyclePreset.StepDelays)
             : null;
         weatherCycle.StartIndex = cyclePreset.StartIndex;
         weatherCycle.ApplyOnMapInit = cyclePreset.ApplyOnMapInit;
+        weatherCycle.ApplyVisualWeather = cyclePreset.ApplyVisualWeather;
         weatherCycle.CurrentIndex = 0;
         weatherCycle.NextSwitch = TimeSpan.Zero;
         weatherCycle.ActiveWeatherEffect = null;
+
+        _weatherCycle.InitializeNow(mapUid, weatherCycle);
 
         Log.Info($"Configured WL weather cycle preset '{profile.WeatherCyclePreset}' from profile '{profile.ID}' on map {ToPrettyString(mapUid)}.");
     }

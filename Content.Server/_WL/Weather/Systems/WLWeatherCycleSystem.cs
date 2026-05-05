@@ -1,11 +1,10 @@
 using Content.Server._WL.Weather.Components;
+using Content.Server._WL.FrozenWorld.Components;
 using Content.Server.Weather;
-using Content.Shared.StatusEffectNew;
-using Content.Shared.StatusEffectNew.Components;
-using Content.Shared.Weather;
+using Content.Shared._WL.FrozenWorld.Prototypes;
 using Robust.Shared.GameObjects;
 using Robust.Shared.Map;
-using Robust.Shared.Map.Components;
+using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
 
 namespace Content.Server._WL.Weather.Systems;
@@ -18,6 +17,7 @@ public sealed class WLWeatherCycleSystem : EntitySystem
 {
     [Dependency] private readonly IGameTiming _timing = default!;
     [Dependency] private readonly WeatherSystem _weather = default!;
+    [Dependency] private readonly IPrototypeManager _proto = default!;
 
     public override void Initialize()
     {
@@ -70,21 +70,67 @@ public sealed class WLWeatherCycleSystem : EntitySystem
         }
     }
 
+    /// <summary>
+    /// Forces the controller to select its start weather and apply gameplay weather immediately.
+    /// Used by FrozenWorld bootstrap so the first climate recalculation does not run without weather.
+    /// </summary>
+    public void InitializeNow(EntityUid uid, WLWeatherCycleComponent comp, bool applyWeather = true)
+    {
+        InitializeCycle(uid, comp, applyWeather);
+    }
+
     private void TryApplyWeather(EntityUid uid, WLWeatherCycleComponent comp, int index)
     {
-        var mapId = Transform(uid).MapID;
+        var mapXform = Transform(uid);
+        var mapUid = mapXform.MapUid ?? uid;
+        var mapId = mapXform.MapID;
         if (mapId == MapId.Nullspace)
             return;
 
-        var mapUid = Transform(uid).MapUid;
-        if (mapUid == null || !EnsureValidStatusEffectContainer(mapUid.Value))
+        var weatherId = comp.Cycle[index];
+        if (!_proto.TryIndex<FrozenWeatherPrototype>(weatherId, out var weather))
+        {
+            Log.Error($"Frozen weather prototype '{weatherId}' does not exist.");
             return;
+        }
 
-        if (!_weather.TrySetWeather(mapId, comp.Cycle[index], out var weatherEnt))
-            return;
+        var state = EnsureComp<FrozenWeatherStateComponent>(mapUid);
+        var intensity = 1f;
+        var shelterPenetration = Math.Clamp(weather.ShelterPenetration, 0f, 1f);
 
-        // Do not QueueDel previous weather manually: TrySetWeather handles fade-out.
-        comp.ActiveWeatherEffect = weatherEnt;
+        state.CurrentWeather = weather.ID;
+        state.DisplayName = weather.DisplayName;
+        state.Intensity = intensity;
+        state.ShelterPenetration = shelterPenetration;
+
+        state.TemperatureOffset = weather.TemperatureOffset * intensity;
+        state.ShelteredTemperatureOffset = weather.TemperatureOffset * shelterPenetration * intensity;
+
+        state.ExposureGainMultiplier = LerpNeutral(weather.ExposureGainMultiplier, intensity);
+        state.ShelteredExposureGainMultiplier = LerpNeutral(weather.ExposureGainMultiplier, shelterPenetration * intensity);
+
+        state.RecoveryMultiplier = LerpNeutral(weather.RecoveryMultiplier, intensity);
+        state.ShelteredRecoveryMultiplier = LerpNeutral(weather.RecoveryMultiplier, shelterPenetration * intensity);
+
+        state.ColdDamageMultiplier = LerpNeutral(weather.ColdDamageMultiplier, intensity);
+        state.ShelteredColdDamageMultiplier = LerpNeutral(weather.ColdDamageMultiplier, shelterPenetration * intensity);
+
+        if (comp.ApplyVisualWeather && weather.VisualWeather is { } visualWeather)
+        {
+            if (_weather.TrySetWeather(mapId, visualWeather, out var weatherEnt))
+            {
+                comp.ActiveWeatherEffect = weatherEnt;
+            }
+            else
+            {
+                comp.ActiveWeatherEffect = null;
+            }
+        }
+        else
+        {
+            _weather.TrySetWeather(mapId, null, out _);
+            comp.ActiveWeatherEffect = null;
+        }
     }
 
     private static TimeSpan ResolveStepDelay(WLWeatherCycleComponent comp, int nextIndex)
@@ -104,36 +150,16 @@ public sealed class WLWeatherCycleSystem : EntitySystem
 
     private void CleanupWeather(EntityUid uid, WLWeatherCycleComponent comp)
     {
-        if (comp.ActiveWeatherEffect == null)
-            return;
-
-        comp.ActiveWeatherEffect = null;
-
-        var mapId = Transform(uid).MapID;
+        var mapXform = Transform(uid);
+        var mapId = mapXform.MapID;
         if (mapId == MapId.Nullspace)
             return;
 
+        if (mapXform.MapUid is { } mapUid && TryComp<FrozenWeatherStateComponent>(mapUid, out var state))
+            state.Clear();
+
         _weather.TrySetWeather(mapId, null, out _);
-    }
-
-    private bool EnsureValidStatusEffectContainer(EntityUid mapUid)
-    {
-        if (!TryComp<StatusEffectContainerComponent>(mapUid, out var container))
-            return true;
-
-        foreach (var effect in container.ActiveStatusEffects?.ContainedEntities ?? [])
-        {
-            if (!Exists(effect) || !TryComp(effect, out MetaDataComponent? _))
-            {
-                Log.Warning($"WLWeatherCycle detected broken status-effect reference {effect} on {ToPrettyString(mapUid)}. Resetting map status-effect container.");
-                DumpStatusContainer(mapUid, container);
-                RemComp<StatusEffectContainerComponent>(mapUid);
-                EnsureComp<StatusEffectContainerComponent>(mapUid);
-                return true;
-            }
-        }
-
-        return true;
+        comp.ActiveWeatherEffect = null;
     }
 
     private void InitializeCycle(EntityUid uid, WLWeatherCycleComponent comp, bool applyWeather)
@@ -149,28 +175,8 @@ public sealed class WLWeatherCycleSystem : EntitySystem
         comp.NextSwitch = _timing.CurTime + ResolveStepDelay(comp, comp.CurrentIndex);
     }
 
-    private void DumpStatusContainer(EntityUid mapUid, StatusEffectContainerComponent container)
+    private static float LerpNeutral(float target, float intensity)
     {
-        var entries = container.ActiveStatusEffects?.ContainedEntities;
-        if (entries == null || entries.Count == 0)
-        {
-            Log.Warning($"WLWeatherCycle trace: map status container is empty on {ToPrettyString(mapUid)}.");
-            return;
-        }
-
-        Log.Warning($"WLWeatherCycle trace: dumping {entries.Count} status refs for {ToPrettyString(mapUid)}.");
-
-        foreach (var effect in entries)
-        {
-            var exists = Exists(effect);
-            var hasMeta = TryComp(effect, out MetaDataComponent? meta);
-            var hasWeather = HasComp<WeatherStatusEffectComponent>(effect);
-            var hasStatus = TryComp<StatusEffectComponent>(effect, out var status);
-            var life = hasMeta ? meta?.EntityLifeStage.ToString() ?? "<no-meta>" : "<no-meta>";
-            var proto = hasMeta ? meta?.EntityPrototype?.ID ?? "<none>" : "<no-meta>";
-            var appliedTo = hasStatus ? status?.AppliedTo?.ToString() ?? "<null>" : "<no-status>";
-
-            Log.Warning($"WLWeatherCycle trace: effect={effect} exists={exists} hasMeta={hasMeta} life={life} proto={proto} hasWeather={hasWeather} appliedTo={appliedTo}");
-        }
+        return float.Lerp(1f, target, Math.Clamp(intensity, 0f, 1f));
     }
 }

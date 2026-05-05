@@ -60,15 +60,14 @@ public sealed partial class FrozenWorldComponent : Component
     public float DayNightPhase;
 
     /// <summary>
-    /// Outdoor weather temperature delta from active WeatherStatusEffect entities.
+    /// Outdoor weather temperature delta from FrozenWeatherState gameplay weather.
     /// Delta in Kelvin/Celsius units.
     /// </summary>
     [DataField]
     public float WeatherTemperatureOffset;
 
     /// <summary>
-    /// Weather temperature delta applied on tiles where official weather is blocked.
-    /// Usually 0 unless a weather modifier has BlockedByRoof = false.
+    /// Weather temperature delta applied on sheltered tiles.
     /// </summary>
     [DataField]
     public float ShelteredWeatherTemperatureOffset;
@@ -90,6 +89,13 @@ public sealed partial class FrozenWorldComponent : Component
 
     [DataField]
     public float ShelteredWeatherColdDamageMultiplier = 1f;
+
+    /// <summary>
+    /// Minimum fraction of outdoor gameplay weather that penetrates shelter.
+    /// The final per-position weather factor is max(this value, shelter.WeatherExposureMultiplier).
+    /// </summary>
+    [DataField]
+    public float WeatherShelterPenetration;
 
     /// <summary>
     /// Strongest active weather modifier display name.

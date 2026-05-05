@@ -1,18 +1,14 @@
 using System;
 using Content.Server._WL.FrozenWorld.Components;
-using Content.Server.Weather;
-using Content.Shared._WL.FrozenWorld.Components;
 using Content.Shared._WL.FrozenWorld.Prototypes;
 using Content.Shared.Light.Components;
-using Content.Shared.StatusEffectNew;
-using Content.Shared.Weather;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
 
 namespace Content.Server._WL.FrozenWorld.Systems;
 
 /// <summary>
-/// Bridges official LightCycle/Weather into FrozenWorld gameplay climate values.
+/// Bridges official LightCycle and FrozenWeatherState into FrozenWorld gameplay climate values.
 /// </summary>
 public sealed class FrozenWorldClimateSystem : EntitySystem
 {
@@ -20,8 +16,6 @@ public sealed class FrozenWorldClimateSystem : EntitySystem
     [Dependency] private readonly IGameTiming _timing = default!;
     [Dependency] private readonly IPrototypeManager _proto = default!;
     [Dependency] private readonly MetaDataSystem _meta = default!;
-    [Dependency] private readonly StatusEffectsSystem _status = default!;
-    [Dependency] private readonly WeatherSystem _weather = default!;
 
     private float _accumulator;
     private const float RecalculateInterval = 1f;
@@ -59,66 +53,21 @@ public sealed class FrozenWorldClimateSystem : EntitySystem
         if (lightPreset.DayNightTemperatureEnabled)
             (phase, dayNightOffset) = CalculateDayNight(mapUid, lightPreset);
 
-        var outdoorTempOffset = 0f;
-        var shelteredTempOffset = 0f;
-        var outdoorExposureMultiplier = 1f;
-        var shelteredExposureMultiplier = 1f;
-        var outdoorRecoveryMultiplier = 1f;
-        var shelteredRecoveryMultiplier = 1f;
-        var outdoorDamageMultiplier = 1f;
-        var shelteredDamageMultiplier = 1f;
-        string? activeWeatherName = null;
-        var strongestIntensity = 0f;
-        var strongestScore = 0f;
-
-        if (_status.TryEffectsWithComp<WeatherStatusEffectComponent>(mapUid, out var weatherEffects))
-        {
-            foreach (var effect in weatherEffects)
-            {
-                if (!TryComp<FrozenWeatherModifierComponent>(effect.Owner, out var modifier))
-                    continue;
-
-                var intensity = Math.Clamp(_weather.GetWeatherPercent((effect.Owner, effect.Comp2)), 0f, 1f);
-                if (intensity <= 0f)
-                    continue;
-
-                var tempOffset = modifier.TemperatureOffset * intensity;
-
-                outdoorTempOffset += tempOffset;
-                outdoorExposureMultiplier *= float.Lerp(1f, modifier.ExposureGainMultiplier, intensity);
-                outdoorRecoveryMultiplier *= float.Lerp(1f, modifier.RecoveryMultiplier, intensity);
-                outdoorDamageMultiplier *= float.Lerp(1f, modifier.ColdDamageMultiplier, intensity);
-
-                if (!modifier.BlockedByRoof)
-                {
-                    shelteredTempOffset += tempOffset;
-                    shelteredExposureMultiplier *= float.Lerp(1f, modifier.ExposureGainMultiplier, intensity);
-                    shelteredRecoveryMultiplier *= float.Lerp(1f, modifier.RecoveryMultiplier, intensity);
-                    shelteredDamageMultiplier *= float.Lerp(1f, modifier.ColdDamageMultiplier, intensity);
-                }
-
-                var score = MathF.Max(MathF.Abs(tempOffset), intensity);
-                if (score <= strongestScore)
-                    continue;
-
-                strongestScore = score;
-                strongestIntensity = intensity;
-                activeWeatherName = modifier.DisplayName;
-            }
-        }
+        TryComp<FrozenWeatherStateComponent>(mapUid, out var weather);
 
         world.DayNightPhase = phase;
         world.DayNightTemperatureOffset = dayNightOffset;
-        world.WeatherTemperatureOffset = outdoorTempOffset;
-        world.ShelteredWeatherTemperatureOffset = shelteredTempOffset;
-        world.WeatherExposureGainMultiplier = MathF.Max(0f, outdoorExposureMultiplier);
-        world.ShelteredWeatherExposureGainMultiplier = MathF.Max(0f, shelteredExposureMultiplier);
-        world.WeatherRecoveryMultiplier = MathF.Max(0f, outdoorRecoveryMultiplier);
-        world.ShelteredWeatherRecoveryMultiplier = MathF.Max(0f, shelteredRecoveryMultiplier);
-        world.WeatherColdDamageMultiplier = MathF.Max(0f, outdoorDamageMultiplier);
-        world.ShelteredWeatherColdDamageMultiplier = MathF.Max(0f, shelteredDamageMultiplier);
-        world.ActiveWeatherName = activeWeatherName;
-        world.WeatherIntensity = strongestIntensity;
+        world.WeatherTemperatureOffset = weather?.TemperatureOffset ?? 0f;
+        world.ShelteredWeatherTemperatureOffset = weather?.ShelteredTemperatureOffset ?? 0f;
+        world.WeatherExposureGainMultiplier = weather?.ExposureGainMultiplier ?? 1f;
+        world.ShelteredWeatherExposureGainMultiplier = weather?.ShelteredExposureGainMultiplier ?? 1f;
+        world.WeatherRecoveryMultiplier = weather?.RecoveryMultiplier ?? 1f;
+        world.ShelteredWeatherRecoveryMultiplier = weather?.ShelteredRecoveryMultiplier ?? 1f;
+        world.WeatherColdDamageMultiplier = weather?.ColdDamageMultiplier ?? 1f;
+        world.ShelteredWeatherColdDamageMultiplier = weather?.ShelteredColdDamageMultiplier ?? 1f;
+        world.WeatherShelterPenetration = weather?.ShelterPenetration ?? 0f;
+        world.ActiveWeatherName = weather?.DisplayName;
+        world.WeatherIntensity = weather?.Intensity ?? 0f;
 
         var ambient = world.BaseAmbientTemperature + world.DayNightTemperatureOffset;
         _temperature.SetAmbientTemperature(mapUid, ambient, world);

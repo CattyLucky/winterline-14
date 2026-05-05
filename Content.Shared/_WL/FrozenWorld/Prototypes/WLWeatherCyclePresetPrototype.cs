@@ -13,7 +13,7 @@ public sealed partial class WLWeatherCyclePresetPrototype : IPrototype
     public string ID { get; private set; } = default!;
 
     [DataField(required: true)]
-    public List<EntProtoId> Cycle = new();
+    public List<string> Cycle = new();
 
     [DataField]
     public TimeSpan StepDelay = TimeSpan.FromMinutes(8);
@@ -26,4 +26,7 @@ public sealed partial class WLWeatherCyclePresetPrototype : IPrototype
 
     [DataField]
     public bool ApplyOnMapInit = true;
+
+    [DataField]
+    public bool ApplyVisualWeather = true;
 }

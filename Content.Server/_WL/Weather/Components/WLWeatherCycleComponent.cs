@@ -1,8 +1,6 @@
 using Content.Server._WL.Weather.Systems;
 using Content.Server._WL.FrozenWorld.Systems;
-using Content.Shared.Prototypes;
 using Robust.Shared.GameObjects;
-using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization.TypeSerializers.Implementations.Custom;
 
 namespace Content.Server._WL.Weather.Components;
@@ -20,7 +18,7 @@ public sealed partial class WLWeatherCycleComponent : Component
     /// Ordered weather sequence to rotate through.
     /// </summary>
     [DataField(required: true)]
-    public List<EntProtoId> Cycle = new();
+    public List<string> Cycle = new();
 
     /// <summary>
     /// /// WL Change
@@ -49,6 +47,9 @@ public sealed partial class WLWeatherCycleComponent : Component
     /// </summary>
     [DataField]
     public bool ApplyOnMapInit = true;
+
+    [DataField]
+    public bool ApplyVisualWeather = true;
 
     /// <summary>
     /// /// WL Change

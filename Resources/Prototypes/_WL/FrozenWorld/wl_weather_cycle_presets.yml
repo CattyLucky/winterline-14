@@ -1,10 +1,50 @@
+- type: frozenWeather
+  id: WLClear
+  displayName: Clear
+  temperatureOffset: 0
+  exposureGainMultiplier: 1
+  recoveryMultiplier: 1
+  coldDamageMultiplier: 1
+  shelterPenetration: 0
+
+- type: frozenWeather
+  id: WLLightSnow
+  displayName: Light snow
+  visualWeather: WLWeatherSnowfallLight
+  temperatureOffset: -4
+  exposureGainMultiplier: 1.1
+  recoveryMultiplier: 0.95
+  coldDamageMultiplier: 1
+  shelterPenetration: 0
+
+- type: frozenWeather
+  id: WLSnow
+  displayName: Snow
+  visualWeather: WLWeatherSnowfallMedium
+  temperatureOffset: -8
+  exposureGainMultiplier: 1.25
+  recoveryMultiplier: 0.85
+  coldDamageMultiplier: 1.1
+  shelterPenetration: 0.05
+
+- type: frozenWeather
+  id: WLBlizzard
+  displayName: Blizzard
+  visualWeather: WLWeatherSnowfallHeavy
+  temperatureOffset: -18
+  exposureGainMultiplier: 1.75
+  recoveryMultiplier: 0.55
+  coldDamageMultiplier: 1.35
+  shelterPenetration: 0.15
+
 - type: wlWeatherCyclePreset
   id: WLFrostRimDefaultWeatherCycle
   cycle:
-  - WLWeatherSnowfallLight
-  - WLWeatherSnowfallMedium
-  - WLWeatherHail
-  - WLWeatherSnowfallHeavy
-  stepDelay: 60s
+  - WLClear
+  - WLLightSnow
+  - WLSnow
+  - WLBlizzard
+  stepDelay: 5s
   startIndex: 0
   applyOnMapInit: true
+  applyVisualWeather: true
