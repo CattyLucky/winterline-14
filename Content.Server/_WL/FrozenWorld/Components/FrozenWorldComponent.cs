@@ -23,6 +23,16 @@ public sealed partial class FrozenWorldComponent : Component
     [DataField]
     public Box2 BaseBoundsWorld;
 
+    /// <summary>
+    /// Temporary migration fallback: treats BaseBoundsWorld as a weak shelter if no explicit
+    /// FrozenShelterComponent area covers the position.
+    ///
+    /// Keep this true while old maps do not yet have authored shelter marker entities.
+    /// Set to false on profiles/maps once explicit shelter areas are placed.
+    /// </summary>
+    [DataField]
+    public bool UseBaseBoundsShelterFallback = true;
+
     [DataField]
     public MapId MapId;
 
@@ -114,7 +124,7 @@ public sealed partial class FrozenWorldComponent : Component
     /// This is a safety clamp for survival calculations, not atmos gas temperature.
     /// </summary>
     [DataField]
-    public float MinEffectiveTemperature = -226.85f; // -500C
+    public float MinEffectiveTemperature = 73.15f; // -200C
 
     /// <summary>
     /// Maximum environmental gameplay temperature after world/local heat modifiers.

@@ -26,7 +26,4 @@ public sealed partial class WLWeatherCyclePresetPrototype : IPrototype
 
     [DataField]
     public bool ApplyOnMapInit = true;
-
-    [DataField]
-    public bool ApplyVisualWeather = true;
 }

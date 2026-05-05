@@ -8,6 +8,7 @@ namespace Content.Client._WL.FrozenWorld.UI;
 public sealed class FrozenThermometerBoundUserInterface : BoundUserInterface
 {
     private FrozenThermometerWindow? _window;
+    private FrozenThermometerDebugWindow? _debugWindow;
     private FrozenThermometerBoundUserInterfaceState? _lastState;
 
     public FrozenThermometerBoundUserInterface(EntityUid owner, Enum uiKey) : base(owner, uiKey)
@@ -19,6 +20,7 @@ public sealed class FrozenThermometerBoundUserInterface : BoundUserInterface
         base.Open();
 
         _window = this.CreateWindow<FrozenThermometerWindow>();
+        _window.DebugPressed += OpenDebugWindow;
 
         if (_lastState != null)
             _window.SetState(_lastState);
@@ -33,5 +35,17 @@ public sealed class FrozenThermometerBoundUserInterface : BoundUserInterface
 
         _lastState = cast;
         _window?.SetState(cast);
+        _debugWindow?.SetState(cast);
+    }
+
+    private void OpenDebugWindow()
+    {
+        if (_debugWindow == null)
+            _debugWindow = new FrozenThermometerDebugWindow();
+
+        _debugWindow.OpenCentered();
+
+        if (_lastState != null)
+            _debugWindow.SetState(_lastState);
     }
 }

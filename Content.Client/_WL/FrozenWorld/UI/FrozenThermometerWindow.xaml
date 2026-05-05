@@ -1,11 +1,18 @@
 <ui:FrozenThermometerWindow
     xmlns="https://spacestation14.io"
     xmlns:ui="clr-namespace:Content.Client._WL.FrozenWorld.UI"
-    SetSize="720 620"
+    SetSize="780 640"
     Resizable="True"
-    MinWidth="680"
-    MinHeight="500">
+    MinWidth="740"
+    MinHeight="560">
     <BoxContainer Orientation="Vertical" Margin="12 12 12 12">
+        <BoxContainer Orientation="Horizontal" HorizontalExpand="True">
+            <Label Name="HeaderLabel" Text="Thermometer" HorizontalExpand="True" />
+            <Button Name="DebugButton" Text="Debug" MinSize="96 28" />
+        </BoxContainer>
+
+        <Control MinSize="1 8" />
+
         <PanelContainer Name="TemperaturePanel" HorizontalExpand="True">
             <BoxContainer Orientation="Vertical">
                 <Label Name="EnvironmentalTemperatureLabel" Text="—" />

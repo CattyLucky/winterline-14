@@ -22,12 +22,16 @@ public sealed partial class FrozenThermometerWindow : DefaultWindow
     private readonly BodyPartRow[] _bodyPartRows = new BodyPartRow[MaxBodyPartRows];
     private Label _emptyBodyPartLabel = default!;
 
+    public event Action? DebugPressed;
+
     public FrozenThermometerWindow()
     {
         RobustXamlLoader.Load(this);
 
         Title = Loc.GetString("wl-thermometer-title");
+        HeaderLabel.Text = Loc.GetString("wl-thermometer-title");
         BodyPartsHeaderLabel.Text = Loc.GetString("wl-thermometer-body-parts-header");
+        DebugButton.OnPressed += _ => DebugPressed?.Invoke();
 
         TemperaturePanel.PanelOverride = FrozenWorldUiTheme.Panel(
             FrozenWorldUiTheme.SurfacePanelAlt,
@@ -85,10 +89,10 @@ public sealed partial class FrozenThermometerWindow : DefaultWindow
             };
 
             var name = FrozenWorldUiTheme.MakeValueLabel(string.Empty);
-            name.SetWidth = 130;
+            name.SetWidth = 160;
 
             var rated = FrozenWorldUiTheme.MakeMutedLabel(string.Empty);
-            rated.SetWidth = 275;
+            rated.SetWidth = 360;
 
             var severity = FrozenWorldUiTheme.MakeMutedLabel(string.Empty);
             severity.HorizontalExpand = true;
@@ -217,6 +221,7 @@ public sealed partial class FrozenThermometerWindow : DefaultWindow
 
     private void ApplyStaticLabelColors()
     {
+        HeaderLabel.FontColorOverride = FrozenWorldUiTheme.TextPrimary;
         EnvironmentalTemperatureLabel.FontColorOverride = FrozenWorldUiTheme.TextPrimary;
 
         StageLabel.FontColorOverride = FrozenWorldUiTheme.TextPrimary;

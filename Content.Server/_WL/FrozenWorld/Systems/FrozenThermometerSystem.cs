@@ -32,12 +32,8 @@ public sealed partial class FrozenThermometerSystem : EntitySystem
         base.Initialize();
 
         SubscribeLocalEvent<FrozenThermometerComponent, BeforeActivatableUIOpenEvent>(OnBeforeThermometerUiOpen);
-
-        Subs.BuiEvents<FrozenThermometerComponent>(FrozenWorldUiKey.Thermometer, subs =>
-        {
-            subs.Event<BoundUIOpenedEvent>(OnThermometerUiOpened);
-            subs.Event<BoundUIClosedEvent>(OnThermometerUiClosed);
-        });
+        SubscribeLocalEvent<FrozenThermometerComponent, BoundUIOpenedEvent>(OnThermometerUiOpened);
+        SubscribeLocalEvent<FrozenThermometerComponent, BoundUIClosedEvent>(OnThermometerUiClosed);
     }
 
     public override void Update(float frameTime)
@@ -50,7 +46,7 @@ public sealed partial class FrozenThermometerSystem : EntitySystem
             if (thermometer.ActiveUser == null)
                 continue;
 
-            if (!_ui.IsUiOpen(uid, FrozenWorldUiKey.Thermometer))
+            if (!IsAnyThermometerUiOpen(uid))
             {
                 thermometer.ActiveUser = null;
                 thermometer.UiUpdateAccumulator = 0f;
@@ -74,13 +70,19 @@ public sealed partial class FrozenThermometerSystem : EntitySystem
 
     private void OnThermometerUiOpened(Entity<FrozenThermometerComponent> ent, ref BoundUIOpenedEvent args)
     {
+        if (!IsThermometerUiKey(args.UiKey))
+            return;
+
         SetActiveUser(ent.Owner, ent.Comp, args.Actor);
         UpdateUiState(ent.Owner, args.Actor, ent.Comp);
     }
 
     private void OnThermometerUiClosed(Entity<FrozenThermometerComponent> ent, ref BoundUIClosedEvent args)
     {
-        if (_ui.IsUiOpen(ent.Owner, FrozenWorldUiKey.Thermometer))
+        if (!IsThermometerUiKey(args.UiKey))
+            return;
+
+        if (IsAnyThermometerUiOpen(ent.Owner))
             return;
 
         ent.Comp.ActiveUser = null;
@@ -89,20 +91,45 @@ public sealed partial class FrozenThermometerSystem : EntitySystem
 
     public void UpdateUiState(EntityUid thermometer, EntityUid user, FrozenThermometerComponent? component = null)
     {
-        if (!_ui.HasUi(thermometer, FrozenWorldUiKey.Thermometer))
+        if (!HasAnyThermometerUi(thermometer))
             return;
 
         if (!Resolve(thermometer, ref component, false))
             return;
 
         var state = BuildState(user);
-        _ui.SetUiState(thermometer, FrozenWorldUiKey.Thermometer, state);
+
+        if (_ui.HasUi(thermometer, FrozenWorldUiKey.Thermometer))
+            _ui.SetUiState(thermometer, FrozenWorldUiKey.Thermometer, state);
+
+        if (_ui.HasUi(thermometer, FrozenWorldUiKey.ThermometerDebug))
+            _ui.SetUiState(thermometer, FrozenWorldUiKey.ThermometerDebug, state);
     }
 
     private void SetActiveUser(EntityUid thermometerUid, FrozenThermometerComponent thermometer, EntityUid user)
     {
         thermometer.ActiveUser = user;
         thermometer.UiUpdateAccumulator = 0f;
+    }
+
+    private bool HasAnyThermometerUi(EntityUid thermometer)
+    {
+        return _ui.HasUi(thermometer, FrozenWorldUiKey.Thermometer)
+               || _ui.HasUi(thermometer, FrozenWorldUiKey.ThermometerDebug);
+    }
+
+    private bool IsAnyThermometerUiOpen(EntityUid thermometer)
+    {
+        return _ui.HasUi(thermometer, FrozenWorldUiKey.Thermometer)
+               && _ui.IsUiOpen(thermometer, FrozenWorldUiKey.Thermometer)
+               || _ui.HasUi(thermometer, FrozenWorldUiKey.ThermometerDebug)
+               && _ui.IsUiOpen(thermometer, FrozenWorldUiKey.ThermometerDebug);
+    }
+
+    private static bool IsThermometerUiKey(object? uiKey)
+    {
+        return Equals(uiKey, FrozenWorldUiKey.Thermometer)
+               || Equals(uiKey, FrozenWorldUiKey.ThermometerDebug);
     }
 
     private FrozenThermometerBoundUserInterfaceState BuildState(EntityUid user)
@@ -132,10 +159,23 @@ public sealed partial class FrozenThermometerSystem : EntitySystem
             snapshot.IsEnvironmentalTemperatureClamped,
             snapshot.MinEffectiveTemperatureCelsius,
             snapshot.MaxEffectiveTemperatureCelsius,
+            KelvinToCelsius(snapshot.BaseAmbientTemperature),
+            snapshot.DayNightTemperatureOffset,
+            snapshot.DayNightPhase,
+            snapshot.WeatherTemperatureOffset,
+            snapshot.WeatherIntensity,
+            snapshot.WeatherExposureFactor,
+            snapshot.WeatherAffectsPosition,
+            snapshot.ActiveWeatherName,
+            snapshot.ZoneTemperatureOffset,
+            snapshot.ShelterName,
             snapshot.StaticHeatBonus,
             snapshot.DynamicHeatBonus,
             snapshot.ShelterBonus,
             snapshot.FootContactPenaltyCelsius,
+            snapshot.ExposureGainMultiplier,
+            snapshot.RecoveryMultiplier,
+            snapshot.ColdDamageMultiplier,
             exposure.Exposure,
             exposure.MaxExposure,
             snapshot.TotalColdSeverity,
@@ -155,10 +195,23 @@ public sealed partial class FrozenThermometerSystem : EntitySystem
             false,
             20f,
             20f,
+            20f,
             0f,
             0f,
             0f,
             0f,
+            0f,
+            false,
+            null,
+            0f,
+            null,
+            0f,
+            0f,
+            0f,
+            0f,
+            1f,
+            1f,
+            1f,
             0f,
             100f,
             0f,

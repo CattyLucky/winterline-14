@@ -1,22 +1,26 @@
-using Content.Server._WL.Weather.Components;
 using Content.Server._WL.FrozenWorld.Components;
-using Content.Server.Weather;
+using Content.Server._WL.Weather.Components;
+using Content.Shared._WL.FrozenWorld.Components;
 using Content.Shared._WL.FrozenWorld.Prototypes;
 using Robust.Shared.GameObjects;
-using Robust.Shared.Map;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
 
 namespace Content.Server._WL.Weather.Systems;
 
 /// <summary>
-/// /// WL Change
-/// Handles sequential weather switching for WL map weather controllers.
+/// WL FrozenWorld weather cycle controller.
+///
+/// Source of truth:
+/// - FrozenWeatherStateComponent: server gameplay temperature/exposure/damage.
+/// - FrozenWeatherVisualStateComponent: client custom audio/overlay state.
+///
+/// This system no longer talks to vanilla WeatherSystem. FrozenWorld weather visual quality is controlled by
+/// FrozenWeatherVisualPrototype profile + RSI state on the client.
 /// </summary>
 public sealed class WLWeatherCycleSystem : EntitySystem
 {
     [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly WeatherSystem _weather = default!;
     [Dependency] private readonly IPrototypeManager _proto = default!;
 
     public override void Initialize()
@@ -24,7 +28,6 @@ public sealed class WLWeatherCycleSystem : EntitySystem
         base.Initialize();
 
         SubscribeLocalEvent<WLWeatherCycleComponent, MapInitEvent>(OnMapInit);
-        // WL Change: cleanup active weather effect when controller is deleted/shutdown.
         SubscribeLocalEvent<WLWeatherCycleComponent, ComponentShutdown>(OnShutdown);
     }
 
@@ -32,13 +35,13 @@ public sealed class WLWeatherCycleSystem : EntitySystem
     {
         if (ent.Comp.Cycle.Count == 0)
             return;
+
         InitializeCycle(ent.Owner, ent.Comp, ent.Comp.ApplyOnMapInit);
     }
 
     private void OnShutdown(Entity<WLWeatherCycleComponent> ent, ref ComponentShutdown args)
     {
-        // Let official WeatherSystem perform proper shutdown fade-out.
-        CleanupWeather(ent.Owner, ent.Comp);
+        CleanupWeather(ent.Owner);
     }
 
     public override void Update(float frameTime)
@@ -53,7 +56,7 @@ public sealed class WLWeatherCycleSystem : EntitySystem
 
             if (comp.NextSwitch == TimeSpan.Zero)
             {
-                InitializeCycle(uid, comp, comp.ApplyOnMapInit && comp.ActiveWeatherEffect == null);
+                InitializeCycle(uid, comp, comp.ApplyOnMapInit);
                 continue;
             }
 
@@ -71,7 +74,7 @@ public sealed class WLWeatherCycleSystem : EntitySystem
     }
 
     /// <summary>
-    /// Forces the controller to select its start weather and apply gameplay weather immediately.
+    /// Forces the controller to select its start weather and apply gameplay / client weather immediately.
     /// Used by FrozenWorld bootstrap so the first climate recalculation does not run without weather.
     /// </summary>
     public void InitializeNow(EntityUid uid, WLWeatherCycleComponent comp, bool applyWeather = true)
@@ -83,9 +86,6 @@ public sealed class WLWeatherCycleSystem : EntitySystem
     {
         var mapXform = Transform(uid);
         var mapUid = mapXform.MapUid ?? uid;
-        var mapId = mapXform.MapID;
-        if (mapId == MapId.Nullspace)
-            return;
 
         var weatherId = comp.Cycle[index];
         if (!_proto.TryIndex<FrozenWeatherPrototype>(weatherId, out var weather))
@@ -94,6 +94,12 @@ public sealed class WLWeatherCycleSystem : EntitySystem
             return;
         }
 
+        ApplyGameplayWeather(mapUid, weather);
+        ApplyClientVisualWeather(mapUid, weather);
+    }
+
+    private void ApplyGameplayWeather(EntityUid mapUid, FrozenWeatherPrototype weather)
+    {
         var state = EnsureComp<FrozenWeatherStateComponent>(mapUid);
         var intensity = 1f;
         var shelterPenetration = Math.Clamp(weather.ShelterPenetration, 0f, 1f);
@@ -114,23 +120,21 @@ public sealed class WLWeatherCycleSystem : EntitySystem
 
         state.ColdDamageMultiplier = LerpNeutral(weather.ColdDamageMultiplier, intensity);
         state.ShelteredColdDamageMultiplier = LerpNeutral(weather.ColdDamageMultiplier, shelterPenetration * intensity);
+    }
 
-        if (comp.ApplyVisualWeather && weather.VisualWeather is { } visualWeather)
-        {
-            if (_weather.TrySetWeather(mapId, visualWeather, out var weatherEnt))
-            {
-                comp.ActiveWeatherEffect = weatherEnt;
-            }
-            else
-            {
-                comp.ActiveWeatherEffect = null;
-            }
-        }
-        else
-        {
-            _weather.TrySetWeather(mapId, null, out _);
-            comp.ActiveWeatherEffect = null;
-        }
+    private void ApplyClientVisualWeather(EntityUid mapUid, FrozenWeatherPrototype weather)
+    {
+        var state = EnsureComp<FrozenWeatherVisualStateComponent>(mapUid);
+
+        if (state.CurrentWeather == weather.ID && Math.Abs(state.Intensity - 1f) < 0.001f)
+            return;
+
+        state.PreviousWeather = state.CurrentWeather;
+        state.CurrentWeather = weather.ID;
+        state.Intensity = 1f;
+        state.ChangedAtSeconds = (float) _timing.CurTime.TotalSeconds;
+        state.ChangeSerial++;
+        Dirty(mapUid, state);
     }
 
     private static TimeSpan ResolveStepDelay(WLWeatherCycleComponent comp, int nextIndex)
@@ -148,18 +152,19 @@ public sealed class WLWeatherCycleSystem : EntitySystem
         return TimeSpan.FromMinutes(8);
     }
 
-    private void CleanupWeather(EntityUid uid, WLWeatherCycleComponent comp)
+    private void CleanupWeather(EntityUid uid)
     {
         var mapXform = Transform(uid);
-        var mapId = mapXform.MapID;
-        if (mapId == MapId.Nullspace)
-            return;
+        var mapUid = mapXform.MapUid ?? uid;
 
-        if (mapXform.MapUid is { } mapUid && TryComp<FrozenWeatherStateComponent>(mapUid, out var state))
-            state.Clear();
+        if (TryComp<FrozenWeatherStateComponent>(mapUid, out var gameplay))
+            gameplay.Clear();
 
-        _weather.TrySetWeather(mapId, null, out _);
-        comp.ActiveWeatherEffect = null;
+        if (TryComp<FrozenWeatherVisualStateComponent>(mapUid, out var visual))
+        {
+            visual.Clear((float) _timing.CurTime.TotalSeconds);
+            Dirty(mapUid, visual);
+        }
     }
 
     private void InitializeCycle(EntityUid uid, WLWeatherCycleComponent comp, bool applyWeather)

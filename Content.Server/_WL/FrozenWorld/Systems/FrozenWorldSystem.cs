@@ -406,10 +406,8 @@ public sealed partial class FrozenWorldSystem : EntitySystem
             : null;
         weatherCycle.StartIndex = cyclePreset.StartIndex;
         weatherCycle.ApplyOnMapInit = cyclePreset.ApplyOnMapInit;
-        weatherCycle.ApplyVisualWeather = cyclePreset.ApplyVisualWeather;
         weatherCycle.CurrentIndex = 0;
         weatherCycle.NextSwitch = TimeSpan.Zero;
-        weatherCycle.ActiveWeatherEffect = null;
 
         _weatherCycle.InitializeNow(mapUid, weatherCycle);
 

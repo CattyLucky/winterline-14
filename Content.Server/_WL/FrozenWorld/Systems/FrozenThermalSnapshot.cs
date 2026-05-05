@@ -31,9 +31,12 @@ public readonly record struct FrozenThermalSnapshot(
     bool WeatherAffectsPosition,
     string? ActiveWeatherName,
     float WeatherIntensity,
+    float WeatherExposureFactor,
+    string? ShelterName,
     float BaseAmbientTemperature,
     float DayNightTemperatureOffset,
-    float DayNightPhase)
+    float DayNightPhase,
+    float ZoneTemperatureOffset)
 {
     public float LocalHeatBonus => StaticHeatBonus + DynamicHeatBonus;
 }
