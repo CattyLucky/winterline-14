@@ -15,6 +15,7 @@ public sealed partial class FrozenThermometerSystem : EntitySystem
 {
     [Dependency] private readonly FrozenThermalQuerySystem _thermal = default!;
     [Dependency] private readonly UserInterfaceSystem _ui = default!;
+    [Dependency] private readonly SharedTransformSystem _xform = default!;
 
     private static readonly FrozenBodyPart[] BodyParts =
     {
@@ -134,11 +135,11 @@ public sealed partial class FrozenThermometerSystem : EntitySystem
 
     private FrozenThermometerBoundUserInterfaceState BuildState(EntityUid user)
     {
-        if (!TryComp<FrozenColdExposureComponent>(user, out var exposure)
-            || !_thermal.TryGetSnapshot(user, exposure, out var snapshot))
-        {
-            return BuildUnavailableState();
-        }
+        if (!TryComp<FrozenColdExposureComponent>(user, out var exposure))
+            return BuildTemperatureOnlyState(user);
+
+        if (!_thermal.TryGetSnapshot(user, exposure, out var snapshot))
+            return BuildTemperatureOnlyState(user);
 
         var bodyParts = new FrozenThermometerBodyPartState[BodyParts.Length];
         for (var i = 0; i < BodyParts.Length; i++)
@@ -183,6 +184,57 @@ public sealed partial class FrozenThermometerSystem : EntitySystem
             snapshot.WeakestBodyPart,
             snapshot.WeakestBodyPartSeverity,
             bodyParts);
+    }
+
+    private FrozenThermometerBoundUserInterfaceState BuildTemperatureOnlyState(EntityUid user)
+    {
+        var xform = Transform(user);
+        if (xform.MapUid is not { } mapUid)
+            return BuildUnavailableState();
+
+        if (!TryComp<FrozenWorldComponent>(mapUid, out var world))
+            return BuildUnavailableState();
+
+        var worldPos = _xform.GetWorldPosition(xform);
+        var environmentalTemperature = _thermal.GetEnvironmentalTemperatureAt(mapUid, worldPos, world);
+        var environmentalTemperatureCelsius = KelvinToCelsius(environmentalTemperature);
+        var baseAmbientTemperatureCelsius = KelvinToCelsius(world.BaseAmbientTemperature);
+        var ambientTemperatureCelsius = KelvinToCelsius(world.AmbientTemperature);
+        var minEffectiveTemperatureCelsius = KelvinToCelsius(world.MinEffectiveTemperature);
+        var maxEffectiveTemperatureCelsius = KelvinToCelsius(world.MaxEffectiveTemperature);
+
+        return new FrozenThermometerBoundUserInterfaceState(
+            true,
+            ambientTemperatureCelsius,
+            environmentalTemperatureCelsius,
+            environmentalTemperatureCelsius,
+            false,
+            minEffectiveTemperatureCelsius,
+            maxEffectiveTemperatureCelsius,
+            baseAmbientTemperatureCelsius,
+            world.DayNightTemperatureOffset,
+            world.DayNightPhase,
+            world.WeatherTemperatureOffset,
+            world.WeatherIntensity,
+            1f,
+            world.WeatherIntensity > 0.01f,
+            world.ActiveWeatherName,
+            0f,
+            null,
+            0f,
+            0f,
+            0f,
+            0f,
+            1f,
+            1f,
+            1f,
+            0f,
+            100f,
+            0f,
+            FrozenColdStage.None,
+            FrozenBodyPart.Torso,
+            0f,
+            Array.Empty<FrozenThermometerBodyPartState>());
     }
 
     private static FrozenThermometerBoundUserInterfaceState BuildUnavailableState()

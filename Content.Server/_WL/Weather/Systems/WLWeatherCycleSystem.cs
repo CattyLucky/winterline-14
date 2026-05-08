@@ -1,4 +1,6 @@
+using System;
 using Content.Server._WL.FrozenWorld.Components;
+using Content.Server._WL.FrozenWorld.Events;
 using Content.Server._WL.Weather.Components;
 using Content.Shared._WL.FrozenWorld.Components;
 using Content.Shared._WL.FrozenWorld.Prototypes;
@@ -12,7 +14,7 @@ namespace Content.Server._WL.Weather.Systems;
 /// WL FrozenWorld weather cycle controller.
 ///
 /// Source of truth:
-/// - FrozenWeatherStateComponent: server gameplay temperature/exposure/damage.
+/// - FrozenWeatherStateComponent: server gameplay weather transition state.
 /// - FrozenWeatherVisualStateComponent: client custom audio/overlay state.
 ///
 /// This system no longer talks to vanilla WeatherSystem. FrozenWorld weather visual quality is controlled by
@@ -22,6 +24,8 @@ public sealed class WLWeatherCycleSystem : EntitySystem
 {
     [Dependency] private readonly IGameTiming _timing = default!;
     [Dependency] private readonly IPrototypeManager _proto = default!;
+
+    private const float DefaultGameplayFadeSeconds = 8f;
 
     public override void Initialize()
     {
@@ -101,25 +105,35 @@ public sealed class WLWeatherCycleSystem : EntitySystem
     private void ApplyGameplayWeather(EntityUid mapUid, FrozenWeatherPrototype weather)
     {
         var state = EnsureComp<FrozenWeatherStateComponent>(mapUid);
-        var intensity = 1f;
-        var shelterPenetration = Math.Clamp(weather.ShelterPenetration, 0f, 1f);
 
+        if (state.CurrentWeather == weather.ID && state.PreviousWeather == null)
+            return;
+
+        var previousWeather = state.CurrentWeather;
+        var hasPreviousWeather = previousWeather != null && previousWeather != weather.ID;
+        var transitionDuration = hasPreviousWeather
+            ? ResolveGameplayFadeDuration(weather)
+            : TimeSpan.Zero;
+
+        state.PreviousWeather = hasPreviousWeather ? previousWeather : null;
         state.CurrentWeather = weather.ID;
         state.DisplayName = weather.DisplayName;
-        state.Intensity = intensity;
-        state.ShelterPenetration = shelterPenetration;
+        state.TransitionStartedAt = _timing.CurTime;
+        state.TransitionDuration = transitionDuration;
 
-        state.TemperatureOffset = weather.TemperatureOffset * intensity;
-        state.ShelteredTemperatureOffset = weather.TemperatureOffset * shelterPenetration * intensity;
+        // If this is the initial weather, apply the target values immediately. Transition blending is
+        // performed by FrozenWorldClimateSystem on subsequent recalculations.
+        if (transitionDuration <= TimeSpan.Zero)
+        {
+            state.TemperatureOffset = weather.TemperatureOffset;
+            state.ExposureGainMultiplier = MathF.Max(0f, weather.ExposureGainMultiplier);
+            state.RecoveryMultiplier = MathF.Max(0f, weather.RecoveryMultiplier);
+            state.ColdDamageMultiplier = MathF.Max(0f, weather.ColdDamageMultiplier);
+            state.ShelterPenetration = Math.Clamp(weather.ShelterPenetration, 0f, 1f);
+            state.Intensity = GetPrototypeIntensity(weather);
+        }
 
-        state.ExposureGainMultiplier = LerpNeutral(weather.ExposureGainMultiplier, intensity);
-        state.ShelteredExposureGainMultiplier = LerpNeutral(weather.ExposureGainMultiplier, shelterPenetration * intensity);
-
-        state.RecoveryMultiplier = LerpNeutral(weather.RecoveryMultiplier, intensity);
-        state.ShelteredRecoveryMultiplier = LerpNeutral(weather.RecoveryMultiplier, shelterPenetration * intensity);
-
-        state.ColdDamageMultiplier = LerpNeutral(weather.ColdDamageMultiplier, intensity);
-        state.ShelteredColdDamageMultiplier = LerpNeutral(weather.ColdDamageMultiplier, shelterPenetration * intensity);
+        RaiseLocalEvent(mapUid, new FrozenWeatherChangedEvent(mapUid, weather.ID));
     }
 
     private void ApplyClientVisualWeather(EntityUid mapUid, FrozenWeatherPrototype weather)
@@ -135,6 +149,19 @@ public sealed class WLWeatherCycleSystem : EntitySystem
         state.ChangedAtSeconds = (float) _timing.CurTime.TotalSeconds;
         state.ChangeSerial++;
         Dirty(mapUid, state);
+    }
+
+    private TimeSpan ResolveGameplayFadeDuration(FrozenWeatherPrototype weather)
+    {
+        var fadeSeconds = DefaultGameplayFadeSeconds;
+
+        if (weather.Visual != null && _proto.TryIndex(weather.Visual.Value, out FrozenWeatherVisualPrototype? visual))
+            fadeSeconds = visual.FadeInSeconds;
+
+        if (fadeSeconds <= 0f)
+            return TimeSpan.Zero;
+
+        return TimeSpan.FromSeconds(fadeSeconds);
     }
 
     private static TimeSpan ResolveStepDelay(WLWeatherCycleComponent comp, int nextIndex)
@@ -159,6 +186,8 @@ public sealed class WLWeatherCycleSystem : EntitySystem
 
         if (TryComp<FrozenWeatherStateComponent>(mapUid, out var gameplay))
             gameplay.Clear();
+
+        RaiseLocalEvent(mapUid, new FrozenWeatherChangedEvent(mapUid, null));
 
         if (TryComp<FrozenWeatherVisualStateComponent>(mapUid, out var visual))
         {
@@ -190,8 +219,23 @@ public sealed class WLWeatherCycleSystem : EntitySystem
         Log.Warning($"WL weather cycle on {ToPrettyString(uid)} has {comp.StepDelays.Count} step delays for {comp.Cycle.Count} weather entries. Falling back to StepDelay for this cycle.");
     }
 
-    private static float LerpNeutral(float target, float intensity)
+    private static float GetPrototypeIntensity(FrozenWeatherPrototype weather)
     {
-        return float.Lerp(1f, target, Math.Clamp(intensity, 0f, 1f));
+        if (MathF.Abs(weather.TemperatureOffset) > 0.01f)
+            return 1f;
+
+        if (MathF.Abs(weather.ExposureGainMultiplier - 1f) > 0.01f)
+            return 1f;
+
+        if (MathF.Abs(weather.RecoveryMultiplier - 1f) > 0.01f)
+            return 1f;
+
+        if (MathF.Abs(weather.ColdDamageMultiplier - 1f) > 0.01f)
+            return 1f;
+
+        if (weather.ShelterPenetration > 0.01f)
+            return 1f;
+
+        return 0f;
     }
 }

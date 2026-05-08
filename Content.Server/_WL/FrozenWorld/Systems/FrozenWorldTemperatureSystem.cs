@@ -8,7 +8,7 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 /// Owns global FrozenWorld ambient temperature and throttled synchronization to tile atmosphere.
 ///
 /// AmbientTemperature is the gameplay value used by FrozenThermalQuerySystem and can change often.
-/// Tile atmosphere sync is expensive because it can touch the whole planet grid, so it is delayed and thresholded.
+/// Tile atmosphere sync is expensive because it can touch the whole world grid, so it is delayed and thresholded.
 /// </summary>
 public sealed partial class FrozenWorldAtmosphereTemperatureSystem : EntitySystem
 {
@@ -84,7 +84,7 @@ public sealed partial class FrozenWorldAtmosphereTemperatureSystem : EntitySyste
 
     private void TryApplyQueuedAtmosphereTemperature(EntityUid mapUid, FrozenWorldComponent world)
     {
-        if (world.PlanetGrid is not { } gridUid || !Exists(gridUid))
+        if (world.WorldGrid is not { } gridUid || !Exists(gridUid))
             return;
 
         if (!ShouldApplyAtmosphereTemperature(world))

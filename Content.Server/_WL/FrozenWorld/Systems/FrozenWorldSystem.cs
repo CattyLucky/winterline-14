@@ -1,3 +1,4 @@
+using System.Numerics;
 using Content.Server._WL.FrozenWorld.Components;
 using Content.Server.Atmos.EntitySystems;
 using Content.Server.Parallax;
@@ -47,6 +48,7 @@ public sealed partial class FrozenWorldSystem : EntitySystem
     [Dependency] private readonly IRobustRandom _random = default!;
     [Dependency] private readonly ShuttleSystem _shuttles = default!;
     [Dependency] private readonly FrozenWorldZoneSystem _zones = default!;
+    [Dependency] private readonly FrozenWorldPoiStampSystem _poiStamps = default!;
     [Dependency] private readonly FrozenWorldClimateSystem _climate = default!;
     [Dependency] private readonly WLWeatherCycleSystem _weatherCycle = default!;
 
@@ -89,25 +91,25 @@ public sealed partial class FrozenWorldSystem : EntitySystem
             return;
         }
 
-        if (!TryFindMainStationGrid(stationData, out var planetGridUid))
+        if (!TryFindWorldGrid(stationData, out var worldGridUid))
         {
             Log.Error($"Station {ToPrettyString(station.Owner)} has no valid station grid for frozen world setup.");
             return;
         }
 
-        if (!TryComp<MapGridComponent>(planetGridUid, out var planetGrid))
+        if (!TryComp<MapGridComponent>(worldGridUid, out var worldGrid))
         {
-            Log.Error($"Frozen world planet grid {ToPrettyString(planetGridUid)} has no MapGridComponent.");
+            Log.Error($"Frozen world grid {ToPrettyString(worldGridUid)} has no MapGridComponent.");
             return;
         }
 
-        var planetXform = Transform(planetGridUid);
-        var mapUid = planetXform.MapUid;
-        var mapId = planetXform.MapID;
+        var worldXform = Transform(worldGridUid);
+        var mapUid = worldXform.MapUid;
+        var mapId = worldXform.MapID;
 
         if (mapUid == null)
         {
-            Log.Error($"Frozen world planet grid {ToPrettyString(planetGridUid)} is not attached to a map.");
+            Log.Error($"Frozen world grid {ToPrettyString(worldGridUid)} is not attached to a map.");
             return;
         }
 
@@ -115,7 +117,8 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         var profileId = station.Comp.Profile;
 
         _meta.SetEntityName(mapUid.Value, profile.MapName);
-        _meta.SetEntityName(planetGridUid, profile.BaseName);
+        _meta.SetEntityName(worldGridUid, profile.BaseName);
+        EnsureComp<FrozenWorldMainGridComponent>(worldGridUid);
 
         if (!_proto.TryIndex(profile.LightCyclePreset, out FrozenWorldLightCyclePresetPrototype? lightCyclePreset))
         {
@@ -125,7 +128,7 @@ public sealed partial class FrozenWorldSystem : EntitySystem
 
         ConfigureMapEntity(mapUid.Value, profile, lightCyclePreset);
 
-        var biomeComp = ConfigurePlanetGrid(planetGridUid, _proto.Index(profile.Biome), seed);
+        var biomeComp = ConfigureWorldGrid(worldGridUid, _proto.Index(profile.Biome), seed);
         if (biomeComp == null)
             return;
 
@@ -133,37 +136,32 @@ public sealed partial class FrozenWorldSystem : EntitySystem
 
         // Seed all existing grid tiles with the world atmosphere and disable gas simulation.
         // Gas does not equalize between tiles; temperature changes per-tile still work (campfires, weather).
-        var seededTiles = _atmos.WLApplyStaticGridAtmosphere(planetGridUid, atmosphereMixture);
+        var seededTiles = _atmos.WLApplyStaticGridAtmosphere(worldGridUid, atmosphereMixture);
 
         // Cache the authored settlement bounds before pinning/preloading biome terrain.
         // PinPreloadArea will later materialize terrain chunks and expand LocalAABB;
         // zones must still be measured from the actual base footprint, not from the preloaded wilderness.
-        var baseBounds = planetGrid.LocalAABB;
+        var baseBounds = ResolveBaseBounds(worldGridUid, worldGrid);
         var preloadBounds = GetTerrainPreloadBounds(baseBounds, profile);
-        var pinnedChunks = _biome.PinPreloadArea(planetGridUid, biomeComp, planetGrid, preloadBounds);
+        var pinnedChunks = _biome.PinPreloadArea(worldGridUid, biomeComp, worldGrid, preloadBounds);
         _atmos.RefreshAllGridMapAtmospheres(mapUid.Value);
 
         var worldComp = EnsureComp<FrozenWorldComponent>(mapUid.Value);
         worldComp.Profile = profileId;
         worldComp.MapId = mapId;
         worldComp.Seed = seed;
-        worldComp.PlanetGrid = planetGridUid;
-        worldComp.TemporaryBaseGrid = null;
+        worldComp.WorldGrid = worldGridUid;
         worldComp.BaseBounds = baseBounds;
-        worldComp.BaseBoundsWorld = baseBounds.Translated(planetXform.WorldPosition);
-        worldComp.BaseStamped = true;
+        worldComp.BaseBoundsWorld = baseBounds.Translated(worldXform.WorldPosition);
+        worldComp.BaseAreaCaptured = true;
         worldComp.BaseAmbientTemperature = profile.AmbientTemperature;
         worldComp.AmbientTemperature = profile.AmbientTemperature;
         worldComp.DayNightTemperatureOffset = 0f;
         worldComp.DayNightPhase = 0f;
         worldComp.WeatherTemperatureOffset = 0f;
-        worldComp.ShelteredWeatherTemperatureOffset = 0f;
         worldComp.WeatherExposureGainMultiplier = 1f;
-        worldComp.ShelteredWeatherExposureGainMultiplier = 1f;
         worldComp.WeatherRecoveryMultiplier = 1f;
-        worldComp.ShelteredWeatherRecoveryMultiplier = 1f;
         worldComp.WeatherColdDamageMultiplier = 1f;
-        worldComp.ShelteredWeatherColdDamageMultiplier = 1f;
         worldComp.ActiveWeatherName = null;
         worldComp.WeatherIntensity = 0f;
 
@@ -174,43 +172,117 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         worldComp.AtmosphereTemperatureAccumulator = 0f;
         worldComp.ZonesGenerated = false;
 
-        var baseComp = EnsureComp<FrozenBaseComponent>(planetGridUid);
+        var baseComp = EnsureComp<FrozenBaseComponent>(worldGridUid);
         baseComp.Profile = profileId;
 
-        _zones.GenerateZones(planetGridUid, (mapUid.Value, worldComp), profile);
+        _zones.GenerateZones(worldGridUid, (mapUid.Value, worldComp), profile);
+        _poiStamps.StampPlacedPois(worldGridUid, worldComp);
         TrySetupWeatherController(mapUid.Value, profile);
         _climate.RecalculateNow(mapUid.Value, worldComp);
 
         _configuredStations.Add(station.Owner);
 
-        Log.Info($"Configured frozen world '{profileId}' on main surface grid {ToPrettyString(planetGridUid)}. Map={mapId}, biome='{profile.Biome}', pinnedChunks={pinnedChunks}, seededAtmosTiles={seededTiles}, preloadBounds={preloadBounds}.");
+        Log.Info($"Configured frozen world '{profileId}' on main surface grid {ToPrettyString(worldGridUid)}. Map={mapId}, biome='{profile.Biome}', pinnedChunks={pinnedChunks}, seededAtmosTiles={seededTiles}, preloadBounds={preloadBounds}.");
     }
 
-    private bool TryFindMainStationGrid(StationDataComponent stationData, out EntityUid gridUid)
+    private bool TryFindWorldGrid(StationDataComponent stationData, out EntityUid gridUid)
     {
-        EntityUid? bestGrid = null;
-        var bestArea = -1f;
+        EntityUid? markedGrid = null;
+        EntityUid? bestFallbackGrid = null;
+        var bestFallbackArea = -1f;
 
         foreach (var candidate in stationData.Grids)
         {
             if (!Exists(candidate) || !TryComp<MapGridComponent>(candidate, out var grid))
                 continue;
 
+            if (HasComp<FrozenWorldMainGridComponent>(candidate))
+            {
+                if (markedGrid != null)
+                {
+                    Log.Warning($"Multiple FrozenWorldMainGridComponent markers found for station setup. Keeping {ToPrettyString(markedGrid.Value)}, ignoring {ToPrettyString(candidate)}.");
+                    continue;
+                }
+
+                markedGrid = candidate;
+                continue;
+            }
+
             var area = grid.LocalAABB.Width * grid.LocalAABB.Height;
-            if (area <= bestArea)
+            if (area <= bestFallbackArea)
                 continue;
 
-            bestGrid = candidate;
-            bestArea = area;
+            bestFallbackGrid = candidate;
+            bestFallbackArea = area;
         }
 
-        if (bestGrid == null)
+        if (markedGrid != null)
+        {
+            gridUid = markedGrid.Value;
+            return true;
+        }
+
+        if (bestFallbackGrid == null)
         {
             gridUid = default;
             return false;
         }
 
-        gridUid = bestGrid.Value;
+        gridUid = bestFallbackGrid.Value;
+        Log.Warning($"Frozen world map has no FrozenWorldMainGridComponent marker. Falling back to largest station grid {ToPrettyString(gridUid)}. Add the marker to the authored world grid before adding large POI/template grids.");
+        return true;
+    }
+
+    private Box2 ResolveBaseBounds(EntityUid worldGridUid, MapGridComponent worldGrid)
+    {
+        var query = EntityQueryEnumerator<FrozenWorldBaseAreaComponent, TransformComponent>();
+        while (query.MoveNext(out var uid, out var baseArea, out var xform))
+        {
+            if (!TryResolveBaseAreaBounds(worldGridUid, worldGrid, uid, baseArea, xform, out var bounds))
+                continue;
+
+            Log.Info($"Frozen world base area resolved from {ToPrettyString(uid)}: {bounds}.");
+            return bounds;
+        }
+
+        // Migration fallback for maps that do not yet have an explicit base-area marker.
+        // This is safe only while the authored grid LocalAABB is still the settlement footprint.
+        Log.Warning($"Frozen world grid {ToPrettyString(worldGridUid)} has no FrozenWorldBaseAreaComponent marker. Falling back to authored grid LocalAABB. Add a base-area marker before adding preauthored wilderness/POI grids to the map file.");
+        return worldGrid.LocalAABB;
+    }
+
+    private bool TryResolveBaseAreaBounds(
+        EntityUid worldGridUid,
+        MapGridComponent worldGrid,
+        EntityUid markerUid,
+        FrozenWorldBaseAreaComponent baseArea,
+        TransformComponent xform,
+        out Box2 bounds)
+    {
+        Vector2 center;
+
+        if (markerUid == worldGridUid)
+        {
+            center = baseArea.UseLocalCenter
+                ? baseArea.LocalCenter
+                : worldGrid.LocalAABB.Center;
+        }
+        else
+        {
+            if (xform.ParentUid != worldGridUid)
+            {
+                bounds = default;
+                return false;
+            }
+
+            center = xform.LocalPosition;
+        }
+
+        var halfExtents = new Vector2(
+            MathF.Max(MathF.Abs(baseArea.HalfExtents.X), 0.5f),
+            MathF.Max(MathF.Abs(baseArea.HalfExtents.Y), 0.5f));
+
+        bounds = Box2.CenteredAround(center, halfExtents * 2f);
         return true;
     }
 
@@ -245,48 +317,48 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         Dirty(mapUid, sunShadowCycle);
     }
 
-    private BiomeComponent? ConfigurePlanetGrid(EntityUid planetGridUid, BiomeTemplatePrototype biomeTemplate, int seed)
+    private BiomeComponent? ConfigureWorldGrid(EntityUid worldGridUid, BiomeTemplatePrototype biomeTemplate, int seed)
     {
-        if (!TryComp<MapGridComponent>(planetGridUid, out var planetGrid))
+        if (!TryComp<MapGridComponent>(worldGridUid, out var worldGrid))
         {
-            Log.Error($"Frozen planet grid {ToPrettyString(planetGridUid)} has no MapGridComponent.");
+            Log.Error($"Frozen world grid {ToPrettyString(worldGridUid)} has no MapGridComponent.");
             return null;
         }
 
-        // WL: this grid is a static planet surface, not a destructible shuttle/station fragment.
+        // WL: this grid is a static world surface, not a destructible shuttle/station fragment.
         // Biome generation can create disconnected or irregular tile regions during chunk loading.
         // If grid splitting stays enabled, Robust will split the world into many grids and break PVS/physics/power.
-        if (planetGrid.CanSplit)
+        if (worldGrid.CanSplit)
         {
-            planetGrid.CanSplit = false;
-            Dirty(planetGridUid, planetGrid);
+            worldGrid.CanSplit = false;
+            Dirty(worldGridUid, worldGrid);
         }
 
         // The loaded settlement grid is authored like a station/shuttle grid.
         // For frozen world gameplay it is the static main surface grid.
         // Keeping this as one grid is required for cables/powernets to work between the base and nearby worksites.
-        _shuttles.Disable(planetGridUid);
-        RemoveShuttleIdentity(planetGridUid);
-        RemoveImplicitRoof(planetGridUid);
-        EnsureComp<RoofComponent>(planetGridUid);
+        _shuttles.Disable(worldGridUid);
+        RemoveShuttleIdentity(worldGridUid);
+        RemoveImplicitRoof(worldGridUid);
+        EnsureComp<RoofComponent>(worldGridUid);
 
-        var biome = EnsureComp<BiomeComponent>(planetGridUid);
-        _biome.SetSeed(planetGridUid, biome, seed, false);
-        _biome.SetTemplate(planetGridUid, biome, biomeTemplate, false);
+        var biome = EnsureComp<BiomeComponent>(worldGridUid);
+        _biome.SetSeed(worldGridUid, biome, seed, false);
+        _biome.SetTemplate(worldGridUid, biome, biomeTemplate, false);
         biome.Enabled = true;
-        Dirty(planetGridUid, biome);
+        Dirty(worldGridUid, biome);
 
-        var gravity = EnsureComp<GravityComponent>(planetGridUid);
+        var gravity = EnsureComp<GravityComponent>(worldGridUid);
         gravity.Enabled = true;
         gravity.Inherent = true;
-        Dirty(planetGridUid, gravity);
+        Dirty(worldGridUid, gravity);
 
         // Frozen world atmos is "frozen" by design: gameplay temperature is owned by
         // FrozenThermalQuerySystem (AmbientTemperature + zone bands + heat field), and
         // tile atmos is only kept around so that breathing, internals and SS14 sub-systems
         // that read tile gas (greenhouses, condensation, etc.) continue to work.
         //
-        // We disable AtmosphereSystem simulation on the planet grid so it does NOT:
+        // We disable AtmosphereSystem simulation on the world grid so it does NOT:
         //  - diffuse gases between tiles,
         //  - equalize pressure (monstermos),
         //  - run superconductivity, which would slowly drag tile temperature toward
@@ -297,14 +369,14 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         // by FrozenWorldSystem.Configure), and tile temperature can still be rewritten on
         // demand via SetAmbientTemperature(...) — the rewrite will simply stick because
         // there is no simulation to undo it.
-        _atmos.WLDisableGridAtmosphereSimulation(planetGridUid);
+        _atmos.WLDisableGridAtmosphereSimulation(worldGridUid);
 
-        var gasOverlay = EnsureComp<GasTileOverlayComponent>(planetGridUid);
-        Dirty(planetGridUid, gasOverlay);
+        var gasOverlay = EnsureComp<GasTileOverlayComponent>(worldGridUid);
+        Dirty(worldGridUid, gasOverlay);
 
-        if (RemComp<ProtectedGridComponent>(planetGridUid))
-            Log.Debug($"Removed ProtectedGrid from frozen world main surface grid {ToPrettyString(planetGridUid)}.");
-        EnsureComp<NavMapComponent>(planetGridUid);
+        if (RemComp<ProtectedGridComponent>(worldGridUid))
+            Log.Debug($"Removed ProtectedGrid from frozen world main surface grid {ToPrettyString(worldGridUid)}.");
+        EnsureComp<NavMapComponent>(worldGridUid);
 
         return biome;
     }
@@ -335,7 +407,7 @@ public sealed partial class FrozenWorldSystem : EntitySystem
     {
         // The authored settlement map is usually saved as a shuttle-like station grid.
         // For frozen-world gameplay this grid is static terrain. Remove shuttle identity so other systems do not
-        // treat the planet surface as a movable shuttle/FTL object.
+        // treat the world surface as a movable shuttle/FTL object.
         RemComp<ShuttleComponent>(gridUid);
         RemComp<IFFComponent>(gridUid);
         RemComp<FTLComponent>(gridUid);

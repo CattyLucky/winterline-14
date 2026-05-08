@@ -13,7 +13,7 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 ///
 /// Implementation note: we replace the exhaled mixture with an empty one rather
 /// than with SpaceGas. SpaceGas would record a vacuum cell on the player's tile
-/// - harmless on the planet grid (atmos simulation is off there) but on a sealed
+/// - harmless on the world grid (atmos simulation is off there) but on a sealed
 /// base grid it would create a small pressure pulse on every breath. An empty
 /// mixture contributes 0 moles, so the tile is left untouched.
 /// </summary>
@@ -36,7 +36,7 @@ public sealed partial class FrozenWorldAtmosSystem : EntitySystem
             return;
 
         // Empty mixture = 0 moles contributed to the tile. Avoids the SpaceGas
-        // vacuum-pulse problem inside sealed grids while still keeping the planet
+        // vacuum-pulse problem inside sealed grids while still keeping the world
         // grid CO2-free.
         args.Gas = new GasMixture();
     }

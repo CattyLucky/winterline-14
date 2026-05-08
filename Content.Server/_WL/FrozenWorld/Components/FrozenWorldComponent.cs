@@ -1,3 +1,4 @@
+using System.Numerics;
 using Content.Shared._WL.FrozenWorld.Prototypes;
 using Robust.Shared.Map;
 using Robust.Shared.Maths;
@@ -11,15 +12,24 @@ public sealed partial class FrozenWorldComponent : Component
     [DataField]
     public ProtoId<FrozenWorldProfilePrototype> Profile;
 
+    /// <summary>
+    /// Main gameplay surface grid for this frozen world.
+    /// Biome, zones, resources, construction, rooms and POI stamps all live on this grid.
+    /// </summary>
     [DataField]
-    public EntityUid? PlanetGrid;
+    public EntityUid? WorldGrid;
 
-    [DataField]
-    public EntityUid? TemporaryBaseGrid;
-
+    /// <summary>
+    /// Settlement/base footprint in WorldGrid local coordinates.
+    /// Zones are measured from this box, not from the whole grid LocalAABB after biome preloading.
+    /// </summary>
     [DataField]
     public Box2 BaseBounds;
 
+    /// <summary>
+    /// Settlement/base footprint in world coordinates.
+    /// Temporary shelter fallback uses this until authored shelter/room data exists.
+    /// </summary>
     [DataField]
     public Box2 BaseBoundsWorld;
 
@@ -39,8 +49,11 @@ public sealed partial class FrozenWorldComponent : Component
     [DataField]
     public int Seed;
 
+    /// <summary>
+    /// True once BaseBounds/BaseBoundsWorld were captured for the current round.
+    /// </summary>
     [DataField]
-    public bool BaseStamped;
+    public bool BaseAreaCaptured;
 
     /// <summary>
     /// Base ambient temperature of the frozen world in Kelvin, before day/night and weather.
@@ -76,29 +89,14 @@ public sealed partial class FrozenWorldComponent : Component
     [DataField]
     public float WeatherTemperatureOffset;
 
-    /// <summary>
-    /// Weather temperature delta applied on sheltered tiles.
-    /// </summary>
-    [DataField]
-    public float ShelteredWeatherTemperatureOffset;
-
     [DataField]
     public float WeatherExposureGainMultiplier = 1f;
-
-    [DataField]
-    public float ShelteredWeatherExposureGainMultiplier = 1f;
 
     [DataField]
     public float WeatherRecoveryMultiplier = 1f;
 
     [DataField]
-    public float ShelteredWeatherRecoveryMultiplier = 1f;
-
-    [DataField]
     public float WeatherColdDamageMultiplier = 1f;
-
-    [DataField]
-    public float ShelteredWeatherColdDamageMultiplier = 1f;
 
     /// <summary>
     /// Minimum fraction of outdoor gameplay weather that penetrates shelter.
@@ -149,10 +147,10 @@ public sealed partial class FrozenWorldComponent : Component
 
     /// <summary>
     /// Whether <see cref="FrozenWorldAtmosphereTemperatureSystem"/> is allowed to rewrite
-    /// tile atmosphere temperature on the planet grid when AmbientTemperature changes.
+    /// tile atmosphere temperature on the world grid when AmbientTemperature changes.
     ///
     /// IMPORTANT: this flag does NOT, by itself, make the atmosphere "frozen". The grid
-    /// atmosphere is taken offline in <see cref="FrozenWorldSystem.ConfigurePlanetGrid"/>
+    /// atmosphere is taken offline in <see cref="FrozenWorldSystem.ConfigureWorldGrid"/>
     /// by setting <see cref="GridAtmosphereComponent.Simulated"/> to false. That is the
     /// switch that disables gas diffusion, monstermos and superconductivity.
     ///
@@ -190,6 +188,13 @@ public sealed partial class FrozenWorldComponent : Component
     public bool ZonesGenerated;
 
     /// <summary>
+    /// POI placements selected for this round and consumed by FrozenWorldPoiStampSystem.
+    /// Patch 07.3A can spawn StampPrototype roots here; full MapPath tile/entity copying is the next step.
+    /// </summary>
+    [DataField]
+    public List<FrozenWorldPoiPlacementData> PoiPlacements = new();
+
+    /// <summary>
     /// Ambient temperature offsets (Kelvin/Celsius delta) by square distance bands from the base.
     /// Used by FrozenThermalQuerySystem to provide zone-to-zone temperature gameplay.
     /// </summary>
@@ -198,3 +203,57 @@ public sealed partial class FrozenWorldComponent : Component
 }
 
 public readonly record struct FrozenWorldTemperatureBand(float MinDistance, float MaxDistance, float TemperatureOffset);
+
+[DataDefinition]
+public sealed partial class FrozenWorldPoiPlacementData
+{
+    [DataField]
+    public ProtoId<FrozenWorldPoiPrototype> Poi;
+
+    [DataField]
+    public string Zone = string.Empty;
+
+    /// <summary>
+    /// Center position in world-grid local coordinates.
+    /// </summary>
+    [DataField]
+    public Vector2 Position;
+
+    /// <summary>
+    /// Reserved approximate footprint in world-grid local coordinates.
+    /// </summary>
+    [DataField]
+    public Box2 Bounds;
+
+    /// <summary>
+    /// Future stamp rotation selected by placement. Patch 07.2 leaves this at zero.
+    /// </summary>
+    [DataField]
+    public int RotationDegrees;
+
+    /// <summary>
+    /// Future stamp mirroring selected by placement. Patch 07.2 leaves this false.
+    /// </summary>
+    [DataField]
+    public bool Mirrored;
+
+    /// <summary>
+    /// True once a stamp pass handled this placement.
+    /// In Patch 07.3A this means a StampPrototype root entity was spawned.
+    /// Later full map-template stamping should also set this to true after copying tiles/entities.
+    /// </summary>
+    [DataField]
+    public bool Stamped;
+
+    /// <summary>
+    /// Root entity spawned for prototype-based POI stamps, if any.
+    /// </summary>
+    [DataField]
+    public EntityUid? StampEntity;
+
+    /// <summary>
+    /// Last non-fatal stamp warning/error for this placement. Kept for debug inspection.
+    /// </summary>
+    [DataField]
+    public string? StampFailure;
+}
