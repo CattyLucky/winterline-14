@@ -32,6 +32,13 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
     [Dependency] private readonly InventorySystem _inventory = default!;
     [Dependency] private readonly SharedTransformSystem _xform = default!;
 
+    /// <summary>
+    /// Required 0..1 severity gap between the coldest body part and the second-coldest body part
+    /// before the UI should call it a meaningful weak spot.
+    /// Without this, equal full-body cold always reports Torso because Torso is first in BodyParts.
+    /// </summary>
+    private const float ClearWeakestBodyPartSeverityDelta = 0.10f;
+
     private static readonly string[] InsulationInventorySlots =
     {
         "jumpsuit",
@@ -106,7 +113,8 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
             exposure.FullDeficitTemperatureCelsius,
             out var partSeverities,
             out var weakestPart,
-            out var weakestSeverity);
+            out var weakestSeverity,
+            out var hasClearWeakestBodyPart);
 
         snapshot = new FrozenThermalSnapshot(
             ambientTemperatureAtPosition,
@@ -123,6 +131,7 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
             footContactPenaltyCelsius,
             weakestPart,
             weakestSeverity,
+            hasClearWeakestBodyPart,
             partRatings,
             partSeverities,
             GetExposureGainMultiplier(receiver) * GetWeatherExposureGainMultiplier(world, weatherExposureFactor),
@@ -346,11 +355,14 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
         float fullDeficitTemperatureCelsius,
         out FrozenBodyPartValues partSeverities,
         out FrozenBodyPart weakestPart,
-        out float weakestSeverity)
+        out float weakestSeverity,
+        out bool hasClearWeakestBodyPart)
     {
         var total = 0f;
         weakestPart = FrozenBodyPart.Torso;
         weakestSeverity = 0f;
+        hasClearWeakestBodyPart = false;
+        var secondWeakestSeverity = 0f;
         partSeverities = new FrozenBodyPartValues(0f);
         var fullDeficit = MathF.Max(1f, fullDeficitTemperatureCelsius);
 
@@ -367,12 +379,20 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
 
             if (severity > weakestSeverity)
             {
+                secondWeakestSeverity = weakestSeverity;
                 weakestSeverity = severity;
                 weakestPart = part;
+            }
+            else if (severity > secondWeakestSeverity)
+            {
+                secondWeakestSeverity = severity;
             }
 
             total += severity * GetBodyPartWeight(part);
         }
+
+        hasClearWeakestBodyPart = weakestSeverity > 0f
+                                  && weakestSeverity - secondWeakestSeverity >= ClearWeakestBodyPartSeverityDelta;
 
         return Math.Clamp(total, 0f, 1f);
     }

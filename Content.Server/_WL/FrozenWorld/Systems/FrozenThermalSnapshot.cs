@@ -22,6 +22,7 @@ public readonly record struct FrozenThermalSnapshot(
     float FootContactPenaltyCelsius,
     FrozenBodyPart WeakestBodyPart,
     float WeakestBodyPartSeverity,
+    bool HasClearWeakestBodyPart,
     FrozenBodyPartValues PartRatedTemperatureCelsius,
     FrozenBodyPartValues PartColdSeverity,
     float ExposureGainMultiplier,

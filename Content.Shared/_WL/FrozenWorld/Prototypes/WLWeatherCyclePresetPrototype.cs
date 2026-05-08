@@ -1,3 +1,4 @@
+using Content.Shared.Prototypes;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization.Manager.Attributes;
 
@@ -13,7 +14,7 @@ public sealed partial class WLWeatherCyclePresetPrototype : IPrototype
     public string ID { get; private set; } = default!;
 
     [DataField(required: true)]
-    public List<string> Cycle = new();
+    public List<ProtoId<FrozenWeatherPrototype>> Cycle = new();
 
     [DataField]
     public TimeSpan StepDelay = TimeSpan.FromMinutes(8);

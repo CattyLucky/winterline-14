@@ -172,12 +172,22 @@ public sealed class WLWeatherCycleSystem : EntitySystem
         if (comp.Cycle.Count == 0)
             return;
 
+        ValidateStepDelays(uid, comp);
+
         comp.CurrentIndex = Math.Clamp(comp.StartIndex, 0, comp.Cycle.Count - 1);
 
         if (applyWeather)
             TryApplyWeather(uid, comp, comp.CurrentIndex);
 
         comp.NextSwitch = _timing.CurTime + ResolveStepDelay(comp, comp.CurrentIndex);
+    }
+
+    private void ValidateStepDelays(EntityUid uid, WLWeatherCycleComponent comp)
+    {
+        if (comp.StepDelays == null || comp.StepDelays.Count == comp.Cycle.Count)
+            return;
+
+        Log.Warning($"WL weather cycle on {ToPrettyString(uid)} has {comp.StepDelays.Count} step delays for {comp.Cycle.Count} weather entries. Falling back to StepDelay for this cycle.");
     }
 
     private static float LerpNeutral(float target, float intensity)

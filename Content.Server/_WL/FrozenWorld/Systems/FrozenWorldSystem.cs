@@ -15,6 +15,7 @@ using Content.Shared.Gravity;
 using Content.Shared.Light.Components;
 using Content.Shared.Light.EntitySystems;
 using Content.Shared.Parallax.Biomes;
+using Content.Shared.Prototypes;
 using Content.Shared.Pinpointer;
 using Content.Shared.Shuttles.Components;
 using Content.Shared.Station.Components;
@@ -399,7 +400,7 @@ public sealed partial class FrozenWorldSystem : EntitySystem
             return;
 
         var weatherCycle = EnsureComp<WLWeatherCycleComponent>(mapUid);
-        weatherCycle.Cycle = new List<string>(cyclePreset.Cycle);
+        weatherCycle.Cycle = new List<ProtoId<FrozenWeatherPrototype>>(cyclePreset.Cycle);
         weatherCycle.StepDelay = cyclePreset.StepDelay;
         weatherCycle.StepDelays = cyclePreset.StepDelays != null
             ? new List<TimeSpan>(cyclePreset.StepDelays)

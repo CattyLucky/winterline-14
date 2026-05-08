@@ -1,6 +1,9 @@
 using Content.Server._WL.FrozenWorld.Systems;
 using Content.Server._WL.Weather.Systems;
+using Content.Shared._WL.FrozenWorld.Prototypes;
+using Content.Shared.Prototypes;
 using Robust.Shared.GameObjects;
+using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization.TypeSerializers.Implementations.Custom;
 
 namespace Content.Server._WL.Weather.Components;
@@ -17,7 +20,7 @@ public sealed partial class WLWeatherCycleComponent : Component
     /// Ordered FrozenWeatherPrototype ids to rotate through.
     /// </summary>
     [DataField(required: true)]
-    public List<string> Cycle = new();
+    public List<ProtoId<FrozenWeatherPrototype>> Cycle = new();
 
     /// <summary>
     /// Default delay between weather switches.

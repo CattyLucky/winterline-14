@@ -9,7 +9,7 @@ namespace Content.Client._WL.FrozenWorld.UI;
 
 /// <summary>
 /// Separate diagnostic window for FrozenWorld thermal calculations.
-/// Kept local to the thermometer BUI: it displays the same server state without needing a second YAML UI key.
+/// Intended for a dedicated debug BUI/admin/debug item, not for the normal player-facing thermometer window.
 /// </summary>
 public sealed class FrozenThermometerDebugWindow : DefaultWindow
 {
