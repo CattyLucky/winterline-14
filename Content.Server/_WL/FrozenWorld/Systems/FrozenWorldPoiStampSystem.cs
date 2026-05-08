@@ -1,99 +1,261 @@
+using System.Linq;
+using System.Numerics;
 using Content.Server._WL.FrozenWorld.Components;
 using Content.Shared._WL.FrozenWorld.Prototypes;
+using Robust.Shared.EntitySerialization;
+using Robust.Shared.EntitySerialization.Systems;
 using Robust.Shared.Map;
 using Robust.Shared.Map.Components;
+using Robust.Shared.Maths;
 using Robust.Shared.Prototypes;
+using Robust.Shared.Utility;
 
 namespace Content.Server._WL.FrozenWorld.Systems;
 
 /// <summary>
-/// Applies already selected FrozenWorld POI placements to the main world grid.
+/// Stamps selected frozen-world POI templates into the main world grid.
 ///
-/// Patch 07.3A intentionally keeps the safe part separate from full map-file stamping:
-/// - placement is already handled by FrozenWorldZoneSystem;
-/// - this pass spawns an optional StampPrototype root/controller at the reserved position;
-/// - POIs that only have MapPath are left visible in logs for the later map-template copier.
-///
-/// This gives us a real, deterministic stamp pass without keeping POIs as separate runtime grids.
-/// Full tile/entity copying from MapPath should be implemented on top of this system once the exact
-/// MapLoaderSystem/MapGrid copy API is verified against the full repository.
+/// Runtime rule: POI maps are authoring templates only. After this pass, tiles/entities live on WorldGrid;
+/// template maps/grids are deleted and must not remain as separate gameplay grids.
 /// </summary>
 public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
 {
+    [Dependency] private readonly MapLoaderSystem _loader = default!;
+    [Dependency] private readonly SharedMapSystem _maps = default!;
     [Dependency] private readonly IPrototypeManager _proto = default!;
+    [Dependency] private readonly SharedTransformSystem _xform = default!;
 
     public void StampPlacedPois(EntityUid worldGridUid, FrozenWorldComponent world)
     {
-        if (world.PoiPlacements.Count == 0)
+        if (world.PoisStamped)
             return;
 
-        if (!HasComp<MapGridComponent>(worldGridUid))
+        if (!TryComp<MapGridComponent>(worldGridUid, out var worldGrid))
         {
-            Log.Error($"Frozen world cannot stamp POIs: world grid {ToPrettyString(worldGridUid)} has no MapGridComponent.");
+            Log.Error($"Frozen world cannot stamp POI: world grid {ToPrettyString(worldGridUid)} has no MapGridComponent.");
             return;
         }
 
-        var stamped = 0;
-        var deferred = 0;
-        var failed = 0;
-
-        for (var i = 0; i < world.PoiPlacements.Count; i++)
+        foreach (var placement in world.PoiPlacements)
         {
-            var placement = world.PoiPlacements[i];
-
             if (placement.Stamped)
                 continue;
 
-            if (!_proto.TryIndex(placement.Poi, out var poi))
+            if (!_proto.TryIndex(placement.Poi, out FrozenWorldPoiPrototype? poi))
             {
-                placement.StampFailure = $"Missing POI prototype '{placement.Poi}'.";
-                world.PoiPlacements[i] = placement;
-                failed++;
-                Log.Warning($"Frozen world POI placement in zone '{placement.Zone}' cannot be stamped: {placement.StampFailure}");
+                MarkFailed(placement, $"Missing POI prototype '{placement.Poi}'.");
                 continue;
             }
 
-            if (TrySpawnStampPrototype(worldGridUid, poi, ref placement))
+            if (placement.RotationSteps != 0 || placement.MirroredX || placement.MirroredY)
             {
-                world.PoiPlacements[i] = placement;
-                stamped++;
-                continue;
+                Log.Warning($"Frozen world POI '{placement.Poi}' requested rotation/mirroring, but the current stamper only supports unrotated templates. Stamping without transform.");
+                placement.RotationSteps = 0;
+                placement.MirroredX = false;
+                placement.MirroredY = false;
             }
 
-            if (poi.RequireMapStamp && !string.IsNullOrWhiteSpace(poi.MapPath))
-            {
-                placement.StampFailure = $"MapPath stamping is deferred: '{poi.MapPath}'. Add full map-template copier in the next patch or set stampPrototype for temporary content.";
-                world.PoiPlacements[i] = placement;
-                deferred++;
-                Log.Info($"Frozen world POI '{poi.ID}' selected at X={placement.Position.X:F1}, Y={placement.Position.Y:F1}, zone='{placement.Zone}', but map-template stamping is deferred. MapPath='{poi.MapPath}'.");
+            if (!TryStampPoi(worldGridUid, worldGrid, placement, poi))
                 continue;
-            }
 
-            placement.StampFailure = "No stampPrototype configured and no usable mapPath.";
-            world.PoiPlacements[i] = placement;
-            failed++;
-            Log.Warning($"Frozen world POI '{poi.ID}' selected at X={placement.Position.X:F1}, Y={placement.Position.Y:F1}, zone='{placement.Zone}', but it has nothing to stamp.");
+            placement.Stamped = true;
+            placement.StampFailure = null;
         }
 
-        Log.Info($"Frozen world POI stamp pass complete: stamped={stamped}, deferredMapTemplates={deferred}, failed={failed}, totalPlacements={world.PoiPlacements.Count}.");
+        world.PoisStamped = true;
     }
 
-    private bool TrySpawnStampPrototype(
+    private bool TryStampPoi(
         EntityUid worldGridUid,
-        FrozenWorldPoiPrototype poi,
-        ref FrozenWorldPoiPlacementData placement)
+        MapGridComponent worldGrid,
+        FrozenWorldPoiPlacementData placement,
+        FrozenWorldPoiPrototype poi)
     {
-        if (poi.StampPrototype is not { } stampPrototype)
+        var stampedSomething = false;
+
+        if (!string.IsNullOrWhiteSpace(poi.MapPath))
+        {
+            if (!TryStampMapTemplate(worldGridUid, worldGrid, placement, poi, out var tileCount, out var entityCount, out var failure))
+            {
+                MarkFailed(placement, failure);
+                return false;
+            }
+
+            stampedSomething = true;
+            Log.Info($"Stamped frozen world POI '{placement.Poi}' from '{poi.MapPath}' at X={placement.Position.X:F1}, Y={placement.Position.Y:F1}. Tiles={tileCount}, entities={entityCount}.");
+        }
+
+        if (poi.StampPrototype is { } stampPrototype)
+        {
+            var entity = Spawn(stampPrototype, new EntityCoordinates(worldGridUid, placement.Position));
+            placement.StampEntity = entity;
+            stampedSomething = true;
+
+            Log.Debug($"Spawned frozen world POI stamp prototype '{stampPrototype}' for '{placement.Poi}' as {ToPrettyString(entity)}.");
+        }
+
+        if (!stampedSomething)
+        {
+            MarkFailed(placement, $"POI '{placement.Poi}' has neither mapPath nor stampPrototype.");
             return false;
+        }
 
-        var coords = new EntityCoordinates(worldGridUid, placement.Position);
-        var spawned = Spawn(stampPrototype, coords);
-
-        placement.Stamped = true;
-        placement.StampEntity = spawned;
-        placement.StampFailure = null;
-
-        Log.Info($"Frozen world stamped POI '{poi.ID}' with root prototype '{stampPrototype}' at X={placement.Position.X:F1}, Y={placement.Position.Y:F1}, zone='{placement.Zone}' as {ToPrettyString(spawned)}.");
         return true;
     }
+
+    private bool TryStampMapTemplate(
+        EntityUid worldGridUid,
+        MapGridComponent worldGrid,
+        FrozenWorldPoiPlacementData placement,
+        FrozenWorldPoiPrototype poi,
+        out int tileCount,
+        out int entityCount,
+        out string failure)
+    {
+        tileCount = 0;
+        entityCount = 0;
+        failure = string.Empty;
+
+        var path = new ResPath(poi.MapPath);
+        var options = MapLoadOptions.Default with
+        {
+            DeserializationOptions = DeserializationOptions.Default with
+            {
+                LogOrphanedGrids = false
+            }
+        };
+
+        if (!_loader.TryLoadGeneric(path, out var result, options))
+        {
+            failure = $"Failed to load POI template '{poi.MapPath}'.";
+            return false;
+        }
+
+        void CleanupTemplate()
+        {
+            foreach (var grid in result.Grids)
+            {
+                if (Exists(grid) && !Deleted(grid))
+                    QueueDel(grid);
+            }
+
+            foreach (var map in result.Maps)
+            {
+                if (Exists(map.Owner) && !Deleted(map.Owner))
+                    QueueDel(map.Owner);
+            }
+        }
+
+        if (result.Grids.Count != 1)
+        {
+            failure = $"POI template '{poi.MapPath}' must contain exactly one grid, found {result.Grids.Count}.";
+            CleanupTemplate();
+            return false;
+        }
+
+        var templateGridUid = result.Grids.First();
+        if (!TryComp<MapGridComponent>(templateGridUid, out var templateGrid))
+        {
+            failure = $"POI template '{poi.MapPath}' grid has no MapGridComponent.";
+            CleanupTemplate();
+            return false;
+        }
+
+        try
+        {
+            if (poi.StampTiles)
+                tileCount = CopyTemplateTiles(worldGridUid, worldGrid, templateGridUid, templateGrid, placement, poi);
+
+            if (poi.StampEntities)
+                entityCount = MoveTemplateGridChildren(worldGridUid, templateGridUid, placement, poi);
+        }
+        catch (Exception e)
+        {
+            failure = $"Exception while stamping POI template '{poi.MapPath}': {e.Message}";
+            CleanupTemplate();
+            return false;
+        }
+
+        CleanupTemplate();
+        return true;
+    }
+
+    private int CopyTemplateTiles(
+        EntityUid worldGridUid,
+        MapGridComponent worldGrid,
+        EntityUid templateGridUid,
+        MapGridComponent templateGrid,
+        FrozenWorldPoiPlacementData placement,
+        FrozenWorldPoiPrototype poi)
+    {
+        var copied = 0;
+        var targetTileOrigin = new Vector2i(
+            (int)MathF.Floor(placement.Position.X),
+            (int)MathF.Floor(placement.Position.Y)) - poi.AnchorOffset;
+
+        foreach (var tile in _maps.GetAllTiles(templateGridUid, templateGrid))
+        {
+            if (tile.Tile.IsEmpty && !poi.StampEmptyTiles)
+                continue;
+
+            var targetIndices = targetTileOrigin + tile.GridIndices;
+            _maps.SetTile(worldGridUid, worldGrid, targetIndices, tile.Tile);
+            copied++;
+        }
+
+        return copied;
+    }
+
+    private int MoveTemplateGridChildren(
+        EntityUid worldGridUid,
+        EntityUid templateGridUid,
+        FrozenWorldPoiPlacementData placement,
+        FrozenWorldPoiPrototype poi)
+    {
+        var toMove = new List<PoiEntityMoveEntry>();
+        var query = EntityQueryEnumerator<TransformComponent>();
+
+        while (query.MoveNext(out var uid, out var xform))
+        {
+            if (uid == templateGridUid)
+                continue;
+
+            if (xform.ParentUid != templateGridUid)
+                continue;
+
+            // Do not embed nested grids/templates into the world grid. The POI template must be a single-grid file.
+            if (HasComp<MapGridComponent>(uid))
+                continue;
+
+            toMove.Add(new PoiEntityMoveEntry(uid, xform.LocalPosition, xform.LocalRotation));
+        }
+
+        var targetLocalOrigin = new Vector2(
+            MathF.Floor(placement.Position.X),
+            MathF.Floor(placement.Position.Y)) - new Vector2(poi.AnchorOffset.X, poi.AnchorOffset.Y);
+
+        var moved = 0;
+
+        foreach (var entry in toMove)
+        {
+            if (!Exists(entry.Uid) || !TryComp(entry.Uid, out TransformComponent? xform))
+                continue;
+
+            var targetCoordinates = new EntityCoordinates(worldGridUid, targetLocalOrigin + entry.LocalPosition);
+            _xform.SetCoordinates(entry.Uid, xform, targetCoordinates);
+            _xform.SetLocalRotation(entry.Uid, entry.LocalRotation, xform);
+            moved++;
+        }
+
+        return moved;
+    }
+
+    private void MarkFailed(FrozenWorldPoiPlacementData placement, string failure)
+    {
+        placement.Stamped = false;
+        placement.StampFailure = failure;
+        Log.Warning($"Frozen world POI '{placement.Poi}' in zone '{placement.ZoneId}' was not stamped: {failure}");
+    }
+
+    private readonly record struct PoiEntityMoveEntry(EntityUid Uid, Vector2 LocalPosition, Angle LocalRotation);
 }

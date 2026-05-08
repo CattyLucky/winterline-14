@@ -22,8 +22,15 @@ public sealed partial class FrozenWorldPoiPrototype : IPrototype
     /// Path to a small map/grid template.
     /// Example: /Maps/_WL/POI/old_bunker_small.yml
     /// </summary>
-    [DataField(required: true)]
+    [DataField]
     public string MapPath = string.Empty;
+
+    /// <summary>
+    /// Optional entity prototype spawned at the selected POI position after stamping.
+    /// Use this for debug markers, POI controller entities, or entity-only POIs.
+    /// </summary>
+    [DataField]
+    public EntProtoId? StampPrototype;
 
     /// <summary>
     /// Optional display/logging name. If empty, ID is used.
@@ -92,28 +99,17 @@ public sealed partial class FrozenWorldPoiPrototype : IPrototype
     public bool StampTiles = true;
 
     /// <summary>
+    /// If true, empty template tiles are allowed to erase existing biome/world tiles.
+    /// Keep false for most surface POI so the template only overwrites authored floor/wall tiles.
+    /// </summary>
+    [DataField]
+    public bool StampEmptyTiles;
+
+    /// <summary>
     /// If true, the future stamper may copy anchored entities from the template.
     /// </summary>
     [DataField]
     public bool StampEntities = true;
-
-    /// <summary>
-    /// Optional temporary root entity to spawn at the selected POI position.
-    /// Use this for Patch 07.3A debug/early content while full map-grid stamping is still being wired.
-    ///
-    /// Real authored ruins should still use MapPath. The later map stamper can ignore this field
-    /// or use it for invisible markers/controllers.
-    /// </summary>
-    [DataField]
-    public EntProtoId? StampPrototype;
-
-    /// <summary>
-    /// If true and no StampPrototype is configured, the stamp pass will log that this POI still
-    /// requires the full map-template stamper. This keeps unfinished POIs visible in logs instead
-    /// of silently doing nothing.
-    /// </summary>
-    [DataField]
-    public bool RequireMapStamp = true;
 }
 
 /// <summary>

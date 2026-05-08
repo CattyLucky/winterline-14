@@ -59,6 +59,13 @@
     maxDistance: 180
     ambientTemperatureOffset: -9
     spawnAttempts: 80
+    poiAttempts: 6
+    pois:
+    - poi: WLMeatballMagnetPoi
+      weight: 1
+      minCount: 2
+      maxCount: 3
+      minSeparation: 56
     spawns:
     - prototype: WLCoalOutcropDebug
       weight: 3
@@ -84,6 +91,18 @@
     maxDistance: 300
     ambientTemperatureOffset: -15
     spawnAttempts: 100
+    poiAttempts: 8
+    pois:
+    - poi: WLMeatballMagnetPoi
+      weight: 1
+      minCount: 2
+      maxCount: 3
+      minSeparation: 64
+    - poi: WLVeganMeatballMagnetPoi
+      weight: 2
+      minCount: 2
+      maxCount: 3
+      minSeparation: 64
     spawns:
     - prototype: WLLargeCoalVeinDebug
       weight: 3

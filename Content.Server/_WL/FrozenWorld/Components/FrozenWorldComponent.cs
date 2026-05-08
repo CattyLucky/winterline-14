@@ -188,11 +188,17 @@ public sealed partial class FrozenWorldComponent : Component
     public bool ZonesGenerated;
 
     /// <summary>
-    /// POI placements selected for this round and consumed by FrozenWorldPoiStampSystem.
-    /// Patch 07.3A can spawn StampPrototype roots here; full MapPath tile/entity copying is the next step.
+    /// Runtime POI placements selected by FrozenWorldZoneSystem.
+    /// The stamp pass consumes this list and inserts map/entity templates into WorldGrid.
     /// </summary>
     [DataField]
     public List<FrozenWorldPoiPlacementData> PoiPlacements = new();
+
+    /// <summary>
+    /// True once the current PoiPlacements list has been processed by FrozenWorldPoiStampSystem.
+    /// </summary>
+    [DataField]
+    public bool PoisStamped;
 
     /// <summary>
     /// Ambient temperature offsets (Kelvin/Celsius delta) by square distance bands from the base.
@@ -204,6 +210,7 @@ public sealed partial class FrozenWorldComponent : Component
 
 public readonly record struct FrozenWorldTemperatureBand(float MinDistance, float MaxDistance, float TemperatureOffset);
 
+
 [DataDefinition]
 public sealed partial class FrozenWorldPoiPlacementData
 {
@@ -211,49 +218,35 @@ public sealed partial class FrozenWorldPoiPlacementData
     public ProtoId<FrozenWorldPoiPrototype> Poi;
 
     [DataField]
-    public string Zone = string.Empty;
+    public string ZoneId = string.Empty;
 
     /// <summary>
-    /// Center position in world-grid local coordinates.
+    /// WorldGrid local placement point. This is normally a tile center.
     /// </summary>
     [DataField]
     public Vector2 Position;
 
-    /// <summary>
-    /// Reserved approximate footprint in world-grid local coordinates.
-    /// </summary>
     [DataField]
     public Box2 Bounds;
 
     /// <summary>
-    /// Future stamp rotation selected by placement. Patch 07.2 leaves this at zero.
+    /// Reserved for future rotation support. Current stamper keeps templates unrotated.
     /// </summary>
     [DataField]
-    public int RotationDegrees;
+    public int RotationSteps;
 
-    /// <summary>
-    /// Future stamp mirroring selected by placement. Patch 07.2 leaves this false.
-    /// </summary>
     [DataField]
-    public bool Mirrored;
+    public bool MirroredX;
 
-    /// <summary>
-    /// True once a stamp pass handled this placement.
-    /// In Patch 07.3A this means a StampPrototype root entity was spawned.
-    /// Later full map-template stamping should also set this to true after copying tiles/entities.
-    /// </summary>
+    [DataField]
+    public bool MirroredY;
+
     [DataField]
     public bool Stamped;
 
-    /// <summary>
-    /// Root entity spawned for prototype-based POI stamps, if any.
-    /// </summary>
     [DataField]
     public EntityUid? StampEntity;
 
-    /// <summary>
-    /// Last non-fatal stamp warning/error for this placement. Kept for debug inspection.
-    /// </summary>
     [DataField]
     public string? StampFailure;
 }

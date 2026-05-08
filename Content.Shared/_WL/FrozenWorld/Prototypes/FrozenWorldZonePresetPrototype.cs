@@ -1,3 +1,4 @@
+using Content.Shared.Prototypes;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization.Manager.Attributes;
 
@@ -49,34 +50,54 @@ public sealed partial class FrozenWorldZoneEntry
     public float AmbientTemperatureOffset;
 
     /// <summary>
-    /// Attempts for weighted extra small entity spawns after minimum counts are placed.
+    /// Attempts for weighted extra spawns after minimum counts are placed.
     /// </summary>
     [DataField]
     public int SpawnAttempts = 100;
 
+    /// <summary>
+    /// Attempts for weighted POI placement after minimum POI counts are placed.
+    /// POIs are larger authored map/grid templates, unlike simple entity spawns.
+    /// </summary>
+    [DataField]
+    public int PoiAttempts = 8;
+
     [DataField]
     public List<FrozenWorldZoneSpawnEntry> Spawns = new();
 
-    /// <summary>
-    /// Attempts for weighted POI placements after minimum POI counts are placed.
-    /// Patch 07.2 only records/logs placements; Patch 07.3 will stamp map templates here.
-    /// </summary>
-    [DataField]
-    public int PoiAttempts = 20;
-
-    /// <summary>
-    /// Direct weighted POI entries for this zone.
-    /// Use these for authored ruins, camps, bunkers, animal dens and other map-template content.
-    /// </summary>
     [DataField]
     public List<FrozenWorldZonePoiEntry> Pois = new();
+}
+
+[DataDefinition]
+public sealed partial class FrozenWorldZonePoiEntry
+{
+    /// <summary>
+    /// POI template to select for this zone. The template is later stamped into the world grid.
+    /// </summary>
+    [DataField(required: true)]
+    public ProtoId<FrozenWorldPoiPrototype> Poi;
+
+    [DataField]
+    public float Weight = 1f;
 
     /// <summary>
-    /// Optional named POI pools to expand into this zone.
-    /// Direct Pois and entries from all sets are combined into one weighted placement list.
+    /// Guaranteed minimum count for this POI entry.
     /// </summary>
     [DataField]
-    public List<ProtoId<FrozenWorldPoiSetPrototype>> PoiSets = new();
+    public int MinCount;
+
+    /// <summary>
+    /// Hard cap for this POI entry in this zone.
+    /// </summary>
+    [DataField]
+    public int MaxCount = 1;
+
+    /// <summary>
+    /// Minimum distance from any already placed zone object or POI.
+    /// </summary>
+    [DataField]
+    public float MinSeparation = 32f;
 }
 
 [DataDefinition]
@@ -84,8 +105,8 @@ public sealed partial class FrozenWorldZoneSpawnEntry
 {
     /// <summary>
     /// Prototype to spawn inside this zone.
-    /// Use this for small standalone entities: resource piles, outcrops, caches, debug markers.
-    /// Large ruins/camps should use FrozenWorldZonePoiEntry instead.
+    /// Stage 2.0 should use debug marker prototypes.
+    /// Later this can become worksites, ruins, animal dens, caches, etc.
     /// </summary>
     [DataField(required: true)]
     public EntProtoId Prototype;
@@ -124,44 +145,4 @@ public sealed partial class FrozenWorldZoneSpawnEntry
     /// </summary>
     [DataField]
     public bool ReserveBiomePatch = true;
-}
-
-[DataDefinition]
-public sealed partial class FrozenWorldZonePoiEntry
-{
-    /// <summary>
-    /// POI template prototype to place inside this zone.
-    /// Patch 07.2 records the selected position; Patch 07.3 will stamp the mapPath template.
-    /// </summary>
-    [DataField(required: true)]
-    public ProtoId<FrozenWorldPoiPrototype> Poi;
-
-    [DataField]
-    public float Weight = 1f;
-
-    /// <summary>
-    /// Guaranteed minimum count for this entry in this zone.
-    /// </summary>
-    [DataField]
-    public int MinCount;
-
-    /// <summary>
-    /// Hard cap for this entry in this zone.
-    /// The POI prototype MaxPerRound can still impose a stricter global cap.
-    /// </summary>
-    [DataField]
-    public int MaxCount = 1;
-
-    /// <summary>
-    /// Minimum distance from any already placed zone spawn/POI bounds.
-    /// This is intentionally larger than regular resource spawn separation.
-    /// </summary>
-    [DataField]
-    public float MinSeparation = 32f;
-
-    /// <summary>
-    /// Extra clearance around the POI footprint. Negative means use FrozenWorldPoiPrototype.MinClearance.
-    /// </summary>
-    [DataField]
-    public float ClearanceRadius = -1f;
 }

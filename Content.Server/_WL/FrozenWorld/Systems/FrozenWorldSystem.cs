@@ -48,8 +48,8 @@ public sealed partial class FrozenWorldSystem : EntitySystem
     [Dependency] private readonly IRobustRandom _random = default!;
     [Dependency] private readonly ShuttleSystem _shuttles = default!;
     [Dependency] private readonly FrozenWorldZoneSystem _zones = default!;
-    [Dependency] private readonly FrozenWorldPoiStampSystem _poiStamps = default!;
     [Dependency] private readonly FrozenWorldClimateSystem _climate = default!;
+    [Dependency] private readonly FrozenWorldPoiStampSystem _poiStamps = default!;
     [Dependency] private readonly WLWeatherCycleSystem _weatherCycle = default!;
 
     private readonly HashSet<EntityUid> _configuredStations = new();
@@ -171,6 +171,8 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         worldComp.AtmosphereTemperatureDirty = false;
         worldComp.AtmosphereTemperatureAccumulator = 0f;
         worldComp.ZonesGenerated = false;
+        worldComp.PoiPlacements.Clear();
+        worldComp.PoisStamped = false;
 
         var baseComp = EnsureComp<FrozenBaseComponent>(worldGridUid);
         baseComp.Profile = profileId;
