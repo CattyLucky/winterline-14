@@ -40,6 +40,33 @@ public sealed partial class FrozenWorldProfilePrototype : IPrototype
     public ProtoId<FrozenWorldZonePresetPrototype> ZonePreset = "FrostRimDefaultZones";
 
     /// <summary>
+    /// Minimum distance around the base AABB that should be pinned/preloaded for the connected frozen terrain.
+    /// </summary>
+    [DataField]
+    public float TerrainPreloadMinDistance = 96f;
+
+    /// <summary>
+    /// Hard cap for terrain preloading around the base AABB.
+    /// Lower this to reduce round-start cost; increase it if you need farther zones to be fully preloaded.
+    /// </summary>
+    [DataField]
+    public float TerrainPreloadMaxDistance = 160f;
+
+    /// <summary>
+    /// Extra padding added to the farthest configured zone distance before clamping to TerrainPreloadMaxDistance.
+    /// </summary>
+    [DataField]
+    public float TerrainPreloadPadding = 32f;
+
+    /// <summary>
+    /// Maximum number of new POI map templates stamped per setup update.
+    /// A small value prevents many heavy POI templates from being loaded and re-anchored in one server tick.
+    /// Set to 0 or a negative value to stamp all remaining POI in one pass.
+    /// </summary>
+    [DataField]
+    public int PoiStampBatchSize = 4;
+
+    /// <summary>
     /// Day/night + light-cycle preset id. Keeps cycle and gameplay temperature curve outside profile body.
     /// </summary>
     [DataField]

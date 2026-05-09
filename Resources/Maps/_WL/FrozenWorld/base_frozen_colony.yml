@@ -85,6 +85,15 @@ entities:
     - type: GridTree
     - type: Broadphase
     - type: OccluderTree
+  - uid: 904
+    components:
+    - type: MetaData
+      name: frozen-world-base-area-marker
+    - type: Transform
+      pos: 0.5,0.5
+      parent: 1
+    - type: FrozenWorldBaseArea
+      halfExtents: 16,16
 - proto: CryogenicSleepUnitSpawner
   entities:
   - uid: 2

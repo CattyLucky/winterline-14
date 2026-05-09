@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Numerics;
 using Content.Server._WL.FrozenWorld.Components;
 using Content.Server.Atmos.EntitySystems;
@@ -25,6 +26,7 @@ using Robust.Shared.Map.Components;
 using Robust.Shared.Maths;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
+using Robust.Shared.Timing;
 using Content.Server.Atmos.Components;
 using Robust.Shared.Map;
 
@@ -46,6 +48,7 @@ public sealed partial class FrozenWorldSystem : EntitySystem
     [Dependency] private readonly MetaDataSystem _meta = default!;
     [Dependency] private readonly IPrototypeManager _proto = default!;
     [Dependency] private readonly IRobustRandom _random = default!;
+    [Dependency] private readonly IGameTiming _timing = default!;
     [Dependency] private readonly ShuttleSystem _shuttles = default!;
     [Dependency] private readonly FrozenWorldZoneSystem _zones = default!;
     [Dependency] private readonly FrozenWorldClimateSystem _climate = default!;
@@ -53,11 +56,82 @@ public sealed partial class FrozenWorldSystem : EntitySystem
     [Dependency] private readonly WLWeatherCycleSystem _weatherCycle = default!;
 
     private readonly HashSet<EntityUid> _configuredStations = new();
+    private readonly Dictionary<EntityUid, FrozenWorldPendingSetup> _pendingSetups = new();
+
+    private static readonly TimeSpan SetupRetryDelay = TimeSpan.FromMilliseconds(100);
+    private const int MaxSetupAttemptsBeforeFallback = 20;
+    private const float MinBaseAabbRetrySize = 16f;
 
     public override void Initialize()
     {
         base.Initialize();
         SubscribeLocalEvent<StationFrozenWorldComponent, StationPostInitEvent>(OnStationPostInit);
+    }
+
+    public override void Update(float frameTime)
+    {
+        base.Update(frameTime);
+
+        if (_pendingSetups.Count == 0)
+            return;
+
+        var now = _timing.CurTime;
+        var complete = new List<EntityUid>();
+        var updates = new List<(EntityUid Uid, FrozenWorldPendingSetup Pending)>();
+
+        foreach (var (stationUid, pending) in _pendingSetups)
+        {
+            if (now < pending.NextAttempt)
+                continue;
+
+            if (_configuredStations.Contains(stationUid))
+            {
+                complete.Add(stationUid);
+                continue;
+            }
+
+            if (!Exists(stationUid) || !TryComp<StationFrozenWorldComponent>(stationUid, out var stationFrozen))
+            {
+                complete.Add(stationUid);
+                continue;
+            }
+
+            if (!stationFrozen.Enabled)
+            {
+                complete.Add(stationUid);
+                continue;
+            }
+
+            if (!_proto.TryIndex(stationFrozen.Profile, out FrozenWorldProfilePrototype? profile))
+            {
+                Log.Error($"Unable to find frozen world profile '{stationFrozen.Profile}' for {ToPrettyString(stationUid)}.");
+                complete.Add(stationUid);
+                continue;
+            }
+
+            var allowFallback = pending.Attempts >= MaxSetupAttemptsBeforeFallback;
+            if (SetupPrimaryFrozenWorld((stationUid, stationFrozen), profile, allowFallback))
+            {
+                complete.Add(stationUid);
+                continue;
+            }
+
+            updates.Add((stationUid, pending with
+            {
+                Attempts = pending.Attempts + 1,
+                NextAttempt = now + SetupRetryDelay
+            }));
+        }
+
+        foreach (var (uid, pending) in updates)
+        {
+            _pendingSetups[uid] = pending;
+        }
+
+        foreach (var uid in complete)
+        {
+            _pendingSetups.Remove(uid);
+        }
     }
 
     private void OnStationPostInit(Entity<StationFrozenWorldComponent> ent, ref StationPostInitEvent args)
@@ -77,30 +151,28 @@ public sealed partial class FrozenWorldSystem : EntitySystem
             return;
         }
 
-        SetupPrimaryFrozenWorld(ent, profile);
+        _pendingSetups[ent.Owner] = new FrozenWorldPendingSetup(0, _timing.CurTime);
+        Log.Info($"Queued frozen world setup for {ToPrettyString(ent.Owner)} with profile '{profile.ID}'.");
     }
 
-    private void SetupPrimaryFrozenWorld(Entity<StationFrozenWorldComponent> station, FrozenWorldProfilePrototype profile)
+    private bool SetupPrimaryFrozenWorld(Entity<StationFrozenWorldComponent> station, FrozenWorldProfilePrototype profile, bool allowBaseFallback)
     {
         if (_configuredStations.Contains(station.Owner))
-            return;
+            return true;
 
         if (!TryComp<StationDataComponent>(station.Owner, out var stationData))
         {
-            Log.Error($"Station {ToPrettyString(station.Owner)} has StationFrozenWorld but no StationDataComponent.");
-            return;
+            return false;
         }
 
         if (!TryFindWorldGrid(stationData, out var worldGridUid))
         {
-            Log.Error($"Station {ToPrettyString(station.Owner)} has no valid station grid for frozen world setup.");
-            return;
+            return false;
         }
 
         if (!TryComp<MapGridComponent>(worldGridUid, out var worldGrid))
         {
-            Log.Error($"Frozen world grid {ToPrettyString(worldGridUid)} has no MapGridComponent.");
-            return;
+            return false;
         }
 
         var worldXform = Transform(worldGridUid);
@@ -109,12 +181,18 @@ public sealed partial class FrozenWorldSystem : EntitySystem
 
         if (mapUid == null)
         {
-            Log.Error($"Frozen world grid {ToPrettyString(worldGridUid)} is not attached to a map.");
-            return;
+            return false;
         }
 
-        var seed = station.Comp.Seed ?? _random.Next();
         var profileId = station.Comp.Profile;
+
+        if (TryContinuePendingPoiStamping(station.Owner, mapUid.Value, worldGridUid, profileId, profile, out var handledPendingStamp))
+            return true;
+
+        if (handledPendingStamp)
+            return false;
+
+        var seed = station.Comp.Seed ?? _random.Next();
 
         _meta.SetEntityName(mapUid.Value, profile.MapName);
         _meta.SetEntityName(worldGridUid, profile.BaseName);
@@ -123,14 +201,14 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         if (!_proto.TryIndex(profile.LightCyclePreset, out FrozenWorldLightCyclePresetPrototype? lightCyclePreset))
         {
             Log.Error($"Unable to find frozen world light-cycle preset '{profile.LightCyclePreset}' for profile '{profile.ID}'.");
-            return;
+            return true;
         }
 
         ConfigureMapEntity(mapUid.Value, profile, lightCyclePreset);
 
         var biomeComp = ConfigureWorldGrid(worldGridUid, _proto.Index(profile.Biome), seed);
         if (biomeComp == null)
-            return;
+            return false;
 
         var atmosphereMixture = SetMapAtmosphere(mapUid.Value, profile);
 
@@ -141,7 +219,8 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         // Cache the authored settlement bounds before pinning/preloading biome terrain.
         // PinPreloadArea will later materialize terrain chunks and expand LocalAABB;
         // zones must still be measured from the actual base footprint, not from the preloaded wilderness.
-        var baseBounds = ResolveBaseBounds(worldGridUid, worldGrid);
+        if (!ResolveBaseBounds(worldGridUid, worldGrid, allowBaseFallback, out var baseBounds))
+            return false;
         var preloadBounds = GetTerrainPreloadBounds(baseBounds, profile);
         var pinnedChunks = _biome.PinPreloadArea(worldGridUid, biomeComp, worldGrid, preloadBounds);
         _atmos.RefreshAllGridMapAtmospheres(mapUid.Value);
@@ -173,18 +252,82 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         worldComp.ZonesGenerated = false;
         worldComp.PoiPlacements.Clear();
         worldComp.PoisStamped = false;
+        worldComp.PoiStampedTileCount = 0;
+        worldComp.PoiStampedEntityCount = 0;
+        worldComp.PoiStampBatches = 0;
 
         var baseComp = EnsureComp<FrozenBaseComponent>(worldGridUid);
         baseComp.Profile = profileId;
 
         _zones.GenerateZones(worldGridUid, (mapUid.Value, worldComp), profile);
-        _poiStamps.StampPlacedPois(worldGridUid, worldComp);
-        TrySetupWeatherController(mapUid.Value, profile);
-        _climate.RecalculateNow(mapUid.Value, worldComp);
 
-        _configuredStations.Add(station.Owner);
+        var stampResult = _poiStamps.StampPlacedPois(worldGridUid, worldComp, profile.PoiStampBatchSize);
+        if (!stampResult.Complete)
+        {
+            var remaining = worldComp.PoiPlacements.Count(placement => !placement.Stamped);
+            Log.Info(
+                $"Deferred frozen world setup for '{profileId}' while stamping POI templates in batches. " +
+                $"remaining={remaining}, batchSize={profile.PoiStampBatchSize}, stampedTiles={worldComp.PoiStampedTileCount}, stampedEntities={worldComp.PoiStampedEntityCount}.");
+            return false;
+        }
+
+        FinalizeFrozenWorldSetup(station.Owner, mapUid.Value, worldGridUid, worldComp, profile);
 
         Log.Info($"Configured frozen world '{profileId}' on main surface grid {ToPrettyString(worldGridUid)}. Map={mapId}, biome='{profile.Biome}', pinnedChunks={pinnedChunks}, seededAtmosTiles={seededTiles}, preloadBounds={preloadBounds}.");
+        return true;
+    }
+
+    private bool TryContinuePendingPoiStamping(
+        EntityUid stationUid,
+        EntityUid mapUid,
+        EntityUid worldGridUid,
+        ProtoId<FrozenWorldProfilePrototype> profileId,
+        FrozenWorldProfilePrototype profile,
+        out bool handled)
+    {
+        handled = false;
+
+        if (!TryComp<FrozenWorldComponent>(mapUid, out var worldComp))
+            return false;
+
+        if (worldComp.PoisStamped)
+            return false;
+
+        if (!worldComp.BaseAreaCaptured || !worldComp.ZonesGenerated)
+            return false;
+
+        if (worldComp.WorldGrid != worldGridUid || worldComp.Profile != profileId)
+            return false;
+
+        handled = true;
+
+        var stampResult = _poiStamps.StampPlacedPois(worldGridUid, worldComp, profile.PoiStampBatchSize);
+        if (!stampResult.Complete)
+        {
+            var remaining = worldComp.PoiPlacements.Count(placement => !placement.Stamped);
+            Log.Info(
+                $"Deferred frozen world setup for '{profileId}' while continuing batched POI stamping. " +
+                $"remaining={remaining}, batchSize={profile.PoiStampBatchSize}, stampedTiles={worldComp.PoiStampedTileCount}, stampedEntities={worldComp.PoiStampedEntityCount}.");
+            return false;
+        }
+
+        FinalizeFrozenWorldSetup(stationUid, mapUid, worldGridUid, worldComp, profile);
+        Log.Info(
+            $"Configured frozen world '{profileId}' on main surface grid {ToPrettyString(worldGridUid)} after batched POI stamping. " +
+            $"batches={worldComp.PoiStampBatches}, stampedTiles={worldComp.PoiStampedTileCount}, stampedEntities={worldComp.PoiStampedEntityCount}.");
+        return true;
+    }
+
+    private void FinalizeFrozenWorldSetup(
+        EntityUid stationUid,
+        EntityUid mapUid,
+        EntityUid worldGridUid,
+        FrozenWorldComponent worldComp,
+        FrozenWorldProfilePrototype profile)
+    {
+        TrySetupWeatherController(mapUid, profile);
+        _climate.RecalculateNow(mapUid, worldComp);
+        _configuredStations.Add(stationUid);
     }
 
     private bool TryFindWorldGrid(StationDataComponent stationData, out EntityUid gridUid)
@@ -235,22 +378,70 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         return true;
     }
 
-    private Box2 ResolveBaseBounds(EntityUid worldGridUid, MapGridComponent worldGrid)
+    private bool ResolveBaseBounds(EntityUid worldGridUid, MapGridComponent worldGrid, bool allowFallback, out Box2 bounds)
     {
+        Log.Debug($"Resolving frozen world base area for grid {ToPrettyString(worldGridUid)}. GridLocalAabb={worldGrid.LocalAABB}.");
+
+        var scanned = 0;
+        var rejectedByParent = 0;
         var query = EntityQueryEnumerator<FrozenWorldBaseAreaComponent, TransformComponent>();
         while (query.MoveNext(out var uid, out var baseArea, out var xform))
         {
-            if (!TryResolveBaseAreaBounds(worldGridUid, worldGrid, uid, baseArea, xform, out var bounds))
+            scanned++;
+
+            if (uid != worldGridUid && xform.ParentUid != worldGridUid)
+            {
+                rejectedByParent++;
+                Log.Debug(
+                    $"Ignoring FrozenWorldBaseArea marker {ToPrettyString(uid)} while resolving for {ToPrettyString(worldGridUid)}: " +
+                    $"parent={ToPrettyString(xform.ParentUid)} localPos={xform.LocalPosition} halfExtents={baseArea.HalfExtents} useLocalCenter={baseArea.UseLocalCenter}.");
+            }
+
+            if (!TryResolveBaseAreaBounds(worldGridUid, worldGrid, uid, baseArea, xform, out var resolvedBounds))
                 continue;
 
-            Log.Info($"Frozen world base area resolved from {ToPrettyString(uid)}: {bounds}.");
-            return bounds;
+            Log.Info($"Frozen world base area resolved from {ToPrettyString(uid)}: {resolvedBounds}.");
+            bounds = resolvedBounds;
+            return true;
         }
 
-        // Migration fallback for maps that do not yet have an explicit base-area marker.
-        // This is safe only while the authored grid LocalAABB is still the settlement footprint.
-        Log.Warning($"Frozen world grid {ToPrettyString(worldGridUid)} has no FrozenWorldBaseAreaComponent marker. Falling back to authored grid LocalAABB. Add a base-area marker before adding preauthored wilderness/POI grids to the map file.");
-        return worldGrid.LocalAABB;
+        var smallAabb = worldGrid.LocalAABB.Width < MinBaseAabbRetrySize || worldGrid.LocalAABB.Height < MinBaseAabbRetrySize;
+        if (!allowFallback && (scanned == 0 || smallAabb))
+        {
+            bounds = default;
+            Log.Info(
+                $"Deferred frozen world setup for {ToPrettyString(worldGridUid)} while resolving base area. " +
+                $"scannedMarkers={scanned}, rejectedByParent={rejectedByParent}, localAabb={worldGrid.LocalAABB}, " +
+                $"smallAabb={smallAabb}, allowFallback={allowFallback}.");
+            return false;
+        }
+
+        if (scanned == 0)
+        {
+            var autoBaseArea = EnsureComp<FrozenWorldBaseAreaComponent>(worldGridUid);
+            autoBaseArea.UseLocalCenter = true;
+            autoBaseArea.LocalCenter = worldGrid.LocalAABB.Center;
+            autoBaseArea.HalfExtents = new Vector2(
+                MathF.Max(worldGrid.LocalAABB.Width * 0.5f, 0.5f),
+                MathF.Max(worldGrid.LocalAABB.Height * 0.5f, 0.5f));
+
+            if (TryResolveBaseAreaBounds(worldGridUid, worldGrid, worldGridUid, autoBaseArea, Transform(worldGridUid), out var autoBounds))
+            {
+                Log.Warning(
+                    $"Frozen world grid {ToPrettyString(worldGridUid)} had no FrozenWorldBaseArea markers after deferred retries " +
+                    $"(scannedMarkers=0). Created runtime base-area component on world grid with center={autoBaseArea.LocalCenter} " +
+                    $"and halfExtents={autoBaseArea.HalfExtents}. Resolved bounds={autoBounds}.");
+                bounds = autoBounds;
+                return true;
+            }
+        }
+
+        Log.Warning(
+            $"Frozen world grid {ToPrettyString(worldGridUid)} has no FrozenWorldBaseAreaComponent marker. " +
+            $"Falling back to authored grid LocalAABB. scannedMarkers={scanned}, rejectedByParent={rejectedByParent}. " +
+            $"Add a base-area marker on the selected world grid (or make it a child of that grid) before adding preauthored wilderness/POI grids to the map file.");
+        bounds = worldGrid.LocalAABB;
+        return true;
     }
 
     private bool TryResolveBaseAreaBounds(
@@ -386,22 +577,29 @@ public sealed partial class FrozenWorldSystem : EntitySystem
     private Box2 GetTerrainPreloadBounds(Box2 baseBounds, FrozenWorldProfilePrototype profile)
     {
         // This is the part that makes the world look like one connected surface instead of
-        // small streamed biome islands floating in parallax.
-        const float minPreloadDistance = 96f;
-        const float maxPreloadDistance = 256f;
-        const float padding = 32f;
+        // small streamed biome islands floating in parallax. Keep it configurable: pinning too much
+        // terrain during round start is expensive, especially before POI stamping and node-group rebuilds.
+        var minPreloadDistance = MathF.Max(profile.TerrainPreloadMinDistance, 0f);
+        var maxPreloadDistance = MathF.Max(profile.TerrainPreloadMaxDistance, minPreloadDistance);
+        var padding = MathF.Max(profile.TerrainPreloadPadding, 0f);
 
-        var distance = minPreloadDistance;
+        var requestedDistance = minPreloadDistance;
 
         if (_proto.TryIndex(profile.ZonePreset, out var preset))
         {
             foreach (var zone in preset.Zones)
             {
-                distance = MathF.Max(distance, zone.MaxDistance + padding);
+                requestedDistance = MathF.Max(requestedDistance, zone.MaxDistance + padding);
             }
         }
 
-        distance = Math.Clamp(distance, minPreloadDistance, maxPreloadDistance);
+        var distance = Math.Clamp(requestedDistance, minPreloadDistance, maxPreloadDistance);
+
+        if (requestedDistance > maxPreloadDistance)
+        {
+            Log.Debug($"Frozen world terrain preload distance for profile '{profile.ID}' was clamped from {requestedDistance:F1} to {distance:F1}. Increase terrainPreloadMaxDistance if farther zones must be fully preloaded at round start.");
+        }
+
         return baseBounds.Enlarged(distance);
     }
 
@@ -488,5 +686,7 @@ public sealed partial class FrozenWorldSystem : EntitySystem
 
         Log.Info($"Configured WL weather cycle preset '{profile.WeatherCyclePreset}' from profile '{profile.ID}' on map {ToPrettyString(mapUid)}.");
     }
+
+    private readonly record struct FrozenWorldPendingSetup(int Attempts, TimeSpan NextAttempt);
 
 }

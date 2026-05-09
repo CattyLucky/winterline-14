@@ -196,9 +196,28 @@ public sealed partial class FrozenWorldComponent : Component
 
     /// <summary>
     /// True once the current PoiPlacements list has been processed by FrozenWorldPoiStampSystem.
+    /// Batched stamping may leave this false for a few setup updates while templates are loaded gradually.
     /// </summary>
     [DataField]
     public bool PoisStamped;
+
+    /// <summary>
+    /// Cumulative tile count written by the current POI stamp pass. Runtime diagnostics only.
+    /// </summary>
+    [DataField]
+    public int PoiStampedTileCount;
+
+    /// <summary>
+    /// Cumulative entity count moved/spawned by the current POI stamp pass. Runtime diagnostics only.
+    /// </summary>
+    [DataField]
+    public int PoiStampedEntityCount;
+
+    /// <summary>
+    /// Number of POI stamp batches completed for the current setup. Runtime diagnostics only.
+    /// </summary>
+    [DataField]
+    public int PoiStampBatches;
 
     /// <summary>
     /// Ambient temperature offsets (Kelvin/Celsius delta) by square distance bands from the base.
@@ -230,7 +249,7 @@ public sealed partial class FrozenWorldPoiPlacementData
     public Box2 Bounds;
 
     /// <summary>
-    /// Reserved for future rotation support. Current stamper keeps templates unrotated.
+    /// 90-degree rotation steps applied by the POI stamper. 0=0deg, 1=90deg, 2=180deg, 3=270deg.
     /// </summary>
     [DataField]
     public int RotationSteps;

@@ -8,7 +8,7 @@
   description: A simple lighter adapted for FrozenWorld campfire ignition.
   components:
   - type: FrozenIgnitionSource
-    igniteSpeedMultiplier: 1
+    igniteSpeedMultiplier: 2
     requiresLit: true
     consumeOnUse: false
 
@@ -34,6 +34,6 @@
   - type: Item
     size: Small
   - type: FrozenIgnitionSource
-    igniteSpeedMultiplier: 1.2
+    igniteSpeedMultiplier: 2.4
     requiresLit: false
     consumeOnUse: true

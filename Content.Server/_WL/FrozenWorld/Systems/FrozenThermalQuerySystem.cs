@@ -481,7 +481,7 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
         if (world.TemperatureBands.Count == 0)
             return ambient;
 
-        var distance = GetSquareDistanceFromBase(worldPos, world.BaseBoundsWorld);
+        var distance = FrozenWorldGeometry.GetSquareDistanceFromBase(worldPos, world.BaseBoundsWorld);
         foreach (var band in world.TemperatureBands)
         {
             if (distance < band.MinDistance || distance > band.MaxDistance)
@@ -493,14 +493,4 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
         return ambient;
     }
 
-    private static float GetSquareDistanceFromBase(Vector2 point, Box2 baseBounds)
-    {
-        var center = baseBounds.Center;
-        var halfWidth = baseBounds.Width / 2f;
-        var halfHeight = baseBounds.Height / 2f;
-
-        var dx = MathF.Max(MathF.Abs(point.X - center.X) - halfWidth, 0f);
-        var dy = MathF.Max(MathF.Abs(point.Y - center.Y) - halfHeight, 0f);
-        return MathF.Max(dx, dy);
-    }
 }

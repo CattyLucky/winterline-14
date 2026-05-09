@@ -73,17 +73,25 @@ public sealed partial class FrozenWorldPoiPrototype : IPrototype
     public int MaxPerRound = -1;
 
     /// <summary>
-    /// Whether the future stamper may rotate this POI in 90-degree increments.
+    /// Whether the placement/stamp pass may rotate this POI in 90-degree increments.
     /// </summary>
     [DataField]
     public bool AllowRotation = true;
 
     /// <summary>
     /// Whether the future stamper may mirror this POI horizontally/vertically.
-    /// Keep false for asymmetric authored content until it is explicitly tested.
+    /// Currently reserved for a later patch; rotation is supported before mirroring.
     /// </summary>
     [DataField]
     public bool AllowMirroring;
+
+    /// <summary>
+    /// If true, the placement pass should materialize the biome patch before the final clearance check.
+    /// This prevents lazy biome generation from later spawning trees/rocks/decor over an accepted POI.
+    /// Existing generated decor is not deleted; if it blocks the footprint, placement is rejected.
+    /// </summary>
+    [DataField]
+    public bool ReserveBiomePatch = true;
 
     /// <summary>
     /// If true, the future placement pass should reject positions that contain blocking physics/entities.
