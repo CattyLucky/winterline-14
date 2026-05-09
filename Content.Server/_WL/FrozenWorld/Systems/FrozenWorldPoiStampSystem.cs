@@ -1,8 +1,11 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Content.Server._WL.FrozenWorld.Components;
 using Content.Server.Atmos.EntitySystems;
+using Content.Server.Decals;
 using Content.Shared.Atmos;
+using Content.Shared.Decals;
 using Content.Shared._WL.FrozenWorld.Prototypes;
 using Robust.Shared.EntitySerialization;
 using Robust.Shared.EntitySerialization.Systems;
@@ -22,6 +25,7 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
 {
     [Dependency] private readonly AtmosphereSystem _atmos = default!;
+    [Dependency] private readonly DecalSystem _decals = default!;
     [Dependency] private readonly MapLoaderSystem _loader = default!;
     [Dependency] private readonly SharedMapSystem _maps = default!;
     [Dependency] private readonly IPrototypeManager _proto = default!;
@@ -30,12 +34,12 @@ public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
     public PoiStampPassResult StampPlacedPois(EntityUid worldGridUid, FrozenWorldComponent world, int maxNewPlacements = 0)
     {
         if (world.PoisStamped)
-            return new PoiStampPassResult(world.PoiPlacements.Count, world.PoiPlacements.Count, 0, 0, 0, 0, true);
+            return new PoiStampPassResult(world.PoiPlacements.Count, world.PoiPlacements.Count, 0, 0, 0, 0, 0, true);
 
         if (!TryComp<MapGridComponent>(worldGridUid, out var worldGrid))
         {
             Log.Error($"Frozen world cannot stamp POI: world grid {ToPrettyString(worldGridUid)} has no MapGridComponent.");
-            return new PoiStampPassResult(world.PoiPlacements.Count, 0, 0, world.PoiPlacements.Count, 0, 0, false);
+            return new PoiStampPassResult(world.PoiPlacements.Count, 0, 0, world.PoiPlacements.Count, 0, 0, 0, false);
         }
 
         var batchLimit = maxNewPlacements <= 0 ? int.MaxValue : maxNewPlacements;
@@ -45,6 +49,7 @@ public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
         var failed = 0;
         var batchTiles = 0;
         var batchEntities = 0;
+        var batchDecals = 0;
 
         foreach (var placement in world.PoiPlacements)
         {
@@ -64,6 +69,13 @@ public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
                 newlyStamped++;
                 batchTiles += result.Tiles;
                 batchEntities += result.Entities;
+                batchDecals += result.Decals;
+
+                foreach (var tile in result.AtmosphereTiles)
+                {
+                    world.PoiStampedAtmosphereTiles.Add(tile);
+                }
+
                 continue;
             }
 
@@ -75,6 +87,7 @@ public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
 
         world.PoiStampedTileCount += batchTiles;
         world.PoiStampedEntityCount += batchEntities;
+        world.PoiStampedDecalCount += batchDecals;
 
         var complete = world.PoiPlacements.All(placement => placement.Stamped);
         world.PoisStamped = complete;
@@ -87,23 +100,22 @@ public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
             $"Frozen world POI stamp batch on {ToPrettyString(worldGridUid)}. " +
             $"Total={total}, alreadyStamped={alreadyStamped}, newlyStamped={newlyStamped}, failed={failed}, remaining={remaining}, " +
             $"batchLimit={(batchLimit == int.MaxValue ? "all" : batchLimit.ToString())}, " +
-            $"batchTiles={batchTiles}, batchEntities={batchEntities}, cumulativeTiles={world.PoiStampedTileCount}, cumulativeEntities={world.PoiStampedEntityCount}, complete={complete}.");
+            $"batchTiles={batchTiles}, batchEntities={batchEntities}, batchDecals={batchDecals}, " +
+            $"cumulativeTiles={world.PoiStampedTileCount}, cumulativeEntities={world.PoiStampedEntityCount}, cumulativeDecals={world.PoiStampedDecalCount}, complete={complete}.");
 
         if (!complete && failed > 0)
             Log.Warning("Frozen world POI stamp batch had failed placements. Setup will retry remaining placements unless the frozen-world setup is finalized by the caller.");
 
-        return new PoiStampPassResult(total, alreadyStamped, newlyStamped, failed, batchTiles, batchEntities, complete);
+        return new PoiStampPassResult(total, alreadyStamped, newlyStamped, failed, batchTiles, batchEntities, batchDecals, complete);
     }
 
     /// <summary>
     /// POI tiles are created after the initial FrozenWorldSystem atmosphere seed pass.
-    /// Seed the world grid again after POI stamping so newly-created template tiles have
-    /// the frozen-world gas mixture, pressure and current ambient temperature.
+    /// Seed only the stamped POI footprint tiles instead of rewriting the whole world grid.
     ///
-    /// This intentionally rewrites the whole world grid for now: POI stamping happens during
-    /// round setup, and doing one full static-atmos seed here is safer than depending on
-    /// SetTile side effects for new template tiles. A targeted tile-only seed can replace
-    /// this later if the AtmosphereSystem exposes a stable per-tile API for it.
+    /// This matters once POI stamping is batched or POI count grows: after biome preloading,
+    /// a full-grid rewrite can touch hundreds of thousands of tiles even when the POI templates
+    /// only wrote a few thousand tiles.
     /// </summary>
     private void TrySeedStampedPoiAtmosphere(EntityUid worldGridUid, FrozenWorldComponent world, int newlyStamped, int stampedTiles)
     {
@@ -119,15 +131,18 @@ public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
             return;
         }
 
+        var targetTiles = world.PoiStampedAtmosphereTiles;
         var mixture = BuildAtmosphereMixture(profile.GasMoles, world.AmbientTemperature);
-        var seededTiles = _atmos.WLApplyStaticGridAtmosphere(worldGridUid, mixture);
+        var seededTiles = _atmos.WLApplyStaticGridAtmosphere(worldGridUid, targetTiles, mixture);
         _atmos.RefreshAllGridMapAtmospheres(mapUid);
 
         world.LastAppliedAtmosphereTemperature = world.AmbientTemperature;
         world.AtmosphereTemperatureDirty = false;
         world.AtmosphereTemperatureAccumulator = 0f;
 
-        Log.Info($"Frozen world POI stamp pass seeded static atmosphere after stamping {newlyStamped} POI(s): stampedTiles={stampedTiles}, seededGridTiles={seededTiles}, ambientTemperature={world.AmbientTemperature:F1}K.");
+        Log.Info(
+            $"Frozen world POI stamp pass seeded targeted atmosphere after stamping {newlyStamped} POI(s): " +
+            $"stampedTiles={stampedTiles}, targetTiles={targetTiles.Count}, seededGridTiles={seededTiles}, ambientTemperature={world.AmbientTemperature:F1}K.");
     }
 
     private static GasMixture BuildAtmosphereMixture(IReadOnlyList<float> gasMoles, float temperature)
@@ -152,12 +167,12 @@ public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
 
         NormalizePlacementTransform(placement, poi);
 
-        if (!TryStampPoi(worldGridUid, worldGrid, placement, poi, out var tileCount, out var entityCount))
+        if (!TryStampPoi(worldGridUid, worldGrid, placement, poi, out var tileCount, out var entityCount, out var decalCount, out var atmosphereTiles))
             return PoiStampResult.Failed;
 
         placement.Stamped = true;
         placement.StampFailure = null;
-        return new PoiStampResult(true, tileCount, entityCount);
+        return new PoiStampResult(true, tileCount, entityCount, decalCount, atmosphereTiles);
     }
 
     private void NormalizePlacementTransform(FrozenWorldPoiPlacementData placement, FrozenWorldPoiPrototype poi)
@@ -186,22 +201,26 @@ public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
         FrozenWorldPoiPlacementData placement,
         FrozenWorldPoiPrototype poi,
         out int tileCount,
-        out int entityCount)
+        out int entityCount,
+        out int decalCount,
+        out HashSet<Vector2i> atmosphereTiles)
     {
         tileCount = 0;
         entityCount = 0;
+        decalCount = 0;
+        atmosphereTiles = new HashSet<Vector2i>();
         var stampedSomething = false;
 
         if (!string.IsNullOrWhiteSpace(poi.MapPath))
         {
-            if (!TryStampMapTemplate(worldGridUid, worldGrid, placement, poi, out tileCount, out entityCount, out var failure))
+            if (!TryStampMapTemplate(worldGridUid, worldGrid, placement, poi, out tileCount, out entityCount, out decalCount, out atmosphereTiles, out var failure))
             {
                 MarkFailed(placement, failure);
                 return false;
             }
 
             stampedSomething = true;
-            Log.Info($"Stamped frozen world POI '{placement.Poi}' from '{poi.MapPath}' at X={placement.Position.X:F1}, Y={placement.Position.Y:F1}, rotation={placement.RotationSteps * 90}deg. Tiles={tileCount}, entities={entityCount}.");
+            Log.Info($"Stamped frozen world POI '{placement.Poi}' from '{poi.MapPath}' at X={placement.Position.X:F1}, Y={placement.Position.Y:F1}, rotation={placement.RotationSteps * 90}deg. Tiles={tileCount}, entities={entityCount}, decals={decalCount}.");
         }
 
         if (poi.StampPrototype is { } stampPrototype)
@@ -230,10 +249,14 @@ public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
         FrozenWorldPoiPrototype poi,
         out int tileCount,
         out int entityCount,
+        out int decalCount,
+        out HashSet<Vector2i> atmosphereTiles,
         out string failure)
     {
         tileCount = 0;
         entityCount = 0;
+        decalCount = 0;
+        atmosphereTiles = new HashSet<Vector2i>();
         failure = string.Empty;
 
         if (!TryLoadPoiTemplate(poi, out var result, out failure))
@@ -258,7 +281,9 @@ public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
                 placement,
                 poi,
                 ref tileCount,
-                ref entityCount);
+                ref entityCount,
+                ref decalCount,
+                atmosphereTiles);
         }
         catch (Exception e)
         {
@@ -331,15 +356,32 @@ public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
         FrozenWorldPoiPlacementData placement,
         FrozenWorldPoiPrototype poi,
         ref int tileCount,
-        ref int entityCount)
+        ref int entityCount,
+        ref int decalCount,
+        HashSet<Vector2i> atmosphereTiles)
     {
         var templateTransform = BuildTemplateTransform(templateGridUid, templateGrid, placement, poi);
 
+        if (poi.ClearExistingBiomeDecor)
+        {
+            var cleanup = ClearExistingPoiFootprint(worldGridUid, templateTransform, poi);
+
+            if (cleanup.Entities > 0 || cleanup.Decals > 0)
+            {
+                Log.Info(
+                    $"Frozen world POI '{placement.Poi}' cleared pre-existing biome/decor in target footprint before stamping: " +
+                    $"entities={cleanup.Entities}, decals={cleanup.Decals}, bounds={cleanup.Bounds}.");
+            }
+        }
+
         if (poi.StampTiles)
-            tileCount = CopyTemplateTiles(worldGridUid, worldGrid, templateGridUid, templateGrid, placement, poi, templateTransform);
+            tileCount = CopyTemplateTiles(worldGridUid, worldGrid, templateGridUid, templateGrid, placement, poi, templateTransform, atmosphereTiles);
 
         if (poi.StampEntities)
-            entityCount = MoveTemplateEntities(worldGridUid, templateGridUid, result, placement, poi, templateTransform);
+            entityCount = MoveTemplateEntities(worldGridUid, templateGridUid, result, placement, poi, templateTransform, atmosphereTiles);
+
+        if (poi.StampDecals)
+            decalCount = CopyTemplateDecals(worldGridUid, templateGridUid, placement, poi, templateTransform);
 
         if (poi.StampEntities && entityCount == 0)
             Log.Warning($"Frozen world POI '{placement.Poi}' stamped no entities from template '{poi.MapPath}'. If this POI is not intentionally tile-only, check entity parentage in the template map.");
@@ -417,6 +459,82 @@ public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
         }
     }
 
+    private PoiFootprintCleanupResult ClearExistingPoiFootprint(
+        EntityUid worldGridUid,
+        PoiTemplateTransform templateTransform,
+        FrozenWorldPoiPrototype poi)
+    {
+        var bounds = GetTargetFootprintBounds(templateTransform, poi.BiomeDecorClearPadding);
+        var removedEntities = ClearExistingEntitiesInBounds(worldGridUid, bounds);
+        var removedDecals = ClearExistingDecalsInBounds(worldGridUid, bounds);
+
+        return new PoiFootprintCleanupResult(removedEntities, removedDecals, bounds);
+    }
+
+    private int ClearExistingEntitiesInBounds(EntityUid worldGridUid, Box2 bounds)
+    {
+        var removed = 0;
+        var query = EntityQueryEnumerator<TransformComponent>();
+
+        while (query.MoveNext(out var uid, out var xform))
+        {
+            if (uid == worldGridUid)
+                continue;
+
+            // Only clean entities already materialized directly on the target world grid.
+            // Template entities are still parented to their temporary template grid/map at this point,
+            // so they are not affected by this cleanup pass.
+            if (xform.ParentUid != worldGridUid)
+                continue;
+
+            if (HasComp<MapGridComponent>(uid))
+                continue;
+
+            if (!bounds.Contains(xform.LocalPosition))
+                continue;
+
+            QueueDel(uid);
+            removed++;
+        }
+
+        return removed;
+    }
+
+    private int ClearExistingDecalsInBounds(EntityUid worldGridUid, Box2 bounds)
+    {
+        if (!TryComp<DecalGridComponent>(worldGridUid, out var decalGrid))
+            return 0;
+
+        var removed = 0;
+        foreach (var (decalId, _) in _decals.GetDecalsIntersecting(worldGridUid, bounds, decalGrid))
+        {
+            if (_decals.RemoveDecal(worldGridUid, decalId, decalGrid))
+                removed++;
+        }
+
+        return removed;
+    }
+
+    private static Box2 GetTargetFootprintBounds(PoiTemplateTransform templateTransform, float padding)
+    {
+        var targetSize = GetRotatedSourceSize(templateTransform.SourceSize, templateTransform.RotationSteps);
+        var min = ToVector2(templateTransform.TargetTileOrigin);
+        var max = min + new Vector2(Math.Max(targetSize.X, 1), Math.Max(targetSize.Y, 1));
+        return new Box2(min, max).Enlarged(MathF.Max(padding, 0f));
+    }
+
+    private static Vector2i GetRotatedSourceSize(Vector2i sourceSize, int rotationSteps)
+    {
+        var width = Math.Max(sourceSize.X, 1);
+        var height = Math.Max(sourceSize.Y, 1);
+
+        return NormalizeRotationSteps(rotationSteps) switch
+        {
+            1 or 3 => new Vector2i(height, width),
+            _ => new Vector2i(width, height)
+        };
+    }
+
     private int CopyTemplateTiles(
         EntityUid worldGridUid,
         MapGridComponent worldGrid,
@@ -424,7 +542,8 @@ public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
         MapGridComponent templateGrid,
         FrozenWorldPoiPlacementData placement,
         FrozenWorldPoiPrototype poi,
-        PoiTemplateTransform templateTransform)
+        PoiTemplateTransform templateTransform,
+        HashSet<Vector2i> atmosphereTiles)
     {
         var copied = 0;
 
@@ -437,7 +556,57 @@ public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
             var targetLocalTile = TransformLocalTile(localTile, templateTransform.SourceSize, templateTransform.RotationSteps);
             var targetIndices = templateTransform.TargetTileOrigin + targetLocalTile;
             _maps.SetTile(worldGridUid, worldGrid, targetIndices, tile.Tile);
+            atmosphereTiles.Add(targetIndices);
             copied++;
+        }
+
+        return copied;
+    }
+
+    private int CopyTemplateDecals(
+        EntityUid worldGridUid,
+        EntityUid templateGridUid,
+        FrozenWorldPoiPlacementData placement,
+        FrozenWorldPoiPrototype poi,
+        PoiTemplateTransform templateTransform)
+    {
+        if (!TryComp<DecalGridComponent>(templateGridUid, out var decalGrid) || decalGrid.ChunkCollection.ChunkCollection.Count == 0)
+            return 0;
+
+        var copied = 0;
+        var skipped = 0;
+
+        foreach (var chunk in decalGrid.ChunkCollection.ChunkCollection.Values)
+        {
+            foreach (var decal in chunk.Decals.Values)
+            {
+                var sourceLocalPosition = decal.Coordinates - ToVector2(templateTransform.SourceOrigin);
+                var targetPosition = ToVector2(templateTransform.TargetTileOrigin)
+                    + TransformLocalPosition(sourceLocalPosition, templateTransform.SourceSize, templateTransform.RotationSteps);
+
+                var targetDecal = new Decal(
+                    targetPosition,
+                    decal.Id,
+                    decal.Color,
+                    TransformLocalRotation(decal.Angle, templateTransform.RotationSteps),
+                    decal.ZIndex,
+                    decal.Cleanable);
+
+                if (_decals.TryAddDecal(targetDecal, new EntityCoordinates(worldGridUid, targetPosition), out _))
+                {
+                    copied++;
+                    continue;
+                }
+
+                skipped++;
+            }
+        }
+
+        if (skipped > 0)
+        {
+            Log.Warning(
+                $"Frozen world POI '{placement.Poi}' copied {copied} decal(s) from template '{poi.MapPath}', " +
+                $"but skipped {skipped}. Check decal prototypes and target tiles after rotation.");
         }
 
         return copied;
@@ -626,7 +795,8 @@ public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
         LoadResult result,
         FrozenWorldPoiPlacementData placement,
         FrozenWorldPoiPrototype poi,
-        PoiTemplateTransform templateTransform)
+        PoiTemplateTransform templateTransform,
+        HashSet<Vector2i> atmosphereTiles)
     {
         var toMove = new List<PoiEntityMoveEntry>();
         var templateMapUids = result.Maps.Select(map => map.Owner).ToArray();
@@ -814,11 +984,14 @@ public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
         int Failed,
         int Tiles,
         int Entities,
+        int Decals,
         bool Complete);
 
-    private readonly record struct PoiStampResult(bool Stamped, int Tiles, int Entities)
+    private readonly record struct PoiFootprintCleanupResult(int Entities, int Decals, Box2 Bounds);
+
+    private readonly record struct PoiStampResult(bool Stamped, int Tiles, int Entities, int Decals, IReadOnlyCollection<Vector2i> AtmosphereTiles)
     {
-        public static PoiStampResult Failed => new(false, 0, 0);
+        public static PoiStampResult Failed => new(false, 0, 0, 0, Array.Empty<Vector2i>());
     }
 
     private enum TemplateEntityDiagnosticClass

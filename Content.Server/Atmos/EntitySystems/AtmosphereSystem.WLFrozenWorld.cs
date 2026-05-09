@@ -1,11 +1,64 @@
+using System.Collections.Generic;
 using Content.Shared.Atmos;
 using Content.Shared.Atmos.Components;
+using Robust.Shared.Map;
 using Robust.Shared.Map.Components;
 
 namespace Content.Server.Atmos.EntitySystems;
 
 public sealed partial class AtmosphereSystem
 {
+    /// <summary>
+    /// WL Change: Seeds a specific set of existing grid tiles with a static frozen-world atmosphere mixture.
+    ///
+    /// This is the targeted counterpart of WLApplyStaticGridAtmosphere(...). It is intended for stamped
+    /// POI/map-template tiles that are created after the main FrozenWorld grid atmosphere seed pass.
+    /// It skips empty/nonexistent tiles and only touches the provided tile indices.
+    /// </summary>
+    public int WLApplyStaticGridAtmosphere(EntityUid gridUid, IReadOnlyCollection<Vector2i> tileIndices, GasMixture mixture)
+    {
+        if (tileIndices.Count == 0)
+            return 0;
+
+        if (!TryComp<MapGridComponent>(gridUid, out var mapGrid))
+            return 0;
+
+        var gridAtmosphere = EnsureComp<GridAtmosphereComponent>(gridUid);
+        var seeded = 0;
+
+        foreach (var indices in tileIndices)
+        {
+            if (!_mapSystem.TryGetTileRef(gridUid, mapGrid, indices, out var tileRef) || tileRef.Tile.IsEmpty)
+                continue;
+
+            if (!gridAtmosphere.Tiles.TryGetValue(indices, out var tileAtmosphere))
+            {
+                tileAtmosphere = new TileAtmosphere(gridUid, indices);
+                gridAtmosphere.Tiles[indices] = tileAtmosphere;
+            }
+
+            var air = mixture.Clone();
+            air.Temperature = mixture.Temperature;
+
+            tileAtmosphere.GridIndex = gridUid;
+            tileAtmosphere.GridIndices = indices;
+            tileAtmosphere.NoGridTile = false;
+            tileAtmosphere.MapAtmosphere = false;
+            tileAtmosphere.Space = false;
+            tileAtmosphere.Air = air;
+            tileAtmosphere.AirArchived = air.Clone();
+            tileAtmosphere.Temperature = mixture.Temperature;
+            tileAtmosphere.ArchivedCycle = 0;
+
+            // Queue atmos revalidation for adjacency/airtight state. This is deliberately targeted;
+            // do not call InvalidateAllTiles or full-grid WLApplyStaticGridAtmosphere here.
+            InvalidateTile(gridUid, indices);
+            seeded++;
+        }
+
+        return seeded;
+    }
+
     /// <summary>
     /// WL: Applies a uniform static atmosphere to every existing tile on a grid.
     /// Simulation is disabled so gas does not equalize between tiles.

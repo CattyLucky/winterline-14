@@ -118,6 +118,30 @@ public sealed partial class FrozenWorldPoiPrototype : IPrototype
     /// </summary>
     [DataField]
     public bool StampEntities = true;
+
+    /// <summary>
+    /// If true, map decals authored on the POI template grid are copied to WorldGrid.
+    /// Decals are transformed with the same rotation as tiles/entities.
+    /// </summary>
+    [DataField]
+    public bool StampDecals = true;
+
+    /// <summary>
+    /// Removes already-materialized biome decor/entities and existing decals from the target footprint
+    /// immediately before the POI template is stamped.
+    ///
+    /// ReserveBiomePatch materializes biome chunks before accepting placement. Without this cleanup pass,
+    /// generated biome trees, rocks and ground decals can remain visually inside stamped ruins/bunkers.
+    /// </summary>
+    [DataField]
+    public bool ClearExistingBiomeDecor = true;
+
+    /// <summary>
+    /// Extra padding around the stamped template footprint to clear pre-existing biome decor.
+    /// Keep this small: it is cleanup around the POI, not a large exclusion field.
+    /// </summary>
+    [DataField]
+    public float BiomeDecorClearPadding = 1f;
 }
 
 /// <summary>

@@ -254,7 +254,9 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         worldComp.PoisStamped = false;
         worldComp.PoiStampedTileCount = 0;
         worldComp.PoiStampedEntityCount = 0;
+        worldComp.PoiStampedDecalCount = 0;
         worldComp.PoiStampBatches = 0;
+        worldComp.PoiStampedAtmosphereTiles.Clear();
 
         var baseComp = EnsureComp<FrozenBaseComponent>(worldGridUid);
         baseComp.Profile = profileId;
@@ -267,7 +269,7 @@ public sealed partial class FrozenWorldSystem : EntitySystem
             var remaining = worldComp.PoiPlacements.Count(placement => !placement.Stamped);
             Log.Info(
                 $"Deferred frozen world setup for '{profileId}' while stamping POI templates in batches. " +
-                $"remaining={remaining}, batchSize={profile.PoiStampBatchSize}, stampedTiles={worldComp.PoiStampedTileCount}, stampedEntities={worldComp.PoiStampedEntityCount}.");
+                $"remaining={remaining}, batchSize={profile.PoiStampBatchSize}, stampedTiles={worldComp.PoiStampedTileCount}, stampedEntities={worldComp.PoiStampedEntityCount}, stampedDecals={worldComp.PoiStampedDecalCount}.");
             return false;
         }
 
@@ -307,14 +309,14 @@ public sealed partial class FrozenWorldSystem : EntitySystem
             var remaining = worldComp.PoiPlacements.Count(placement => !placement.Stamped);
             Log.Info(
                 $"Deferred frozen world setup for '{profileId}' while continuing batched POI stamping. " +
-                $"remaining={remaining}, batchSize={profile.PoiStampBatchSize}, stampedTiles={worldComp.PoiStampedTileCount}, stampedEntities={worldComp.PoiStampedEntityCount}.");
+                $"remaining={remaining}, batchSize={profile.PoiStampBatchSize}, stampedTiles={worldComp.PoiStampedTileCount}, stampedEntities={worldComp.PoiStampedEntityCount}, stampedDecals={worldComp.PoiStampedDecalCount}.");
             return false;
         }
 
         FinalizeFrozenWorldSetup(stationUid, mapUid, worldGridUid, worldComp, profile);
         Log.Info(
             $"Configured frozen world '{profileId}' on main surface grid {ToPrettyString(worldGridUid)} after batched POI stamping. " +
-            $"batches={worldComp.PoiStampBatches}, stampedTiles={worldComp.PoiStampedTileCount}, stampedEntities={worldComp.PoiStampedEntityCount}.");
+            $"batches={worldComp.PoiStampBatches}, stampedTiles={worldComp.PoiStampedTileCount}, stampedEntities={worldComp.PoiStampedEntityCount}, stampedDecals={worldComp.PoiStampedDecalCount}.");
         return true;
     }
 

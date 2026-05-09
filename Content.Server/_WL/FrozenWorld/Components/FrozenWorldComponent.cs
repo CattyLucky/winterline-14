@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Numerics;
 using Content.Shared._WL.FrozenWorld.Prototypes;
 using Robust.Shared.Map;
@@ -214,10 +215,22 @@ public sealed partial class FrozenWorldComponent : Component
     public int PoiStampedEntityCount;
 
     /// <summary>
+    /// Cumulative decal count copied by the current POI stamp pass. Runtime diagnostics only.
+    /// </summary>
+    [DataField]
+    public int PoiStampedDecalCount;
+
+    /// <summary>
     /// Number of POI stamp batches completed for the current setup. Runtime diagnostics only.
     /// </summary>
     [DataField]
     public int PoiStampBatches;
+
+    /// <summary>
+    /// Exact WorldGrid tile indices written by stamped POI templates during the current setup.
+    /// Runtime-only cache used for targeted POI atmosphere seeding after the final batch.
+    /// </summary>
+    public readonly HashSet<Vector2i> PoiStampedAtmosphereTiles = new();
 
     /// <summary>
     /// Ambient temperature offsets (Kelvin/Celsius delta) by square distance bands from the base.
