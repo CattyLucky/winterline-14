@@ -1,6 +1,7 @@
 ﻿using Content.Server.GameTicking;
 using Content.Server.Spawners.Components;
 using Content.Server.Station.Systems;
+using Content.Server._WL.FrozenWorld.Components;
 using Robust.Shared.Map;
 using Robust.Shared.Random;
 
@@ -22,6 +23,15 @@ public sealed class SpawnPointSystem : EntitySystem
     {
         if (args.SpawnResult != null)
             return;
+
+        if (args.Station is { } stationUid
+            && TryComp<StationFrozenWorldComponent>(stationUid, out var frozenStation)
+            && !frozenStation.WorldReady)
+        {
+            Log.Warning(
+                $"Player spawning into station {ToPrettyString(stationUid)} BEFORE FrozenWorld setup completed. " +
+                $"RunLevel: {_gameTicker.RunLevel}, Job: {args.Job}.");
+        }
 
         // TODO: Cache all this if it ends up important.
         var points = EntityQueryEnumerator<SpawnPointComponent, TransformComponent>();

@@ -5,10 +5,15 @@ namespace Content.Shared._WL.FrozenWorld.Components;
 /// <summary>
 /// Explicit FrozenWorld shelter area.
 ///
-/// This is the first stable shelter layer for the survival mode:
+/// This is the authored/debug shelter layer for the survival mode:
 /// - it does not depend on vanilla WeatherSystem.CanWeatherAffect;
 /// - it does not treat a single placed floor tile as protection;
 /// - it is cheap to author and debug through YAML.
+///
+/// This is not the final player-built room mechanic. Player-built shelters should be
+/// produced by the room/flood-fill system and exposed to FrozenShelterSystem as
+/// FrozenShelterSource.PlayerBuiltRoom snapshots. Keep this component for map-authored
+/// safe areas, migration fallbacks and explicit debug regions.
 ///
 /// Put this component on an invisible marker, structure, base controller or other entity.
 /// The rectangular area is evaluated in world axes around the entity position.

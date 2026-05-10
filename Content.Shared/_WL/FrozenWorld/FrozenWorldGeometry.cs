@@ -12,6 +12,21 @@ namespace Content.Shared._WL.FrozenWorld;
 /// </summary>
 public static class FrozenWorldGeometry
 {
+    /// <summary>
+    /// Converts a world-space position to the local coordinate space used by the frozen world grid.
+    /// FrozenWorld main grids are expected to be static and unrotated; this helper intentionally keeps
+    /// the conversion in one place so future rotation support is not reimplemented differently by callers.
+    /// </summary>
+    public static Vector2 WorldToLocal(Vector2 worldPos, Vector2 gridWorldPosition)
+    {
+        return worldPos - gridWorldPosition;
+    }
+
+    public static float GetSquareDistanceFromBaseWorld(Vector2 worldPos, Vector2 gridWorldPosition, Box2 baseBounds)
+    {
+        return GetSquareDistanceFromBase(WorldToLocal(worldPos, gridWorldPosition), baseBounds);
+    }
+
     public static float GetSquareDistanceFromBase(Vector2 point, Box2 baseBounds)
     {
         var center = baseBounds.Center;

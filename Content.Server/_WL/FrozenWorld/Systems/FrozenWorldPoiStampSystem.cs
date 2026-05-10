@@ -928,6 +928,11 @@ public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
         return value < 0 ? value + 4 : value;
     }
 
+    /// <summary>
+    /// Rotates a discrete tile index inside the template bounds.
+    /// The -1 terms are intentional: tile indices address cells in [0..size-1].
+    /// Do not make this formula match TransformLocalPosition; float positions live in continuous [0..size).
+    /// </summary>
     private static Vector2i TransformLocalTile(Vector2i localTile, Vector2i sourceSize, int rotationSteps)
     {
         var width = Math.Max(sourceSize.X, 1);
@@ -943,6 +948,12 @@ public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
         };
     }
 
+    /// <summary>
+    /// Rotates a continuous local position inside the template bounds.
+    /// Unlike TransformLocalTile this uses size-y instead of size-1-y because positions are continuous
+    /// coordinates in [0..size), so a point at a tile center (x+0.5, y+0.5) still maps to the matching
+    /// rotated tile center after TransformLocalTile maps the tile index.
+    /// </summary>
     private static Vector2 TransformLocalPosition(Vector2 localPosition, Vector2i sourceSize, int rotationSteps)
     {
         var width = Math.Max(sourceSize.X, 1);

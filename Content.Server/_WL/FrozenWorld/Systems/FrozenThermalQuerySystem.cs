@@ -2,12 +2,20 @@ using System.Numerics;
 using Content.Server._WL.FrozenWorld.Components;
 using Content.Shared._WL.FrozenWorld.Components;
 using Content.Shared._WL.FrozenWorld.Systems;
-using Content.Shared.Atmos;
 using Content.Shared.Inventory;
 using Content.Shared._WL.FrozenWorld;
 using Content.Shared.Light.Components;
 
 namespace Content.Server._WL.FrozenWorld.Systems;
+
+public readonly record struct FrozenEnvironmentalTemperatureResult(
+    float Temperature,
+    float AmbientTemperature,
+    float StaticHeatBonus,
+    float DynamicHeatBonus,
+    float ShelterBonus,
+    float WeatherExposureMultiplier,
+    FrozenShelterSnapshot Shelter);
 
 /// <summary>
 /// Central temperature query layer for FrozenWorld gameplay.
@@ -74,21 +82,18 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
 
         TryComp<FrozenTemperatureReceiverComponent>(uid, out var receiver);
         var worldPos = _xform.GetWorldPosition(xform);
-        var shelter = _shelter.GetShelter(uid, mapUid, world, worldPos);
-        var weatherExposureFactor = GetWeatherExposureFactor(world, shelter);
+        var shelter = _shelter.GetShelter(mapUid, world, worldPos);
+        var environment = GetEnvironmentalTemperatureAt(mapUid, worldPos, world, shelter);
+
+        var weatherExposureFactor = environment.WeatherExposureMultiplier;
         var weatherAffectsPosition = world.WeatherIntensity > 0.01f && weatherExposureFactor > 0.01f;
         var weatherTemperatureOffset = GetWeatherTemperatureOffset(world, weatherExposureFactor);
 
-        var shelterBonus = shelter.TemperatureBonus;
-        var environmentalTemperature = GetEnvironmentalTemperatureAt(
-            mapUid,
-            worldPos,
-            world,
-            shelterBonus,
-            shelter,
-            out var staticHeatBonus,
-            out var dynamicHeatBonus,
-            out var ambientTemperatureAtPosition);
+        var shelterBonus = environment.ShelterBonus;
+        var environmentalTemperature = environment.Temperature;
+        var staticHeatBonus = environment.StaticHeatBonus;
+        var dynamicHeatBonus = environment.DynamicHeatBonus;
+        var ambientTemperatureAtPosition = environment.AmbientTemperature;
 
         var zoneTemperatureOffset = ambientTemperatureAtPosition - world.AmbientTemperature - weatherTemperatureOffset;
         var environmentalTemperatureCelsius = KelvinToCelsius(environmentalTemperature);
@@ -143,6 +148,7 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
             world.WeatherIntensity,
             weatherExposureFactor,
             shelter.Name,
+            shelter.Source,
             world.BaseAmbientTemperature,
             world.DayNightTemperatureOffset,
             world.DayNightPhase,
@@ -151,99 +157,34 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
         return true;
     }
 
-    public float GetEnvironmentalTemperatureAt(EntityUid mapUid, Vector2 worldPos)
-    {
-        if (!TryComp<FrozenWorldComponent>(mapUid, out var world))
-            return Atmospherics.T20C;
-
-        var shelter = _shelter.GetShelter(mapUid, mapUid, world, worldPos);
-        return GetEnvironmentalTemperatureAt(mapUid, worldPos, world, shelter.TemperatureBonus, shelter, out _, out _);
-    }
-
-    public float GetEnvironmentalTemperatureAt(EntityUid mapUid, Vector2 worldPos, FrozenWorldComponent world)
-    {
-        var shelter = _shelter.GetShelter(mapUid, mapUid, world, worldPos);
-        return GetEnvironmentalTemperatureAt(mapUid, worldPos, world, shelter.TemperatureBonus, shelter, out _, out _);
-    }
-
-    public float GetEnvironmentalTemperatureAt(
+    public FrozenEnvironmentalTemperatureResult GetEnvironmentalTemperatureAt(
         EntityUid mapUid,
         Vector2 worldPos,
         FrozenWorldComponent world,
-        out float staticHeatBonus,
-        out float dynamicHeatBonus)
+        FrozenShelterSnapshot? knownShelter = null)
     {
-        var shelter = _shelter.GetShelter(mapUid, mapUid, world, worldPos);
-        return GetEnvironmentalTemperatureAt(
-            mapUid,
-            worldPos,
-            world,
-            shelter.TemperatureBonus,
-            shelter,
-            out staticHeatBonus,
-            out dynamicHeatBonus);
-    }
+        var shelter = knownShelter ?? _shelter.GetShelter(mapUid, world, worldPos);
+        var weatherExposureFactor = GetWeatherExposureFactor(world, shelter);
 
-    public float GetEnvironmentalTemperatureAt(
-        EntityUid mapUid,
-        Vector2 worldPos,
-        FrozenWorldComponent world,
-        float shelterBonus,
-        out float staticHeatBonus,
-        out float dynamicHeatBonus)
-    {
-        var shelter = _shelter.GetShelter(mapUid, mapUid, world, worldPos);
-        return GetEnvironmentalTemperatureAt(
-            mapUid,
-            worldPos,
-            world,
-            shelterBonus,
-            shelter,
-            out staticHeatBonus,
-            out dynamicHeatBonus,
-            out _);
-    }
-
-    public float GetEnvironmentalTemperatureAt(
-        EntityUid mapUid,
-        Vector2 worldPos,
-        FrozenWorldComponent world,
-        float shelterBonus,
-        FrozenShelterSnapshot shelter,
-        out float staticHeatBonus,
-        out float dynamicHeatBonus)
-    {
-        return GetEnvironmentalTemperatureAt(
-            mapUid,
-            worldPos,
-            world,
-            shelterBonus,
-            shelter,
-            out staticHeatBonus,
-            out dynamicHeatBonus,
-            out _);
-    }
-
-    public float GetEnvironmentalTemperatureAt(
-        EntityUid mapUid,
-        Vector2 worldPos,
-        FrozenWorldComponent world,
-        float shelterBonus,
-        FrozenShelterSnapshot shelter,
-        out float staticHeatBonus,
-        out float dynamicHeatBonus,
-        out float ambientTemperature)
-    {
-        GetLocalHeatBonusesAt(mapUid, worldPos, out staticHeatBonus, out dynamicHeatBonus);
-        ambientTemperature = GetAmbientTemperatureAt(worldPos, world, shelter);
+        GetLocalHeatBonusesAt(mapUid, worldPos, out var staticHeatBonus, out var dynamicHeatBonus);
+        var ambientTemperature = GetAmbientTemperatureAt(worldPos, world, shelter);
 
         var localHeatBonus = staticHeatBonus + dynamicHeatBonus;
         var maxOffset = MathF.Max(0f, world.MaxLocalTemperatureOffset);
         if (maxOffset > 0f)
             localHeatBonus = Math.Clamp(localHeatBonus, -maxOffset, maxOffset);
 
-        var environmentalTemperature = ambientTemperature + localHeatBonus + shelterBonus;
-        return Math.Clamp(environmentalTemperature, world.MinEffectiveTemperature, world.MaxEffectiveTemperature);
+        var environmentalTemperature = ambientTemperature + localHeatBonus + shelter.TemperatureBonus;
+        environmentalTemperature = Math.Clamp(environmentalTemperature, world.MinEffectiveTemperature, world.MaxEffectiveTemperature);
+
+        return new FrozenEnvironmentalTemperatureResult(
+            environmentalTemperature,
+            ambientTemperature,
+            staticHeatBonus,
+            dynamicHeatBonus,
+            shelter.TemperatureBonus,
+            weatherExposureFactor,
+            shelter);
     }
 
     public float GetLocalHeatBonusAt(EntityUid mapUid, Vector2 worldPos)
@@ -432,6 +373,19 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
         return kelvin - 273.15f;
     }
 
+
+    private float GetSquareDistanceFromBaseAtWorldPosition(Vector2 worldPos, FrozenWorldComponent world)
+    {
+        if (world.WorldGrid is not { } worldGridUid || !Exists(worldGridUid))
+            return FrozenWorldGeometry.GetSquareDistanceFromBase(worldPos, world.BaseBounds);
+
+        if (!TryComp(worldGridUid, out TransformComponent? gridXform))
+            return FrozenWorldGeometry.GetSquareDistanceFromBase(worldPos, world.BaseBounds);
+
+        var gridWorldPosition = _xform.GetWorldPosition(gridXform);
+        return FrozenWorldGeometry.GetSquareDistanceFromBaseWorld(worldPos, gridWorldPosition, world.BaseBounds);
+    }
+
     private static float GetWeatherExposureFactor(FrozenWorldComponent world, FrozenShelterSnapshot shelter)
     {
         if (!shelter.IsSheltered)
@@ -474,14 +428,14 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
         return float.Lerp(1f, target, Math.Clamp(factor, 0f, 1f));
     }
 
-    private static float GetAmbientTemperatureAt(Vector2 worldPos, FrozenWorldComponent world, FrozenShelterSnapshot shelter)
+    private float GetAmbientTemperatureAt(Vector2 worldPos, FrozenWorldComponent world, FrozenShelterSnapshot shelter)
     {
         var ambient = world.AmbientTemperature + GetWeatherTemperatureOffset(world, GetWeatherExposureFactor(world, shelter));
 
         if (world.TemperatureBands.Count == 0)
             return ambient;
 
-        var distance = FrozenWorldGeometry.GetSquareDistanceFromBase(worldPos, world.BaseBoundsWorld);
+        var distance = GetSquareDistanceFromBaseAtWorldPosition(worldPos, world);
         foreach (var band in world.TemperatureBands)
         {
             if (distance < band.MinDistance || distance > band.MaxDistance)

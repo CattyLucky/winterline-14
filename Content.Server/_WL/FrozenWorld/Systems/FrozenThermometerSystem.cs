@@ -196,19 +196,27 @@ public sealed partial class FrozenThermometerSystem : EntitySystem
             return BuildUnavailableState();
 
         var worldPos = _xform.GetWorldPosition(xform);
-        var environmentalTemperature = _thermal.GetEnvironmentalTemperatureAt(mapUid, worldPos, world);
-        var environmentalTemperatureCelsius = KelvinToCelsius(environmentalTemperature);
+        var environment = _thermal.GetEnvironmentalTemperatureAt(mapUid, worldPos, world);
+        var environmentalTemperatureCelsius = KelvinToCelsius(environment.Temperature);
+        var unclampedEnvironmentalTemperature = environment.AmbientTemperature
+                                             + environment.StaticHeatBonus
+                                             + environment.DynamicHeatBonus
+                                             + environment.ShelterBonus;
+        var unclampedEnvironmentalTemperatureCelsius = KelvinToCelsius(unclampedEnvironmentalTemperature);
+        var isEnvironmentalTemperatureClamped = MathF.Abs(unclampedEnvironmentalTemperature - environment.Temperature) > 0.001f;
         var baseAmbientTemperatureCelsius = KelvinToCelsius(world.BaseAmbientTemperature);
-        var ambientTemperatureCelsius = KelvinToCelsius(world.AmbientTemperature);
+        var ambientTemperatureCelsius = KelvinToCelsius(environment.AmbientTemperature);
         var minEffectiveTemperatureCelsius = KelvinToCelsius(world.MinEffectiveTemperature);
         var maxEffectiveTemperatureCelsius = KelvinToCelsius(world.MaxEffectiveTemperature);
+        var zoneTemperatureOffset = environment.AmbientTemperature - world.AmbientTemperature - world.WeatherTemperatureOffset;
+        var weatherAffectsPosition = world.WeatherIntensity > 0.01f && environment.WeatherExposureMultiplier > 0.01f;
 
         return new FrozenThermometerBoundUserInterfaceState(
             true,
             ambientTemperatureCelsius,
             environmentalTemperatureCelsius,
-            environmentalTemperatureCelsius,
-            false,
+            unclampedEnvironmentalTemperatureCelsius,
+            isEnvironmentalTemperatureClamped,
             minEffectiveTemperatureCelsius,
             maxEffectiveTemperatureCelsius,
             baseAmbientTemperatureCelsius,
@@ -216,14 +224,14 @@ public sealed partial class FrozenThermometerSystem : EntitySystem
             world.DayNightPhase,
             world.WeatherTemperatureOffset,
             world.WeatherIntensity,
-            1f,
-            world.WeatherIntensity > 0.01f,
+            environment.WeatherExposureMultiplier,
+            weatherAffectsPosition,
             world.ActiveWeatherName,
-            0f,
-            null,
-            0f,
-            0f,
-            0f,
+            zoneTemperatureOffset,
+            environment.Shelter.Name,
+            environment.StaticHeatBonus,
+            environment.DynamicHeatBonus,
+            environment.ShelterBonus,
             0f,
             1f,
             1f,

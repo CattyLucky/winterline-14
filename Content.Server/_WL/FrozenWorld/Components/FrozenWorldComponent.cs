@@ -28,15 +28,10 @@ public sealed partial class FrozenWorldComponent : Component
     public Box2 BaseBounds;
 
     /// <summary>
-    /// Settlement/base footprint in world coordinates.
-    /// Temporary shelter fallback uses this until authored shelter/room data exists.
-    /// </summary>
-    [DataField]
-    public Box2 BaseBoundsWorld;
-
-    /// <summary>
-    /// Temporary migration fallback: treats BaseBoundsWorld as a weak shelter if no explicit
+    /// Temporary migration fallback: treats BaseBounds as a weak shelter if no explicit
     /// FrozenShelterComponent area covers the position.
+    /// The position check is converted from world coordinates into WorldGrid local coordinates at query time,
+    /// so the fallback does not depend on a stale cached world-space AABB.
     ///
     /// Keep this true while old maps do not yet have authored shelter marker entities.
     /// Set to false on profiles/maps once explicit shelter areas are placed.
@@ -51,7 +46,7 @@ public sealed partial class FrozenWorldComponent : Component
     public int Seed;
 
     /// <summary>
-    /// True once BaseBounds/BaseBoundsWorld were captured for the current round.
+    /// True once BaseBounds were captured for the current round.
     /// </summary>
     [DataField]
     public bool BaseAreaCaptured;

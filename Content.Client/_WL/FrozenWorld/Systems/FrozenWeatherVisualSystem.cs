@@ -6,6 +6,7 @@ using Robust.Client.Player;
 using Robust.Shared.Audio;
 using Robust.Shared.Audio.Components;
 using Robust.Shared.Audio.Systems;
+using Robust.Shared.Map.Components;
 using Robust.Shared.Maths;
 using Robust.Shared.Player;
 using Robust.Shared.Prototypes;
@@ -28,7 +29,8 @@ public sealed class FrozenWeatherVisualSystem : EntitySystem
 
     [Dependency] private readonly EntityQuery<AudioComponent> _audioQuery = default!;
 
-    private FrozenWeatherOverlay _overlay = default!;
+    private FrozenWeatherOverlay _screenOverlay = default!;
+    private FrozenWeatherPrecipitationOverlay _worldOverlay = default!;
 
     private string? _currentWeather;
     private string? _previousWeather;
@@ -48,8 +50,11 @@ public sealed class FrozenWeatherVisualSystem : EntitySystem
     {
         base.Initialize();
 
-        _overlay = new FrozenWeatherOverlay();
-        _overlayManager.AddOverlay(_overlay);
+        _screenOverlay = new FrozenWeatherOverlay();
+        _worldOverlay = new FrozenWeatherPrecipitationOverlay();
+
+        _overlayManager.AddOverlay(_screenOverlay);
+        _overlayManager.AddOverlay(_worldOverlay);
     }
 
     public override void Shutdown()
@@ -57,14 +62,13 @@ public sealed class FrozenWeatherVisualSystem : EntitySystem
         base.Shutdown();
 
         _overlayManager.RemoveOverlay<FrozenWeatherOverlay>();
+        _overlayManager.RemoveOverlay<FrozenWeatherPrecipitationOverlay>();
         StopAllAudio();
     }
 
     public override void Update(float frameTime)
     {
         base.Update(frameTime);
-
-        _overlay.Update(frameTime);
 
         if (!TryGetLocalWeatherState(out var state))
         {
@@ -91,6 +95,7 @@ public sealed class FrozenWeatherVisualSystem : EntitySystem
             BeginTransition(state);
 
         _transitionTime += frameTime;
+
         UpdateVisualAndAudio(state.Intensity);
     }
 
@@ -287,37 +292,86 @@ public sealed class FrozenWeatherVisualSystem : EntitySystem
         var total = Math.Clamp(currentWeight + previousWeight, 0f, 1.5f);
         if (total <= 0.001f)
         {
-            _overlay.VisualIntensity = 0f;
-            _overlay.SnowIntensity = 0f;
-            _overlay.SnowHazeAlpha = 0f;
-            _overlay.ScreenTintAlpha = 0f;
+            ClearOverlayState();
             return;
         }
 
         var dominant = currentWeight >= previousWeight ? current : previous;
         dominant ??= current ?? previous;
+        var outdoorFactor = IsLocalPlayerWeatherExposed() ? 1f : 0f;
 
-        _overlay.VisualIntensity = Math.Clamp(total, 0f, 1f);
-        _overlay.SnowIntensity = Blend(current?.SnowIntensity ?? 0f, currentWeight, previous?.SnowIntensity ?? 0f, previousWeight);
-        _overlay.WindStrength = Blend(current?.WindStrength ?? 0f, currentWeight, previous?.WindStrength ?? 0f, previousWeight);
-        _overlay.SnowHazeAlpha = Blend(current?.SnowHazeAlpha ?? 0f, currentWeight, previous?.SnowHazeAlpha ?? 0f, previousWeight);
-        _overlay.ScreenTintAlpha = Blend(current?.ScreenTintAlpha ?? 0f, currentWeight, previous?.ScreenTintAlpha ?? 0f, previousWeight);
-        _overlay.SnowSpeed = Blend(current?.SnowSpeed ?? 120f, currentWeight, previous?.SnowSpeed ?? 120f, previousWeight);
+        var visualIntensity = Math.Clamp(total, 0f, 1f);
+        var snowIntensity = Blend(current?.SnowIntensity ?? 0f, currentWeight, previous?.SnowIntensity ?? 0f, previousWeight);
+        var windStrength = Blend(current?.WindStrength ?? 0f, currentWeight, previous?.WindStrength ?? 0f, previousWeight);
+        var snowSpeed = Blend(current?.SnowSpeed ?? 120f, currentWeight, previous?.SnowSpeed ?? 120f, previousWeight);
+        var spriteSource = !string.IsNullOrWhiteSpace(current?.WeatherSpriteRsi)
+            ? current
+            : (!string.IsNullOrWhiteSpace(previous?.WeatherSpriteRsi) ? previous : null);
 
-        _overlay.WeatherSpriteRsiPath = dominant?.WeatherSpriteRsi;
-        _overlay.WeatherSpriteState = dominant?.WeatherSpriteState;
-        _overlay.WeatherSpriteTileSize = Blend(current?.WeatherSpriteTileSize ?? 16f, currentWeight, previous?.WeatherSpriteTileSize ?? 16f, previousWeight);
-        _overlay.WeatherSpriteAlpha = Blend(current?.WeatherSpriteAlpha ?? 0.65f, currentWeight, previous?.WeatherSpriteAlpha ?? 0.65f, previousWeight);
-        _overlay.WeatherSpriteWindScale = Blend(current?.WeatherSpriteWindScale ?? 1f, currentWeight, previous?.WeatherSpriteWindScale ?? 1f, previousWeight);
-        _overlay.WeatherSpriteFallScale = Blend(current?.WeatherSpriteFallScale ?? 1f, currentWeight, previous?.WeatherSpriteFallScale ?? 1f, previousWeight);
-
-        _overlay.WeatherSpriteSecondPass = dominant?.WeatherSpriteSecondPass ?? false;
-        _overlay.WeatherSpriteSecondPassScale = Blend(current?.WeatherSpriteSecondPassScale ?? 1.55f, currentWeight, previous?.WeatherSpriteSecondPassScale ?? 1.55f, previousWeight);
-        _overlay.WeatherSpriteSecondPassAlpha = Blend(current?.WeatherSpriteSecondPassAlpha ?? 0.35f, currentWeight, previous?.WeatherSpriteSecondPassAlpha ?? 0.35f, previousWeight);
-        _overlay.WeatherSpriteSecondPassSpeed = Blend(current?.WeatherSpriteSecondPassSpeed ?? 0.55f, currentWeight, previous?.WeatherSpriteSecondPassSpeed ?? 0.55f, previousWeight);
+        _screenOverlay.VisualIntensity = visualIntensity;
+        _screenOverlay.SnowIntensity = 0f;
+        _screenOverlay.WindStrength = windStrength;
+        _screenOverlay.SnowHazeAlpha = Blend(current?.SnowHazeAlpha ?? 0f, currentWeight, previous?.SnowHazeAlpha ?? 0f, previousWeight) * outdoorFactor;
+        _screenOverlay.ScreenTintAlpha = Blend(current?.ScreenTintAlpha ?? 0f, currentWeight, previous?.ScreenTintAlpha ?? 0f, previousWeight) * outdoorFactor;
+        _screenOverlay.SnowSpeed = snowSpeed;
 
         if (dominant != null)
-            _overlay.ScreenTintColor = dominant.Value.ScreenTintColor;
+            _screenOverlay.ScreenTintColor = dominant.Value.ScreenTintColor;
+
+        _worldOverlay.VisualIntensity = visualIntensity;
+        _worldOverlay.SnowIntensity = snowIntensity;
+        _worldOverlay.WindStrength = windStrength;
+        _worldOverlay.SnowSpeed = snowSpeed;
+        _worldOverlay.WeatherSpriteRsiPath = spriteSource?.WeatherSpriteRsi;
+        _worldOverlay.WeatherSpriteState = spriteSource?.WeatherSpriteState;
+        _worldOverlay.WeatherSpriteTileSize = Blend(current?.WeatherSpriteTileSize ?? 16f, currentWeight, previous?.WeatherSpriteTileSize ?? 16f, previousWeight);
+        _worldOverlay.WeatherSpriteAlpha = Blend(current?.WeatherSpriteAlpha ?? 0.65f, currentWeight, previous?.WeatherSpriteAlpha ?? 0.65f, previousWeight);
+        _worldOverlay.WeatherSpriteWindScale = Blend(current?.WeatherSpriteWindScale ?? 1f, currentWeight, previous?.WeatherSpriteWindScale ?? 1f, previousWeight);
+        _worldOverlay.WeatherSpriteFallScale = Blend(current?.WeatherSpriteFallScale ?? 1f, currentWeight, previous?.WeatherSpriteFallScale ?? 1f, previousWeight);
+        _worldOverlay.WeatherSpriteSecondPass = dominant?.WeatherSpriteSecondPass ?? false;
+        _worldOverlay.WeatherSpriteSecondPassScale = dominant?.WeatherSpriteSecondPassScale ?? 1.55f;
+        _worldOverlay.WeatherSpriteSecondPassAlpha = dominant?.WeatherSpriteSecondPassAlpha ?? 0.35f;
+        _worldOverlay.WeatherSpriteSecondPassSpeed = dominant?.WeatherSpriteSecondPassSpeed ?? 0.55f;
+    }
+
+    private bool IsLocalPlayerWeatherExposed()
+    {
+        if (_player.LocalEntity is not { } localUid)
+            return true;
+
+        var xform = Transform(localUid);
+        var gridUid = xform.ParentUid;
+        if (!TryComp<MapGridComponent>(gridUid, out var grid))
+            return true;
+
+        if (!TryComp<FrozenShelterWeatherMaskComponent>(gridUid, out var mask) || mask.WeatherOccludedTiles.Count == 0)
+            return true;
+
+        var tileSize = grid.TileSize;
+        var tile = new Vector2i(
+            (int) MathF.Floor(xform.LocalPosition.X / tileSize),
+            (int) MathF.Floor(xform.LocalPosition.Y / tileSize));
+
+        foreach (var occluded in mask.WeatherOccludedTiles)
+        {
+            if (occluded == tile)
+                return false;
+        }
+
+        return true;
+    }
+
+    private void ClearOverlayState()
+    {
+        _screenOverlay.VisualIntensity = 0f;
+        _screenOverlay.SnowIntensity = 0f;
+        _screenOverlay.SnowHazeAlpha = 0f;
+        _screenOverlay.ScreenTintAlpha = 0f;
+
+        _worldOverlay.VisualIntensity = 0f;
+        _worldOverlay.SnowIntensity = 0f;
+        _worldOverlay.WeatherSpriteRsiPath = null;
+        _worldOverlay.WeatherSpriteState = null;
     }
 
     private static float Blend(float current, float currentWeight, float previous, float previousWeight)
@@ -337,7 +391,7 @@ public sealed class FrozenWeatherVisualSystem : EntitySystem
         _previousWeather = null;
         _clearingToClear = false;
         _missingStateTime = 0f;
-        _overlay.VisualIntensity = 0f;
+        ClearOverlayState();
     }
 
     private readonly record struct FrozenWeatherVisualSettings(

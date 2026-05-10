@@ -30,4 +30,12 @@ public sealed partial class StationFrozenWorldComponent : Component
     [DataField]
     public int? Seed;
 
+    /// <summary>
+    /// Set by FrozenWorldSystem after all setup stages complete (zones, POI stamping,
+    /// weather cycle, climate). Player spawning must gate on this flag.
+    /// Not serialized: a save/load reset is expected to redo setup from scratch.
+    /// </summary>
+    [ViewVariables]
+    public bool WorldReady;
+
 }

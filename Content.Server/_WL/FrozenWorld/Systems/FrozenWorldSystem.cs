@@ -8,8 +8,10 @@ using Content.Server.Shuttles.Components;
 using Content.Server.Shuttles.Systems;
 using Content.Server.Station.Components;
 using Content.Server.Station.Events;
+using Content.Server.GameTicking.Events;
 using Content.Server._WL.Weather.Components;
 using Content.Server._WL.Weather.Systems;
+using Content.Server._WL.FrozenWorld.Events;
 using Content.Shared._WL.FrozenWorld.Prototypes;
 using Content.Shared.Atmos;
 using Content.Shared.Atmos.Components;
@@ -66,6 +68,7 @@ public sealed partial class FrozenWorldSystem : EntitySystem
     {
         base.Initialize();
         SubscribeLocalEvent<StationFrozenWorldComponent, StationPostInitEvent>(OnStationPostInit);
+        SubscribeLocalEvent<RoundStartingEvent>(OnRoundStarting);
     }
 
     public override void Update(float frameTime)
@@ -109,17 +112,20 @@ public sealed partial class FrozenWorldSystem : EntitySystem
                 continue;
             }
 
-            var allowFallback = pending.Attempts >= MaxSetupAttemptsBeforeFallback;
-            if (SetupPrimaryFrozenWorld((stationUid, stationFrozen), profile, allowFallback))
+            var allowFallback = pending.Stage == FrozenWorldSetupStage.ResolvingBase
+                                && pending.Attempts >= MaxSetupAttemptsBeforeFallback;
+            if (SetupPrimaryFrozenWorld((stationUid, stationFrozen), profile, allowFallback, pending.ForceUnbatched))
             {
                 complete.Add(stationUid);
                 continue;
             }
 
+            var nextStage = GetPendingSetupStage(stationUid, stationFrozen.Profile);
             updates.Add((stationUid, pending with
             {
-                Attempts = pending.Attempts + 1,
-                NextAttempt = now + SetupRetryDelay
+                Attempts = nextStage == pending.Stage ? pending.Attempts + 1 : 0,
+                NextAttempt = now + SetupRetryDelay,
+                Stage = nextStage
             }));
         }
 
@@ -151,11 +157,48 @@ public sealed partial class FrozenWorldSystem : EntitySystem
             return;
         }
 
-        _pendingSetups[ent.Owner] = new FrozenWorldPendingSetup(0, _timing.CurTime);
+        ent.Comp.WorldReady = false;
+        _pendingSetups[ent.Owner] = new FrozenWorldPendingSetup(0, _timing.CurTime, FrozenWorldSetupStage.ResolvingBase, ForceUnbatched: true);
         Log.Info($"Queued frozen world setup for {ToPrettyString(ent.Owner)} with profile '{profile.ID}'.");
     }
 
-    private bool SetupPrimaryFrozenWorld(Entity<StationFrozenWorldComponent> station, FrozenWorldProfilePrototype profile, bool allowBaseFallback)
+    private void OnRoundStarting(RoundStartingEvent ev)
+    {
+        var query = EntityQueryEnumerator<StationFrozenWorldComponent>();
+        while (query.MoveNext(out var stationUid, out var stationFrozen))
+        {
+            if (!stationFrozen.Enabled || _configuredStations.Contains(stationUid))
+                continue;
+
+            if (!_proto.TryIndex(stationFrozen.Profile, out FrozenWorldProfilePrototype? profile))
+            {
+                Log.Error($"Unable to find frozen world profile '{stationFrozen.Profile}' for {ToPrettyString(stationUid)} on RoundStartingEvent.");
+                continue;
+            }
+
+            if (SetupPrimaryFrozenWorld(
+                    (stationUid, stationFrozen),
+                    profile,
+                    allowBaseFallback: true,
+                    forceUnbatched: true))
+            {
+                _pendingSetups.Remove(stationUid);
+                Log.Info($"Frozen world setup completed synchronously on RoundStartingEvent for {ToPrettyString(stationUid)}.");
+            }
+            else
+            {
+                Log.Error(
+                    $"Frozen world setup FAILED synchronously on RoundStartingEvent for {ToPrettyString(stationUid)}. " +
+                    "Players may spawn into a half-ready world. Falling back to the retry loop in Update().");
+            }
+        }
+    }
+
+    private bool SetupPrimaryFrozenWorld(
+        Entity<StationFrozenWorldComponent> station,
+        FrozenWorldProfilePrototype profile,
+        bool allowBaseFallback,
+        bool forceUnbatched)
     {
         if (_configuredStations.Contains(station.Owner))
             return true;
@@ -231,7 +274,6 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         worldComp.Seed = seed;
         worldComp.WorldGrid = worldGridUid;
         worldComp.BaseBounds = baseBounds;
-        worldComp.BaseBoundsWorld = baseBounds.Translated(worldXform.WorldPosition);
         worldComp.BaseAreaCaptured = true;
         worldComp.BaseAmbientTemperature = profile.AmbientTemperature;
         worldComp.AmbientTemperature = profile.AmbientTemperature;
@@ -263,13 +305,16 @@ public sealed partial class FrozenWorldSystem : EntitySystem
 
         _zones.GenerateZones(worldGridUid, (mapUid.Value, worldComp), profile);
 
-        var stampResult = _poiStamps.StampPlacedPois(worldGridUid, worldComp, profile.PoiStampBatchSize);
+        // On round-start first setup, stamp everything synchronously. PoiStampBatchSize=0 means unlimited.
+        // Runtime POI placement still uses the configured batched path elsewhere.
+        var batchSize = forceUnbatched ? 0 : profile.PoiStampBatchSize;
+        var stampResult = _poiStamps.StampPlacedPois(worldGridUid, worldComp, batchSize);
         if (!stampResult.Complete)
         {
             var remaining = worldComp.PoiPlacements.Count(placement => !placement.Stamped);
             Log.Info(
                 $"Deferred frozen world setup for '{profileId}' while stamping POI templates in batches. " +
-                $"remaining={remaining}, batchSize={profile.PoiStampBatchSize}, stampedTiles={worldComp.PoiStampedTileCount}, stampedEntities={worldComp.PoiStampedEntityCount}, stampedDecals={worldComp.PoiStampedDecalCount}.");
+                $"remaining={remaining}, batchSize={batchSize}, stampedTiles={worldComp.PoiStampedTileCount}, stampedEntities={worldComp.PoiStampedEntityCount}, stampedDecals={worldComp.PoiStampedDecalCount}.");
             return false;
         }
 
@@ -330,6 +375,14 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         TrySetupWeatherController(mapUid, profile);
         _climate.RecalculateNow(mapUid, worldComp);
         _configuredStations.Add(stationUid);
+
+        if (TryComp<StationFrozenWorldComponent>(stationUid, out var stationFrozen))
+            stationFrozen.WorldReady = true;
+
+        var ev = new FrozenWorldReadyEvent(stationUid, mapUid, worldGridUid);
+        RaiseLocalEvent(stationUid, ref ev);
+
+        Log.Info($"Frozen world ready: station={ToPrettyString(stationUid)}, map={ToPrettyString(mapUid)}, grid={ToPrettyString(worldGridUid)}.");
     }
 
     private bool TryFindWorldGrid(StationDataComponent stationData, out EntityUid gridUid)
@@ -659,6 +712,34 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         return TimeSpan.FromTicks(ticks);
     }
 
+
+    private FrozenWorldSetupStage GetPendingSetupStage(EntityUid stationUid, ProtoId<FrozenWorldProfilePrototype> profileId)
+    {
+        if (!TryComp<StationDataComponent>(stationUid, out var stationData))
+            return FrozenWorldSetupStage.ResolvingBase;
+
+        foreach (var gridUid in stationData.Grids)
+        {
+            if (!Exists(gridUid))
+                continue;
+
+            var xform = Transform(gridUid);
+            if (xform.MapUid is not { } mapUid)
+                continue;
+
+            if (!TryComp<FrozenWorldComponent>(mapUid, out var world))
+                continue;
+
+            if (world.Profile != profileId)
+                continue;
+
+            if (world.BaseAreaCaptured && world.ZonesGenerated && !world.PoisStamped)
+                return FrozenWorldSetupStage.StampingPoi;
+        }
+
+        return FrozenWorldSetupStage.ResolvingBase;
+    }
+
     private void TrySetupWeatherController(EntityUid mapUid, FrozenWorldProfilePrototype profile)
     {
         if (!profile.EnableWeatherCycle)
@@ -689,6 +770,20 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         Log.Info($"Configured WL weather cycle preset '{profile.WeatherCyclePreset}' from profile '{profile.ID}' on map {ToPrettyString(mapUid)}.");
     }
 
-    private readonly record struct FrozenWorldPendingSetup(int Attempts, TimeSpan NextAttempt);
+    private enum FrozenWorldSetupStage
+    {
+        ResolvingBase,
+        StampingPoi,
+    }
+
+    /// <summary>
+    /// Pending setup state.
+    /// ForceUnbatched=true means "stamp everything in one tick" on first round-start setup pass.
+    /// </summary>
+    private readonly record struct FrozenWorldPendingSetup(
+        int Attempts,
+        TimeSpan NextAttempt,
+        FrozenWorldSetupStage Stage,
+        bool ForceUnbatched);
 
 }
