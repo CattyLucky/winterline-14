@@ -120,7 +120,10 @@ public sealed class FrozenWeatherPrecipitationOverlay : Overlay
         var curTime = _timing.RealTime;
 
         var snow = Math.Clamp(SnowIntensity * VisualIntensity, 0f, 3f);
-        var firstPassAlpha = Math.Clamp(WeatherSpriteAlpha * snow, 0f, 0.95f);
+        // Hard cap: precipitation must never fully occlude the world. The frost vignette is responsible
+        // for closing the player's vision; precipitation is the texture of falling snow on top of it.
+        // 0.65 keeps the world readable through any storm while still feeling dense at peak weather.
+        var firstPassAlpha = Math.Clamp(WeatherSpriteAlpha * snow, 0f, 0.65f);
         if (firstPassAlpha <= 0.001f)
             return;
 

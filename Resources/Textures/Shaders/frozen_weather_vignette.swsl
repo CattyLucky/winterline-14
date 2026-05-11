@@ -1,0 +1,95 @@
+// FrozenWorld weather: frost-on-glass with occlusion.
+//
+// Produces an opaque frost layer that grows from the screen edges inward as the storm intensifies.
+// Between crystal branches, a dark backing hides the world below.
+//
+// Parameters:
+//   intensity         0..1   storm strength.
+//   innerRadius       0..1   clear-zone radius at intensity=1 (smaller = tighter clear circle).
+//   outerRadius       0..1.5 where frost density reaches max.
+//   frostScale        >0     size of ice crystals (lower = bigger, higher = smaller).
+//   maxAlpha          0..1   final alpha at peak.
+//   backingDarkness   0..1   dark backing strength in frost zone.
+//   crystalBrightness 0..1   brightness of ice highlights above backing.
+//   backingColor      vec3   backing color (deep blue/black).
+//   frostColor        vec3   crystal color (cold white/pale blue).
+
+light_mode unshaded;
+
+uniform highp float intensity;
+uniform highp float innerRadius;
+uniform highp float outerRadius;
+uniform highp float frostScale;
+uniform highp float maxAlpha;
+uniform highp float backingDarkness;
+uniform highp float crystalBrightness;
+uniform highp vec3 backingColor;
+uniform highp vec3 frostColor;
+
+highp vec2 hash22(highp vec2 p) {
+    p = vec2(dot(p, vec2(127.1, 311.7)),
+             dot(p, vec2(269.5, 183.3)));
+    return fract(sin(p) * 43758.5453) * 2.0 - 1.0;
+}
+
+highp vec2 voronoi(highp vec2 uv) {
+    highp vec2 ip = floor(uv);
+    highp vec2 fp = fract(uv);
+
+    highp float minDist1 = 8.0;
+    highp float minDist2 = 8.0;
+
+    for (int y = -1; y <= 1; y++) {
+        for (int x = -1; x <= 1; x++) {
+            highp vec2 neighbor = vec2(float(x), float(y));
+            highp vec2 point = hash22(ip + neighbor) * 0.5 + 0.5;
+            highp vec2 diff = neighbor + point - fp;
+            highp float d = dot(diff, diff);
+
+            if (d < minDist1) {
+                minDist2 = minDist1;
+                minDist1 = d;
+            } else if (d < minDist2) {
+                minDist2 = d;
+            }
+        }
+    }
+    return vec2(sqrt(minDist1), sqrt(minDist2));
+}
+
+void fragment() {
+    highp vec2 screenSize = vec2(1.0 / SCREEN_PIXEL_SIZE.x, 1.0 / SCREEN_PIXEL_SIZE.y);
+    highp vec2 center = screenSize * 0.5;
+    highp float halfDiag = length(center);
+    highp float dist = length(FRAGCOORD.xy - center) / halfDiag;
+
+    // Frost zone mask: 0 in clear center, 1 in fully frosted area.
+    highp float clearZone = mix(outerRadius, innerRadius, intensity);
+    // Make the onset of frost steeper right after clearZone so vision collapse feels immediate.
+    highp float frostMask = pow(smoothstep(clearZone, outerRadius, dist), 0.4);
+
+    if (frostMask < 0.01) {
+        COLOR = vec4(0.0);
+        return;
+    }
+
+    // Voronoi crystal pattern.
+    highp vec2 uv = FRAGCOORD.xy / halfDiag * frostScale;
+    highp vec2 v = voronoi(uv);
+
+    // Cell edges -> bright highlights.
+    highp float edge = clamp(v.y - v.x, 0.0, 1.0);
+    highp float crystal = pow(1.0 - edge, 6.0);
+
+    // Cell body fade for slight texture in interiors.
+    highp float body = smoothstep(0.0, 0.5, v.x) * 0.4;
+    highp float pattern = clamp(crystal + body * 0.3, 0.0, 1.0);
+
+    // Compose: dark backing + bright crystals.
+    highp float backingAlpha = frostMask * backingDarkness;
+    highp float crystalAlpha = pattern * frostMask * crystalBrightness;
+    highp vec3 finalColor = mix(backingColor, frostColor, pattern);
+    highp float finalAlpha = clamp(backingAlpha + crystalAlpha, 0.0, 1.0) * maxAlpha;
+
+    COLOR = vec4(finalColor, finalAlpha);
+}
