@@ -27,18 +27,6 @@ public sealed partial class FrozenWorldComponent : Component
     [DataField]
     public Box2 BaseBounds;
 
-    /// <summary>
-    /// Temporary migration fallback: treats BaseBounds as a weak shelter if no explicit
-    /// FrozenShelterComponent area covers the position.
-    /// The position check is converted from world coordinates into WorldGrid local coordinates at query time,
-    /// so the fallback does not depend on a stale cached world-space AABB.
-    ///
-    /// Keep this true while old maps do not yet have authored shelter marker entities.
-    /// Set to false on profiles/maps once explicit shelter areas are placed.
-    /// </summary>
-    [DataField]
-    public bool UseBaseBoundsShelterFallback = true;
-
     [DataField]
     public MapId MapId;
 

@@ -1,24 +1,107 @@
+# FrozenWorld outer clothing tiers.
+# Each tier has its own RSI path so placeholder art can be replaced independently.
+
 - type: entity
   parent: ClothingOuterWinterCoat
-  id: ClothingOuterWinterCoatWL
-  name: winter coat
-  description: A heavy jacket made from 'synthetic' animal furs.
+  id: ClothingOuterWinterCoatLightWL
+  name: light insulated coat
+  description: A thin insulated coat for mild frozen weather and short trips outside.
+  suffix: WL, T1
   components:
+  - type: Sprite
+    sprite: _WL/Clothing/FrozenWorld/OuterClothing/tier1_light.rsi
+  - type: Clothing
+    sprite: _WL/Clothing/FrozenWorld/OuterClothing/tier1_light.rsi
   - type: FrozenInsulation
-    ratedTemperatureCelsius: -22
+    tier: Light
     coverage:
     - Torso
     - Arms
     - Legs
 
 - type: entity
+  parent: ClothingOuterWinterCoat
+  id: ClothingOuterWinterCoatWarmWL
+  name: warm insulated coat
+  description: A padded coat for routine work in below-freezing weather.
+  suffix: WL, T2
+  components:
+  - type: Sprite
+    sprite: _WL/Clothing/FrozenWorld/OuterClothing/tier2_warm.rsi
+  - type: Clothing
+    sprite: _WL/Clothing/FrozenWorld/OuterClothing/tier2_warm.rsi
+  - type: FrozenInsulation
+    tier: Warm
+    coverage:
+    - Torso
+    - Arms
+    - Legs
+
+- type: entity
+  parent: ClothingOuterWinterCoat
+  id: ClothingOuterWinterCoatWL
+  name: winter insulated coat
+  description: A heavy winter coat for sustained exposure to harsh cold.
+  suffix: WL, T3
+  components:
+  - type: Sprite
+    sprite: _WL/Clothing/FrozenWorld/OuterClothing/tier3_winter.rsi
+  - type: Clothing
+    sprite: _WL/Clothing/FrozenWorld/OuterClothing/tier3_winter.rsi
+  - type: FrozenInsulation
+    tier: Winter
+    coverage:
+    - Torso
+    - Arms
+    - Legs
+
+- type: entity
+  parent: ClothingOuterWinterCoat
+  id: ClothingOuterWinterCoatArcticWL
+  name: arctic insulated coat
+  description: A sealed arctic coat for long work in brutal cold.
+  suffix: WL, T4
+  components:
+  - type: Sprite
+    sprite: _WL/Clothing/FrozenWorld/OuterClothing/tier4_arctic.rsi
+  - type: Clothing
+    sprite: _WL/Clothing/FrozenWorld/OuterClothing/tier4_arctic.rsi
+  - type: FrozenInsulation
+    tier: Arctic
+    coverage:
+    - Torso
+    - Arms
+    - Legs
+
+- type: entity
+  parent: ClothingOuterWinterCoat
+  id: ClothingOuterWinterCoatExtremeWL
+  name: extreme insulated coat
+  description: A reinforced extreme-weather coat for the deepest freeze.
+  suffix: WL, T5
+  components:
+  - type: Sprite
+    sprite: _WL/Clothing/FrozenWorld/OuterClothing/tier5_extreme.rsi
+  - type: Clothing
+    sprite: _WL/Clothing/FrozenWorld/OuterClothing/tier5_extreme.rsi
+  - type: FrozenInsulation
+    tier: Extreme
+    coverage:
+    - Torso
+    - Arms
+    - Legs
+
+# Supporting FrozenWorld clothing.
+
+- type: entity
   parent: ClothingUniformJumpsuitColorGrey
   id: ClothingUniformJumpsuitWinterWL
   name: thermal underlayer
   description: A warm inner layer for survival in severe cold.
+  suffix: WL
   components:
   - type: FrozenInsulation
-    ratedTemperatureCelsius: -12
+    tier: Warm
     coverage:
     - Torso
     - Arms
@@ -29,9 +112,10 @@
   id: ClothingHeadHelmetWinterWL
   name: winter helmet
   description: An insulated helmet that shields the head and face from freezing air.
+  suffix: WL
   components:
   - type: FrozenInsulation
-    ratedTemperatureCelsius: -26
+    tier: Winter
     coverage:
     - Head
     - Face
@@ -42,15 +126,17 @@
   id: ClothingHeadHatHoodWinterWL
   name: winter helmet
   description: An insulated helmet that shields the head and face from freezing air.
+  suffix: WL, Alias
 
 - type: entity
   parent: ClothingHandsGlovesLeather
   id: ClothingHandsGlovesWinterWL
   name: winter gloves
   description: Insulated gloves for extreme cold.
+  suffix: WL
   components:
   - type: FrozenInsulation
-    ratedTemperatureCelsius: -20
+    tier: Winter
     coverage:
     - Hands
 
@@ -59,9 +145,10 @@
   id: ClothingShoesBootsWinterWL
   name: winter boots
   description: Insulated boots built for frozen terrain.
+  suffix: WL
   components:
   - type: FrozenInsulation
-    ratedTemperatureCelsius: -24
+    tier: Winter
     coverage:
     - Feet
   - type: FrozenFootwear

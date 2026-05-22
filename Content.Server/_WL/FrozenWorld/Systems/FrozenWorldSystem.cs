@@ -112,9 +112,9 @@ public sealed partial class FrozenWorldSystem : EntitySystem
                 continue;
             }
 
-            var allowFallback = pending.Stage == FrozenWorldSetupStage.ResolvingBase
-                                && pending.Attempts >= MaxSetupAttemptsBeforeFallback;
-            if (SetupPrimaryFrozenWorld((stationUid, stationFrozen), profile, allowFallback, pending.ForceUnbatched))
+            var allowLocalAabbFallback = pending.Stage == FrozenWorldSetupStage.ResolvingBase
+                                         && pending.Attempts >= MaxSetupAttemptsBeforeFallback;
+            if (SetupPrimaryFrozenWorld((stationUid, stationFrozen), profile, allowLocalAabbFallback, pending.ForceUnbatched))
             {
                 complete.Add(stationUid);
                 continue;
@@ -179,7 +179,7 @@ public sealed partial class FrozenWorldSystem : EntitySystem
             if (SetupPrimaryFrozenWorld(
                     (stationUid, stationFrozen),
                     profile,
-                    allowBaseFallback: true,
+                    allowLocalAabbFallback: true,
                     forceUnbatched: true))
             {
                 _pendingSetups.Remove(stationUid);
@@ -197,7 +197,7 @@ public sealed partial class FrozenWorldSystem : EntitySystem
     private bool SetupPrimaryFrozenWorld(
         Entity<StationFrozenWorldComponent> station,
         FrozenWorldProfilePrototype profile,
-        bool allowBaseFallback,
+        bool allowLocalAabbFallback,
         bool forceUnbatched)
     {
         if (_configuredStations.Contains(station.Owner))
@@ -259,10 +259,10 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         // Gas does not equalize between tiles; temperature changes per-tile still work (campfires, weather).
         var seededTiles = _atmos.WLApplyStaticGridAtmosphere(worldGridUid, atmosphereMixture);
 
-        // Cache the authored settlement bounds before pinning/preloading biome terrain.
+        // Cache the settlement grid bounds before pinning/preloading biome terrain.
         // PinPreloadArea will later materialize terrain chunks and expand LocalAABB;
-        // zones must still be measured from the actual base footprint, not from the preloaded wilderness.
-        if (!ResolveBaseBounds(worldGridUid, worldGrid, allowBaseFallback, out var baseBounds))
+        // zones must still be measured from the original grid footprint, not from the preloaded wilderness.
+        if (!ResolveBaseBounds(worldGridUid, worldGrid, allowLocalAabbFallback, out var baseBounds))
             return false;
         var preloadBounds = GetTerrainPreloadBounds(baseBounds, profile);
         var pinnedChunks = _biome.PinPreloadArea(worldGridUid, biomeComp, worldGrid, preloadBounds);
@@ -437,100 +437,19 @@ public sealed partial class FrozenWorldSystem : EntitySystem
     {
         Log.Debug($"Resolving frozen world base area for grid {ToPrettyString(worldGridUid)}. GridLocalAabb={worldGrid.LocalAABB}.");
 
-        var scanned = 0;
-        var rejectedByParent = 0;
-        var query = EntityQueryEnumerator<FrozenWorldBaseAreaComponent, TransformComponent>();
-        while (query.MoveNext(out var uid, out var baseArea, out var xform))
-        {
-            scanned++;
-
-            if (uid != worldGridUid && xform.ParentUid != worldGridUid)
-            {
-                rejectedByParent++;
-                Log.Debug(
-                    $"Ignoring FrozenWorldBaseArea marker {ToPrettyString(uid)} while resolving for {ToPrettyString(worldGridUid)}: " +
-                    $"parent={ToPrettyString(xform.ParentUid)} localPos={xform.LocalPosition} halfExtents={baseArea.HalfExtents} useLocalCenter={baseArea.UseLocalCenter}.");
-            }
-
-            if (!TryResolveBaseAreaBounds(worldGridUid, worldGrid, uid, baseArea, xform, out var resolvedBounds))
-                continue;
-
-            Log.Info($"Frozen world base area resolved from {ToPrettyString(uid)}: {resolvedBounds}.");
-            bounds = resolvedBounds;
-            return true;
-        }
-
         var smallAabb = worldGrid.LocalAABB.Width < MinBaseAabbRetrySize || worldGrid.LocalAABB.Height < MinBaseAabbRetrySize;
-        if (!allowFallback && (scanned == 0 || smallAabb))
+        if (!allowFallback && smallAabb)
         {
             bounds = default;
             Log.Info(
-                $"Deferred frozen world setup for {ToPrettyString(worldGridUid)} while resolving base area. " +
-                $"scannedMarkers={scanned}, rejectedByParent={rejectedByParent}, localAabb={worldGrid.LocalAABB}, " +
+                $"Deferred frozen world setup for {ToPrettyString(worldGridUid)} while waiting for authored grid bounds. " +
+                $"localAabb={worldGrid.LocalAABB}, " +
                 $"smallAabb={smallAabb}, allowFallback={allowFallback}.");
             return false;
         }
 
-        if (scanned == 0)
-        {
-            var autoBaseArea = EnsureComp<FrozenWorldBaseAreaComponent>(worldGridUid);
-            autoBaseArea.UseLocalCenter = true;
-            autoBaseArea.LocalCenter = worldGrid.LocalAABB.Center;
-            autoBaseArea.HalfExtents = new Vector2(
-                MathF.Max(worldGrid.LocalAABB.Width * 0.5f, 0.5f),
-                MathF.Max(worldGrid.LocalAABB.Height * 0.5f, 0.5f));
-
-            if (TryResolveBaseAreaBounds(worldGridUid, worldGrid, worldGridUid, autoBaseArea, Transform(worldGridUid), out var autoBounds))
-            {
-                Log.Warning(
-                    $"Frozen world grid {ToPrettyString(worldGridUid)} had no FrozenWorldBaseArea markers after deferred retries " +
-                    $"(scannedMarkers=0). Created runtime base-area component on world grid with center={autoBaseArea.LocalCenter} " +
-                    $"and halfExtents={autoBaseArea.HalfExtents}. Resolved bounds={autoBounds}.");
-                bounds = autoBounds;
-                return true;
-            }
-        }
-
-        Log.Warning(
-            $"Frozen world grid {ToPrettyString(worldGridUid)} has no FrozenWorldBaseAreaComponent marker. " +
-            $"Falling back to authored grid LocalAABB. scannedMarkers={scanned}, rejectedByParent={rejectedByParent}. " +
-            $"Add a base-area marker on the selected world grid (or make it a child of that grid) before adding preauthored wilderness/POI grids to the map file.");
         bounds = worldGrid.LocalAABB;
-        return true;
-    }
-
-    private bool TryResolveBaseAreaBounds(
-        EntityUid worldGridUid,
-        MapGridComponent worldGrid,
-        EntityUid markerUid,
-        FrozenWorldBaseAreaComponent baseArea,
-        TransformComponent xform,
-        out Box2 bounds)
-    {
-        Vector2 center;
-
-        if (markerUid == worldGridUid)
-        {
-            center = baseArea.UseLocalCenter
-                ? baseArea.LocalCenter
-                : worldGrid.LocalAABB.Center;
-        }
-        else
-        {
-            if (xform.ParentUid != worldGridUid)
-            {
-                bounds = default;
-                return false;
-            }
-
-            center = xform.LocalPosition;
-        }
-
-        var halfExtents = new Vector2(
-            MathF.Max(MathF.Abs(baseArea.HalfExtents.X), 0.5f),
-            MathF.Max(MathF.Abs(baseArea.HalfExtents.Y), 0.5f));
-
-        bounds = Box2.CenteredAround(center, halfExtents * 2f);
+        Log.Info($"Frozen world base bounds resolved from grid LocalAABB on {ToPrettyString(worldGridUid)}: {bounds}.");
         return true;
     }
 

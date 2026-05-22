@@ -18,18 +18,12 @@ public enum FrozenShelterSource
 
     /// <summary>
     /// Legacy/authored rectangular shelter marker from <see cref="FrozenShelterComponent"/>.
-    /// Useful for map-authored safe zones and migration fallbacks, but not the final player-built room layer.
+    /// Useful for explicit map-authored safe zones and debug areas, but not the normal player-built room layer.
     /// </summary>
     ExplicitArea,
 
     /// <summary>
-    /// Temporary fallback from FrozenWorldComponent.BaseBounds while old maps have no authored room/shelter data.
-    /// </summary>
-    BaseFallback,
-
-    /// <summary>
     /// Shelter produced by a closed room built by players.
-    /// This is the target source for the upcoming room/flood-fill system.
     /// </summary>
     PlayerBuiltRoom,
 }
@@ -75,14 +69,10 @@ public readonly record struct CachedShelterArea(
 /// - place an entity/marker with FrozenShelterComponent;
 /// - configure its rectangular area, weather exposure, temperature bonus and priority.
 ///
-/// Target gameplay path:
-/// - player-built rooms should not create large ad-hoc FrozenShelterComponent markers;
-/// - the room/flood-fill system should feed this same query layer with FrozenShelterSnapshot
-///   data using FrozenShelterSource.PlayerBuiltRoom.
-///
-/// Temporary compatibility path:
-/// - if FrozenWorldComponent.UseBaseBoundsShelterFallback is true, the authored starting base AABB
-///   still works as a weak shelter until all maps receive explicit shelter markers.
+/// Gameplay path:
+/// - player-built rooms do not create large ad-hoc FrozenShelterComponent markers;
+/// - FrozenShelterRoomSystem feeds this same query layer with FrozenShelterSnapshot data
+///   using FrozenShelterSource.PlayerBuiltRoom.
 ///
 /// Performance note:
 /// - point queries use a map-keyed shelter cache instead of scanning every FrozenShelterComponent
@@ -90,11 +80,7 @@ public readonly record struct CachedShelterArea(
 /// </summary>
 public sealed class FrozenShelterSystem : EntitySystem
 {
-    private const float BaseFallbackWeatherExposureMultiplier = 0.15f;
-    private const float BaseFallbackTemperatureBonus = 6f;
-    private const float BaseFallbackRecoveryMultiplier = 1.25f;
     private const int PlayerBuiltRoomPriority = 1000;
-    private const int BaseFallbackPriority = -1000;
 
     [Dependency] private readonly SharedTransformSystem _xform = default!;
     [Dependency] private readonly FrozenShelterRoomSystem _rooms = default!;
@@ -128,8 +114,7 @@ public sealed class FrozenShelterSystem : EntitySystem
 
     /// <summary>
     /// Returns cached explicit shelter areas on a map.
-    /// This intentionally does not include the temporary BaseBounds fallback because event-spawners
-    /// generally need authored shelter areas, not migration fallback data.
+    /// Player-built rooms are queried separately because they are tile-cache data, not authored rectangles.
     /// </summary>
     public IReadOnlyList<CachedShelterArea> GetSheltersOnMap(EntityUid mapUid)
     {
@@ -145,7 +130,7 @@ public sealed class FrozenShelterSystem : EntitySystem
         var bestPriority = int.MinValue;
 
         // Player-built rooms are the primary gameplay shelter layer.
-        // Authored FrozenShelterComponent areas and BaseBounds fallback stay as migration/debug layers.
+        // Authored FrozenShelterComponent areas stay available for explicit map/debug shelters.
         if (_rooms.TryGetRoomShelter(mapUid, world, worldPos, out var roomShelter) &&
             IsBetterShelter(roomShelter, PlayerBuiltRoomPriority, best, bestPriority))
         {
@@ -163,12 +148,6 @@ public sealed class FrozenShelterSystem : EntitySystem
                 best = shelter.Snapshot;
                 bestPriority = shelter.Priority;
             }
-        }
-
-        if (TryGetBaseBoundsFallback(world, worldPos, out var fallback) &&
-            IsBetterShelter(fallback, BaseFallbackPriority, best, bestPriority))
-        {
-            best = fallback;
         }
 
         return best;
@@ -270,34 +249,6 @@ public sealed class FrozenShelterSystem : EntitySystem
 
         mapUid = default;
         return false;
-    }
-
-    private bool TryGetBaseBoundsFallback(FrozenWorldComponent world, Vector2 worldPos, out FrozenShelterSnapshot snapshot)
-    {
-        snapshot = default;
-
-        if (!world.UseBaseBoundsShelterFallback)
-            return false;
-
-        if (world.WorldGrid is not { } worldGridUid || !Exists(worldGridUid))
-            return false;
-
-        if (!TryComp(worldGridUid, out TransformComponent? gridXform))
-            return false;
-
-        var gridWorldPosition = _xform.GetWorldPosition(gridXform);
-        var localPos = FrozenWorldGeometry.WorldToLocal(worldPos, gridWorldPosition);
-        if (!world.BaseBounds.Contains(localPos))
-            return false;
-
-        snapshot = new FrozenShelterSnapshot(
-            true,
-            BaseFallbackWeatherExposureMultiplier,
-            BaseFallbackTemperatureBonus,
-            BaseFallbackRecoveryMultiplier,
-            "Base fallback",
-            FrozenShelterSource.BaseFallback);
-        return true;
     }
 
     private static bool IsBetterShelter(

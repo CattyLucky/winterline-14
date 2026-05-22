@@ -164,7 +164,6 @@ public sealed class FrozenShelterRoomSystemTest : GameTest
             var gridUid = mapData.Grid.Owner;
             var world = entManager.EnsureComponent<FrozenWorldComponent>(mapData.MapUid);
             world.WorldGrid = gridUid;
-            world.UseBaseBoundsShelterFallback = false;
             world.MinEffectiveTemperature = 0f;
             world.MaxEffectiveTemperature = 1000f;
             world.MaxLocalTemperatureOffset = 1000f;
@@ -214,7 +213,6 @@ public sealed class FrozenShelterRoomSystemTest : GameTest
             var gridUid = mapData.Grid.Owner;
             var world = entManager.EnsureComponent<FrozenWorldComponent>(mapData.MapUid);
             world.WorldGrid = gridUid;
-            world.UseBaseBoundsShelterFallback = false;
             world.MinEffectiveTemperature = 0f;
             world.MaxEffectiveTemperature = 1000f;
             world.MaxLocalTemperatureOffset = 1000f;

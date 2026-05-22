@@ -10,10 +10,9 @@ namespace Content.Shared._WL.FrozenWorld.Components;
 /// - it does not treat a single placed floor tile as protection;
 /// - it is cheap to author and debug through YAML.
 ///
-/// This is not the final player-built room mechanic. Player-built shelters should be
-/// produced by the room/flood-fill system and exposed to FrozenShelterSystem as
-/// FrozenShelterSource.PlayerBuiltRoom snapshots. Keep this component for map-authored
-/// safe areas, migration fallbacks and explicit debug regions.
+/// This is not the normal player-built room mechanic. Player-built shelters are produced by
+/// the room/flood-fill system and exposed to FrozenShelterSystem as FrozenShelterSource.PlayerBuiltRoom
+/// snapshots. Keep this component for explicit map-authored safe areas and debug regions.
 ///
 /// Put this component on an invisible marker, structure, base controller or other entity.
 /// The rectangular area is evaluated in world axes around the entity position.
