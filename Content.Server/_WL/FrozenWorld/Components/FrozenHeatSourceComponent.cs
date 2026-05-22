@@ -51,6 +51,25 @@ public sealed partial class FrozenHeatSourceComponent : Component
     public float TransferEfficiency = 1f;
 
     /// <summary>
+    /// Static sources inside player-built rooms heat the containing room instead of leaking through walls
+    /// as normal radius heat. Dynamic carried sources stay local radius heat, but are still room-bounded.
+    /// </summary>
+    [DataField]
+    public bool RoomHeating = true;
+
+    /// <summary>
+    /// Room tile count where this source still delivers full room-wide heat. Larger rooms dilute the bonus.
+    /// </summary>
+    [DataField]
+    public float RoomHeatingReferenceTiles = 64f;
+
+    /// <summary>
+    /// Extra tuning multiplier for room-wide heating, before room size and leakage are applied.
+    /// </summary>
+    [DataField]
+    public float RoomHeatingEfficiency = 1f;
+
+    /// <summary>
     /// Runtime multiplier from the currently burning FrozenFuelComponent.
     /// Do not configure this in YAML; configure FrozenFuel.HeatBonusMultiplier instead.
     /// </summary>

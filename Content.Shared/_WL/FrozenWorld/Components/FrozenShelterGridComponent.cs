@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using Content.Shared._WL.FrozenWorld;
 using Robust.Shared.Maths;
+using Robust.Shared.Timing;
 
 namespace Content.Shared._WL.FrozenWorld.Components;
 
@@ -47,13 +49,10 @@ public sealed partial class FrozenShelterGridComponent : Component
     public int MaxRooms = 128;
 
     /// <summary>
-    /// How far from room boundary tiles the MVP flood-fill is allowed to look for room floor.
+    /// How far from room boundary tiles the flood-fill seed search is allowed to look for room floor.
     ///
-    /// This keeps rebuilds bounded on large FrozenWorld maps: the first implementation is designed
-    /// to find player-built rooms near walls/doors, not to scan the whole biome surface every time.
-    ///
-    /// Keep this low. Room weather masks are used by the client world-space weather renderer, so rebuilds
-    /// should not discover thousands of outdoor candidate tiles for one small room.
+    /// This only bounds seed discovery. Once a seed is found, flood-fill may traverse a larger closed room
+    /// up to MaxRoomTiles.
     /// </summary>
     [DataField]
     public int RoomSearchPadding = 4;
@@ -75,6 +74,30 @@ public sealed partial class FrozenShelterGridComponent : Component
     /// </summary>
     [DataField]
     public float ClosedRoomRecoveryMultiplier = 1.15f;
+
+    /// <summary>
+    /// Maximum leak ratio that still counts as a basic room. Worse rooms are Drafty.
+    /// </summary>
+    [DataField]
+    public float RoomTierBasicMaxLeakRatio = 0.20f;
+
+    /// <summary>
+    /// Maximum leak ratio that still counts as a sealed room.
+    /// </summary>
+    [DataField]
+    public float RoomTierSealedMaxLeakRatio = 0.08f;
+
+    /// <summary>
+    /// Maximum leak ratio that counts as a fully insulated room.
+    /// </summary>
+    [DataField]
+    public float RoomTierInsulatedMaxLeakRatio = 0.01f;
+
+    /// <summary>
+    /// MapGridComponent.LastTileModifiedTick seen during the latest room rebuild.
+    /// Runtime-only fallback for cases where tile changed events are missed by this system.
+    /// </summary>
+    public GameTick LastSeenTileModifiedTick;
 
     /// <summary>
     /// Tile index to room id lookup. Runtime-only.
@@ -119,6 +142,21 @@ public sealed partial class FrozenShelterRoomData
     /// </summary>
     [DataField]
     public float LeakRatio;
+
+    [DataField]
+    public FrozenShelterRoomTier Tier = FrozenShelterRoomTier.None;
+
+    /// <summary>
+    /// 0 = weather boundary is useless, 1 = every room-blocking edge blocks weather with full insulation.
+    /// </summary>
+    [DataField]
+    public float WeatherProtectionRatio = 1f;
+
+    /// <summary>
+    /// Average insulation of the weather-blocking perimeter edges, ignoring edges that do not block weather.
+    /// </summary>
+    [DataField]
+    public float AverageInsulation = 1f;
 
     [DataField]
     public float TemperatureBonus = 8f;

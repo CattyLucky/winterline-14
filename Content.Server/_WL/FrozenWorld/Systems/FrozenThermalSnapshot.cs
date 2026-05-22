@@ -35,6 +35,7 @@ public readonly record struct FrozenThermalSnapshot(
     float WeatherExposureFactor,
     string? ShelterName,
     FrozenShelterSource ShelterSource,
+    FrozenShelterRoomThermalInfo Room,
     float BaseAmbientTemperature,
     float DayNightTemperatureOffset,
     float DayNightPhase,

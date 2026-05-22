@@ -28,6 +28,7 @@ public sealed class FrozenThermometerDebugWindow : DefaultWindow
     private readonly Label _weatherName = FrozenWorldUiTheme.MakeMutedLabel();
     private readonly Label _weatherExposure = FrozenWorldUiTheme.MakeMutedLabel();
     private readonly Label _shelterName = FrozenWorldUiTheme.MakeMutedLabel();
+    private readonly Label _roomInfo = FrozenWorldUiTheme.MakeMutedLabel();
     private readonly Label _multipliers = FrozenWorldUiTheme.MakeMutedLabel();
 
     private readonly Label _coldStage = FrozenWorldUiTheme.MakeMutedLabel();
@@ -58,7 +59,7 @@ public sealed class FrozenThermometerDebugWindow : DefaultWindow
 
         AddSection("Temperature layers", _temperatureBase, _temperatureDayNight, _temperatureWeather, _temperatureZone,
             _temperatureShelter, _temperatureHeat, _temperatureFoot, _temperatureFinal, _temperatureClamp);
-        AddSection("Weather and shelter", _weatherName, _weatherExposure, _shelterName, _multipliers);
+        AddSection("Weather and shelter", _weatherName, _weatherExposure, _shelterName, _roomInfo, _multipliers);
         AddSection("Cold calculation", _coldStage, _coldExposure, _coldWeakest);
     }
 
@@ -85,6 +86,9 @@ public sealed class FrozenThermometerDebugWindow : DefaultWindow
         _weatherName.Text = $"Weather: {state.ActiveWeatherName ?? "None"} | intensity {state.WeatherIntensity:0.00}";
         _weatherExposure.Text = $"Weather exposure here: {state.WeatherExposureFactor * 100f:0.#}% | affects: {state.WeatherAffectsPosition}";
         _shelterName.Text = $"Shelter: {state.ShelterName ?? "Outside"}";
+        _roomInfo.Text = state.Room.HasRoom
+            ? $"Room #{state.Room.RoomId}: {state.Room.Tier} | tiles {state.Room.TileCount} | leak {state.Room.LeakRatio * 100f:0.#}% | envelope {state.Room.WeatherProtectionRatio * 100f:0.#}% | insulation {state.Room.AverageInsulation * 100f:0.#}% | room heat {FormatSigned(state.Room.RoomHeatBonus)}°C"
+            : "Room: none";
         _multipliers.Text = $"Multipliers: exposure x{state.ExposureGainMultiplier:0.00} | recovery x{state.RecoveryMultiplier:0.00} | damage x{state.ColdDamageMultiplier:0.00}";
 
         _coldStage.Text = $"Stage: {state.Stage}";
@@ -106,6 +110,7 @@ public sealed class FrozenThermometerDebugWindow : DefaultWindow
         _weatherName.Text = string.Empty;
         _weatherExposure.Text = string.Empty;
         _shelterName.Text = string.Empty;
+        _roomInfo.Text = string.Empty;
         _multipliers.Text = string.Empty;
         _coldStage.Text = string.Empty;
         _coldExposure.Text = string.Empty;

@@ -52,6 +52,7 @@ public sealed class FrozenThermometerBoundUserInterfaceState : BoundUserInterfac
     public readonly string? ActiveWeatherName;
     public readonly float ZoneTemperatureOffsetCelsius;
     public readonly string? ShelterName;
+    public readonly FrozenShelterRoomThermalInfo Room;
 
     public readonly float StaticHeatBonusCelsius;
     public readonly float DynamicHeatBonusCelsius;
@@ -90,6 +91,7 @@ public sealed class FrozenThermometerBoundUserInterfaceState : BoundUserInterfac
         string? activeWeatherName,
         float zoneTemperatureOffsetCelsius,
         string? shelterName,
+        FrozenShelterRoomThermalInfo room,
         float staticHeatBonusCelsius,
         float dynamicHeatBonusCelsius,
         float shelterBonusCelsius,
@@ -122,6 +124,7 @@ public sealed class FrozenThermometerBoundUserInterfaceState : BoundUserInterfac
         ActiveWeatherName = activeWeatherName;
         ZoneTemperatureOffsetCelsius = zoneTemperatureOffsetCelsius;
         ShelterName = shelterName;
+        Room = room;
         StaticHeatBonusCelsius = staticHeatBonusCelsius;
         DynamicHeatBonusCelsius = dynamicHeatBonusCelsius;
         ShelterBonusCelsius = shelterBonusCelsius;

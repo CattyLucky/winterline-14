@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using Content.Server._WL.FrozenWorld.Components;
+using Robust.Shared.Map.Components;
 using Robust.Shared.Maths;
 using Robust.Shared.Timing;
 
@@ -16,6 +17,8 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 public sealed partial class FrozenDynamicHeatSourceSystem : EntitySystem
 {
     [Dependency] private readonly IGameTiming _timing = default!;
+    [Dependency] private readonly SharedMapSystem _map = default!;
+    [Dependency] private readonly FrozenShelterRoomSystem _rooms = default!;
 
     private const float ChunkSize = 8f;
     private static readonly TimeSpan DynamicIndexRebuildInterval = TimeSpan.FromSeconds(0.25);
@@ -27,7 +30,7 @@ public sealed partial class FrozenDynamicHeatSourceSystem : EntitySystem
     /// Returns dynamic heat contribution at a world position.
     /// This is a temperature offset in Kelvin/Celsius degrees, not final effective temperature.
     /// </summary>
-    public float GetDynamicHeatBonusAt(EntityUid mapUid, Vector2 worldPos)
+    public float GetDynamicHeatBonusAt(EntityUid mapUid, Vector2 worldPos, FrozenShelterRoomKey? queryRoom = null)
     {
         EnsureDynamicIndex();
 
@@ -53,6 +56,9 @@ public sealed partial class FrozenDynamicHeatSourceSystem : EntitySystem
                 for (var i = 0; i < sources.Count; i++)
                 {
                     var source = sources[i];
+                    if (!RoomKeysMatch(queryRoom, source.RoomKey))
+                        continue;
+
                     var outerRadius = MathF.Max(0.01f, source.OuterRadius);
                     var outerRadiusSq = outerRadius * outerRadius;
                     var distSq = Vector2.DistanceSquared(worldPos, source.Position);
@@ -126,6 +132,9 @@ public sealed partial class FrozenDynamicHeatSourceSystem : EntitySystem
             var innerRadius = Math.Clamp(source.InnerRadius, 0f, outerRadius);
             var position = xform.WorldPosition;
             var chunk = WorldToChunk(position);
+            var sourceRoom = TryGetSourceRoom(xform, out var roomKey)
+                ? roomKey
+                : (FrozenShelterRoomKey?) null;
 
             if (!_dynamicHeatByMap.TryGetValue(mapUid, out var mapIndex))
             {
@@ -144,10 +153,27 @@ public sealed partial class FrozenDynamicHeatSourceSystem : EntitySystem
                 innerRadius,
                 outerRadius,
                 source.EffectiveHeatBonus,
-                source.EffectiveTransferEfficiency));
+                source.EffectiveTransferEfficiency,
+                sourceRoom));
 
             mapIndex.MaxOuterRadius = MathF.Max(mapIndex.MaxOuterRadius, outerRadius);
         }
+    }
+
+    private bool TryGetSourceRoom(TransformComponent xform, out FrozenShelterRoomKey roomKey)
+    {
+        roomKey = default;
+
+        if (xform.GridUid is not { } gridUid)
+            return false;
+
+        if (!TryComp<MapGridComponent>(gridUid, out var mapGrid))
+            return false;
+
+        var tile = _map.TileIndicesFor(gridUid, mapGrid, xform.Coordinates);
+        return _rooms.TryGetRoomKeyAt(gridUid, tile, out roomKey, out var room)
+               && room.IsClosed
+               && room.HasFloor;
     }
 
     private static Vector2i WorldToChunk(Vector2 worldPos)
@@ -169,5 +195,14 @@ public sealed partial class FrozenDynamicHeatSourceSystem : EntitySystem
         float InnerRadius,
         float OuterRadius,
         float HeatBonus,
-        float TransferEfficiency);
+        float TransferEfficiency,
+        FrozenShelterRoomKey? RoomKey);
+
+    private static bool RoomKeysMatch(FrozenShelterRoomKey? queryRoom, FrozenShelterRoomKey? sourceRoom)
+    {
+        if (!queryRoom.HasValue)
+            return !sourceRoom.HasValue;
+
+        return sourceRoom.HasValue && queryRoom.Value.Equals(sourceRoom.Value);
+    }
 }

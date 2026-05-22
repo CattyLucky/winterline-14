@@ -51,6 +51,8 @@ public readonly record struct FrozenShelterSnapshot(
         FrozenShelterSource.Outside);
 }
 
+public readonly record struct FrozenShelterRoomKey(EntityUid GridUid, int RoomId);
+
 /// <summary>
 /// Runtime cached shelter area used by broad-phase shelter queries.
 /// Event spawners can enumerate these areas to avoid spawning raids/animals inside shelters.

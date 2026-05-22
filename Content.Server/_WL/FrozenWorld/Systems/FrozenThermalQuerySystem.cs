@@ -15,7 +15,8 @@ public readonly record struct FrozenEnvironmentalTemperatureResult(
     float DynamicHeatBonus,
     float ShelterBonus,
     float WeatherExposureMultiplier,
-    FrozenShelterSnapshot Shelter);
+    FrozenShelterSnapshot Shelter,
+    FrozenShelterRoomThermalInfo Room);
 
 /// <summary>
 /// Central temperature query layer for FrozenWorld gameplay.
@@ -35,8 +36,10 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
 {
     [Dependency] private readonly FrozenHeatFieldSystem _heatField = default!;
     [Dependency] private readonly FrozenDynamicHeatSourceSystem _dynamicHeat = default!;
+    [Dependency] private readonly FrozenRoomHeatSystem _roomHeat = default!;
     [Dependency] private readonly FrozenSurfaceProtectionSystem _protection = default!;
     [Dependency] private readonly FrozenShelterSystem _shelter = default!;
+    [Dependency] private readonly FrozenShelterRoomSystem _rooms = default!;
     [Dependency] private readonly InventorySystem _inventory = default!;
     [Dependency] private readonly SharedTransformSystem _xform = default!;
 
@@ -149,6 +152,7 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
             weatherExposureFactor,
             shelter.Name,
             shelter.Source,
+            environment.Room,
             world.BaseAmbientTemperature,
             world.DayNightTemperatureOffset,
             world.DayNightPhase,
@@ -166,7 +170,31 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
         var shelter = knownShelter ?? _shelter.GetShelter(mapUid, world, worldPos);
         var weatherExposureFactor = GetWeatherExposureFactor(world, shelter);
 
-        GetLocalHeatBonusesAt(mapUid, worldPos, out var staticHeatBonus, out var dynamicHeatBonus);
+        var queryRoom = (FrozenShelterRoomKey?) null;
+        var roomInfo = FrozenShelterRoomThermalInfo.None;
+
+        if (_rooms.TryGetRoomKeyAtWorld(mapUid, world, worldPos, out var roomKey, out var room) &&
+            room.IsClosed &&
+            room.HasFloor)
+        {
+            queryRoom = roomKey;
+        }
+
+        GetLocalHeatBonusesAt(mapUid, worldPos, queryRoom, out var staticHeatBonus, out var dynamicHeatBonus);
+        if (queryRoom is { } heatRoom)
+        {
+            var roomHeatBonus = _roomHeat.GetRoomHeatBonus(heatRoom);
+            staticHeatBonus += roomHeatBonus;
+            roomInfo = new FrozenShelterRoomThermalInfo(
+                room.RoomId,
+                room.Tier,
+                room.TileCount,
+                room.LeakRatio,
+                room.WeatherProtectionRatio,
+                room.AverageInsulation,
+                roomHeatBonus);
+        }
+
         var ambientTemperature = GetAmbientTemperatureAt(worldPos, world, shelter);
 
         var localHeatBonus = staticHeatBonus + dynamicHeatBonus;
@@ -184,7 +212,8 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
             dynamicHeatBonus,
             shelter.TemperatureBonus,
             weatherExposureFactor,
-            shelter);
+            shelter,
+            roomInfo);
     }
 
     public float GetLocalHeatBonusAt(EntityUid mapUid, Vector2 worldPos)
@@ -195,8 +224,18 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
 
     public void GetLocalHeatBonusesAt(EntityUid mapUid, Vector2 worldPos, out float staticHeatBonus, out float dynamicHeatBonus)
     {
-        staticHeatBonus = _heatField.GetStaticHeatBonusAt(mapUid, worldPos);
-        dynamicHeatBonus = _dynamicHeat.GetDynamicHeatBonusAt(mapUid, worldPos);
+        GetLocalHeatBonusesAt(mapUid, worldPos, null, out staticHeatBonus, out dynamicHeatBonus);
+    }
+
+    private void GetLocalHeatBonusesAt(
+        EntityUid mapUid,
+        Vector2 worldPos,
+        FrozenShelterRoomKey? queryRoom,
+        out float staticHeatBonus,
+        out float dynamicHeatBonus)
+    {
+        staticHeatBonus = _heatField.GetStaticHeatBonusAt(mapUid, worldPos, queryRoom);
+        dynamicHeatBonus = _dynamicHeat.GetDynamicHeatBonusAt(mapUid, worldPos, queryRoom);
     }
 
     private FrozenBodyPartValues GetBodyPartRatings(EntityUid uid, FrozenColdExposureComponent exposure)
