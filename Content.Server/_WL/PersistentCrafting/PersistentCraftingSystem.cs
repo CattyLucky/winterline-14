@@ -1,13 +1,23 @@
 using System.Linq;
+using Content.Server.Atmos.Components;
+using Content.Server._WL.FrozenWorld.Systems;
+using Content.Shared._WL.FrozenWorld;
+using Content.Shared._WL.FrozenWorld.Components;
 using Content.Shared._WL.PersistentCrafting;
 using Content.Shared.Actions;
 using Content.Shared.DoAfter;
 using Content.Shared.GameTicking;
 using Content.Shared.Hands.EntitySystems;
+using Content.Shared.Interaction;
+using Content.Shared.Maps;
+using Content.Shared.Physics;
 using Content.Shared.Popups;
 using Content.Shared.Roles;
 using Content.Shared.Stacks;
 using Content.Shared.Tag;
+using Content.Shared.Verbs;
+using Robust.Shared.Map;
+using Robust.Shared.Map.Components;
 using Robust.Shared.Network;
 using Robust.Shared.Player;
 using Robust.Shared.Prototypes;
@@ -17,14 +27,27 @@ namespace Content.Server._WL.PersistentCrafting;
 
 public sealed class PersistentCraftingSystem : EntitySystem
 {
+    private static readonly Vector2i[] CardinalDirections =
+    {
+        new(1, 0),
+        new(-1, 0),
+        new(0, 1),
+        new(0, -1),
+    };
+
     [Dependency] private readonly SharedActionsSystem _actions = default!;
     [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
     [Dependency] private readonly SharedHandsSystem _hands = default!;
+    [Dependency] private readonly SharedInteractionSystem _interaction = default!;
+    [Dependency] private readonly SharedMapSystem _map = default!;
     [Dependency] private readonly IPrototypeManager _proto = default!;
     [Dependency] private readonly SharedPopupSystem _popup = default!;
+    [Dependency] private readonly FrozenShelterRoomSystem _rooms = default!;
     [Dependency] private readonly SharedStackSystem _stacks = default!;
     [Dependency] private readonly TagSystem _tag = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
+    [Dependency] private readonly SharedTransformSystem _transform = default!;
+    [Dependency] private readonly TurfSystem _turf = default!;
 
     private const double CraftRateLimitSeconds = 0.5;
     private const double UnlockRateLimitSeconds = 0.3;
@@ -62,8 +85,13 @@ public sealed class PersistentCraftingSystem : EntitySystem
         SubscribeLocalEvent<PersistentCraftAccessComponent, ComponentShutdown>(OnAccessShutdown);
         SubscribeLocalEvent<PersistentCraftAccessComponent, OpenPersistentCraftMenuActionEvent>(OnOpenCraftMenu);
         SubscribeLocalEvent<PersistentCraftAccessComponent, PersistentCraftDoAfterEvent>(OnCraftDoAfter);
+        SubscribeLocalEvent<PersistentCraftBlueprintComponent, InteractHandEvent>(OnBlueprintInteract);
+        SubscribeLocalEvent<PersistentCraftBlueprintComponent, GetVerbsEvent<InteractionVerb>>(OnBlueprintGetVerbs);
+        SubscribeLocalEvent<PersistentCraftBlueprintComponent, PersistentCraftPlacementDoAfterEvent>(OnPlacementDoAfter);
+        SubscribeNetworkEvent<RequestOpenPersistentCraftMenuEvent>(OnRequestOpenCraftMenu);
         SubscribeNetworkEvent<RequestPersistentCraftStateEvent>(OnRequestState);
         SubscribeNetworkEvent<RequestPersistentCraftRecipeEvent>(OnRequestCraftRecipe);
+        SubscribeNetworkEvent<RequestPersistentCraftPlacementEvent>(OnRequestCraftPlacement);
         SubscribeNetworkEvent<RequestPersistentCraftUnlockEvent>(OnRequestUnlock);
     }
 
@@ -229,7 +257,22 @@ public sealed class PersistentCraftingSystem : EntitySystem
                 }
             }
 
-            if (recipe.Results.Count == 0)
+            if (recipe.Placement != null)
+            {
+                if (string.IsNullOrWhiteSpace(recipe.Placement.Proto) ||
+                    !_proto.TryIndex<EntityPrototype>(recipe.Placement.Proto, out _))
+                {
+                    Log.Warning($"[PersistentCraft] Recipe '{recipe.ID}' placement references missing proto '{recipe.Placement.Proto}'.");
+                }
+
+                if (string.IsNullOrWhiteSpace(recipe.Placement.BlueprintProto) ||
+                    !_proto.TryIndex<EntityPrototype>(recipe.Placement.BlueprintProto, out _))
+                {
+                    Log.Warning($"[PersistentCraft] Recipe '{recipe.ID}' placement references missing blueprint proto '{recipe.Placement.BlueprintProto}'.");
+                }
+            }
+
+            if (recipe.Results.Count == 0 && recipe.Placement == null)
                 Log.Warning($"[PersistentCraft] Recipe '{recipe.ID}' has no results.");
 
             for (var i = 0; i < recipe.Results.Count; i++)
@@ -403,11 +446,16 @@ public sealed class PersistentCraftingSystem : EntitySystem
 
         args.Handled = true;
 
-        if (!TryComp(args.Performer, out ActorComponent? actor))
+        if (TryComp(args.Performer, out ActorComponent? actor))
+            OpenCraftMenu(args.Performer, actor.PlayerSession);
+    }
+
+    private void OnRequestOpenCraftMenu(RequestOpenPersistentCraftMenuEvent ev, EntitySessionEventArgs args)
+    {
+        if (args.SenderSession.AttachedEntity is not { Valid: true } user)
             return;
 
-        RaiseNetworkEvent(new OpenPersistentCraftMenuEvent(), actor.PlayerSession);
-        SendState(actor.PlayerSession, args.Performer);
+        OpenCraftMenu(user, args.SenderSession);
     }
 
     private void OnRequestState(RequestPersistentCraftStateEvent ev, EntitySessionEventArgs args)
@@ -433,6 +481,9 @@ public sealed class PersistentCraftingSystem : EntitySystem
             return;
 
         if (!_proto.TryIndex<PersistentCraftRecipePrototype>(ev.RecipeId, out var recipe))
+            return;
+
+        if (recipe.Placement != null)
             return;
 
         if (!IsLoaded(user))
@@ -467,6 +518,56 @@ public sealed class PersistentCraftingSystem : EntitySystem
 
         _popup.PopupEntity(
             Loc.GetString("persistent-craft-station-popup-started", ("recipe", ResolveRecipeName(recipe))),
+            user,
+            user);
+    }
+
+    private void OnRequestCraftPlacement(RequestPersistentCraftPlacementEvent ev, EntitySessionEventArgs args)
+    {
+        if (args.SenderSession.AttachedEntity is not { Valid: true } user)
+            return;
+
+        if (ev.RecipeId.Length > MaxNetworkStringLength)
+            return;
+
+        if (!HasComp<PersistentCraftAccessComponent>(user))
+            return;
+
+        if (!_proto.TryIndex<PersistentCraftRecipePrototype>(ev.RecipeId, out var recipe) ||
+            recipe.Placement == null)
+        {
+            return;
+        }
+
+        if (!IsLoaded(user))
+        {
+            PopupUser(user, "persistent-craft-popup-loading");
+            SendState(args.SenderSession, user);
+            return;
+        }
+
+        if (!_craftExecutionService.MeetsRecipeRequirement(user, recipe))
+        {
+            PopupUser(user, "persistent-craft-station-popup-skill-locked");
+            SendState(args.SenderSession, user);
+            return;
+        }
+
+        var location = GetCoordinates(ev.Coordinates);
+        if (!TryValidatePlacement(user, recipe, location, true))
+        {
+            SendState(args.SenderSession, user);
+            return;
+        }
+
+        if (!TrySpawnBlueprint(recipe, location, ev.Angle, out _))
+        {
+            PopupUser(user, "persistent-craft-placement-popup-invalid");
+            return;
+        }
+
+        _popup.PopupEntity(
+            Loc.GetString("persistent-craft-placement-popup-planned", ("recipe", ResolveRecipeName(recipe))),
             user,
             user);
     }
@@ -590,6 +691,182 @@ public sealed class PersistentCraftingSystem : EntitySystem
         SendStateToAttachedActor(args.User);
     }
 
+    private void OnBlueprintInteract(EntityUid uid, PersistentCraftBlueprintComponent component, InteractHandEvent args)
+    {
+        if (args.Handled)
+            return;
+
+        args.Handled = TryStartBlueprintBuild(uid, component, args.User);
+    }
+
+    private void OnBlueprintGetVerbs(EntityUid uid, PersistentCraftBlueprintComponent component, GetVerbsEvent<InteractionVerb> args)
+    {
+        if (!args.CanAccess || !args.CanInteract)
+            return;
+
+        args.Verbs.Add(new InteractionVerb
+        {
+            Text = Loc.GetString("persistent-craft-blueprint-build-verb"),
+            Act = () => TryStartBlueprintBuild(uid, component, args.User),
+        });
+
+        args.Verbs.Add(new InteractionVerb
+        {
+            Text = Loc.GetString("persistent-craft-blueprint-cancel-verb"),
+            Act = () => QueueDel(uid),
+        });
+    }
+
+    private bool TryStartBlueprintBuild(EntityUid blueprint, PersistentCraftBlueprintComponent component, EntityUid user)
+    {
+        if (!HasComp<PersistentCraftAccessComponent>(user))
+            return false;
+
+        if (!_proto.TryIndex<PersistentCraftRecipePrototype>(component.RecipeId, out var recipe) ||
+            recipe.Placement == null)
+        {
+            return false;
+        }
+
+        if (!IsLoaded(user))
+        {
+            PopupUser(user, "persistent-craft-popup-loading");
+            SendStateToAttachedActor(user);
+            return false;
+        }
+
+        if (!_craftExecutionService.MeetsRecipeRequirement(user, recipe))
+        {
+            PopupUser(user, "persistent-craft-station-popup-skill-locked");
+            SendStateToAttachedActor(user);
+            return false;
+        }
+
+        var location = Transform(blueprint).Coordinates;
+        if (!TryValidatePlacement(user, recipe, location, true, allowBlueprintBoundary: false, ignoredBlueprint: blueprint))
+        {
+            SendStateToAttachedActor(user);
+            return false;
+        }
+
+        if (!_craftExecutionService.TryPlanIngredientConsumption(user, recipe, out _))
+        {
+            PopupUser(user, "persistent-craft-station-popup-missing-items");
+            SendStateToAttachedActor(user);
+            return false;
+        }
+
+        if (!TryStartPlacementDoAfter(blueprint, user, recipe))
+            return false;
+
+        if (TryComp(user, out ActorComponent? actor))
+        {
+            RaiseNetworkEvent(
+                new PersistentCraftRecipeStartedEvent(
+                    recipe.ID,
+                    _craftExecutionService.GetEffectiveCraftTime(recipe)),
+                actor.PlayerSession);
+        }
+
+        _popup.PopupEntity(
+            Loc.GetString("persistent-craft-placement-popup-started", ("recipe", ResolveRecipeName(recipe))),
+            user,
+            user);
+
+        return true;
+    }
+
+    private void OnPlacementDoAfter(EntityUid uid, PersistentCraftBlueprintComponent component, PersistentCraftPlacementDoAfterEvent args)
+    {
+        if (args.Handled)
+            return;
+
+        if (!_proto.TryIndex<PersistentCraftRecipePrototype>(args.RecipeId, out var recipe) ||
+            recipe.Placement == null ||
+            component.RecipeId != args.RecipeId)
+        {
+            return;
+        }
+
+        if (!Exists(args.User) ||
+            !HasComp<PersistentCraftAccessComponent>(args.User))
+        {
+            return;
+        }
+
+        if (args.Cancelled)
+        {
+            args.Handled = true;
+            SendCraftRecipeExecutionToAttachedActor(args.User, recipe.ID, PersistentCraftRecipeExecutionResult.Cancelled);
+            SendStateToAttachedActor(args.User);
+            return;
+        }
+
+        args.Handled = true;
+
+        if (!IsLoaded(args.User))
+        {
+            PopupUser(args.User, "persistent-craft-popup-loading");
+            SendCraftRecipeExecutionToAttachedActor(args.User, recipe.ID, PersistentCraftRecipeExecutionResult.Cancelled);
+            SendStateToAttachedActor(args.User);
+            return;
+        }
+
+        if (!_craftExecutionService.MeetsRecipeRequirement(args.User, recipe))
+        {
+            PopupUser(args.User, "persistent-craft-station-popup-skill-locked");
+            SendCraftRecipeExecutionToAttachedActor(args.User, recipe.ID, PersistentCraftRecipeExecutionResult.Cancelled);
+            SendStateToAttachedActor(args.User);
+            return;
+        }
+
+        var location = Transform(uid).Coordinates;
+        var angle = Transform(uid).LocalRotation;
+        if (!TryValidatePlacement(args.User, recipe, location, true, allowBlueprintBoundary: false, ignoredBlueprint: uid))
+        {
+            SendCraftRecipeExecutionToAttachedActor(args.User, recipe.ID, PersistentCraftRecipeExecutionResult.Cancelled);
+            SendStateToAttachedActor(args.User);
+            return;
+        }
+
+        if (!_craftExecutionService.TryPlanIngredientConsumption(args.User, recipe, out var plan))
+        {
+            PopupUser(args.User, "persistent-craft-station-popup-missing-items");
+            SendCraftRecipeExecutionToAttachedActor(args.User, recipe.ID, PersistentCraftRecipeExecutionResult.Cancelled);
+            SendStateToAttachedActor(args.User);
+            return;
+        }
+
+        if (!TrySpawnPlacement(recipe, location, angle, out _))
+        {
+            PopupUser(args.User, "persistent-craft-placement-popup-invalid");
+            SendCraftRecipeExecutionToAttachedActor(args.User, recipe.ID, PersistentCraftRecipeExecutionResult.Cancelled);
+            SendStateToAttachedActor(args.User);
+            return;
+        }
+
+        _craftExecutionService.ConsumeIngredientPlan(plan);
+        _craftExecutionService.GrantCraftPoints(args.User, recipe);
+        QueueDel(uid);
+
+        _popup.PopupEntity(
+            Loc.GetString("persistent-craft-placement-popup-placed", ("recipe", ResolveRecipeName(recipe))),
+            args.User,
+            args.User);
+
+        var pointsReward = PersistentCraftingHelper.GetPointReward(recipe);
+        if (pointsReward > 0)
+        {
+            _popup.PopupEntity(
+                Loc.GetString("persistent-craft-popup-points-gained", ("points", pointsReward)),
+                args.User,
+                args.User);
+        }
+
+        SendCraftRecipeExecutionToAttachedActor(args.User, recipe.ID, PersistentCraftRecipeExecutionResult.Completed);
+        SendStateToAttachedActor(args.User);
+    }
+
     private bool TryStartCraftDoAfter(EntityUid user, PersistentCraftRecipePrototype recipe)
     {
         var craftTime = _craftExecutionService.GetEffectiveCraftTime(recipe);
@@ -612,9 +889,235 @@ public sealed class PersistentCraftingSystem : EntitySystem
         return _doAfter.TryStartDoAfter(doAfter);
     }
 
+    private bool TryStartPlacementDoAfter(EntityUid blueprint, EntityUid user, PersistentCraftRecipePrototype recipe)
+    {
+        var craftTime = _craftExecutionService.GetEffectiveCraftTime(recipe);
+        var transform = Transform(blueprint);
+        var doAfter = new DoAfterArgs(
+            EntityManager,
+            user,
+            craftTime,
+            new PersistentCraftPlacementDoAfterEvent(
+                recipe.ID,
+                GetNetCoordinates(transform.Coordinates),
+                transform.LocalRotation),
+            blueprint,
+            target: blueprint,
+            used: user)
+        {
+            BreakOnMove = true,
+            BreakOnDamage = true,
+            NeedHand = false,
+            RequireCanInteract = true,
+            BlockDuplicate = true,
+        };
+
+        return _doAfter.TryStartDoAfter(doAfter);
+    }
+
+    private bool TryValidatePlacement(
+        EntityUid user,
+        PersistentCraftRecipePrototype recipe,
+        EntityCoordinates location,
+        bool showPopup,
+        bool allowBlueprintBoundary = true,
+        EntityUid? ignoredBlueprint = null)
+    {
+        if (recipe.Placement is not { } placement)
+            return false;
+
+        if (!_proto.TryIndex<EntityPrototype>(placement.Proto, out _))
+        {
+            PopupPlacementFailure(user, showPopup, "persistent-craft-placement-popup-invalid");
+            return false;
+        }
+
+        if (!location.IsValid(EntityManager) ||
+            !_turf.TryGetTileRef(location, out var tileRefNullable) ||
+            tileRefNullable.Value.Tile.IsEmpty ||
+            !TryComp<MapGridComponent>(tileRefNullable.Value.GridUid, out var grid))
+        {
+            PopupPlacementFailure(user, showPopup, "persistent-craft-placement-popup-invalid-floor");
+            return false;
+        }
+
+        var tileRef = tileRefNullable.Value;
+        var tileDef = _turf.GetContentTileDefinition(tileRef);
+        if (!tileDef.WLHasFrozenConstructionMetadata ||
+            !AllowsPlacementOnFloor(tileDef, placement.FloorRequirement))
+        {
+            PopupPlacementFailure(user, showPopup, "persistent-craft-placement-popup-invalid-floor");
+            return false;
+        }
+
+        if (placement.MinFloorTier != FrozenRoomFloorTier.None &&
+            tileDef.WLRoomFloorTier < placement.MinFloorTier)
+        {
+            PopupPlacementFailure(user, showPopup, "persistent-craft-placement-popup-requires-floor-tier");
+            return false;
+        }
+
+        if (!placement.CanBuildInImpassable &&
+            _turf.IsTileBlocked(tileRef, CollisionGroup.FullTileMask))
+        {
+            PopupPlacementFailure(user, showPopup, "persistent-craft-placement-popup-blocked");
+            return false;
+        }
+
+        if (HasBlueprintAt(tileRef.GridUid, grid, tileRef.GridIndices, ignoredBlueprint))
+        {
+            PopupPlacementFailure(user, showPopup, "persistent-craft-placement-popup-blocked");
+            return false;
+        }
+
+        if (placement.RequireAdjacentBoundary &&
+            !HasAdjacentFrozenBoundary(tileRef.GridUid, grid, tileRef.GridIndices, allowBlueprintBoundary))
+        {
+            PopupPlacementFailure(user, showPopup, "persistent-craft-placement-popup-requires-boundary");
+            return false;
+        }
+
+        if (placement.RequireRoom &&
+            !_rooms.TryGetRoomAt(tileRef.GridUid, tileRef.GridIndices, out _))
+        {
+            PopupPlacementFailure(user, showPopup, "persistent-craft-placement-popup-requires-room");
+            return false;
+        }
+
+        var snappedLocation = _map.GridTileToLocal(tileRef.GridUid, grid, tileRef.GridIndices);
+        if (!_interaction.InRangeUnobstructed(user, snappedLocation, popup: showPopup))
+            return false;
+
+        return true;
+    }
+
+    private bool TrySpawnBlueprint(PersistentCraftRecipePrototype recipe, EntityCoordinates location, Angle angle, out EntityUid blueprint)
+    {
+        blueprint = default;
+
+        if (recipe.Placement is not { } placement ||
+            !_turf.TryGetTileRef(location, out var tileRefNullable) ||
+            tileRefNullable.Value.Tile.IsEmpty ||
+            !TryComp<MapGridComponent>(tileRefNullable.Value.GridUid, out var grid))
+        {
+            return false;
+        }
+
+        var tileRef = tileRefNullable.Value;
+        var snappedLocation = _map.GridTileToLocal(tileRef.GridUid, grid, tileRef.GridIndices);
+        blueprint = Spawn(placement.BlueprintProto, snappedLocation);
+
+        var blueprintComp = EnsureComp<PersistentCraftBlueprintComponent>(blueprint);
+        blueprintComp.RecipeId = recipe.ID;
+        Dirty(blueprint, blueprintComp);
+
+        if (placement.CanRotate && TryComp(blueprint, out TransformComponent? xform))
+            _transform.SetLocalRotation(blueprint, angle, xform);
+
+        return true;
+    }
+
+    private bool TrySpawnPlacement(PersistentCraftRecipePrototype recipe, EntityCoordinates location, Angle angle, out EntityUid placed)
+    {
+        placed = default;
+
+        if (recipe.Placement is not { } placement ||
+            !_turf.TryGetTileRef(location, out var tileRefNullable) ||
+            tileRefNullable.Value.Tile.IsEmpty ||
+            !TryComp<MapGridComponent>(tileRefNullable.Value.GridUid, out var grid))
+        {
+            return false;
+        }
+
+        var tileRef = tileRefNullable.Value;
+        var snappedLocation = _map.GridTileToLocal(tileRef.GridUid, grid, tileRef.GridIndices);
+        placed = Spawn(placement.Proto, snappedLocation);
+
+        if (placement.CanRotate && TryComp(placed, out TransformComponent? xform))
+            _transform.SetLocalRotation(placed, angle, xform);
+
+        return true;
+    }
+
+    private static bool AllowsPlacementOnFloor(ContentTileDefinition tileDef, FrozenBuildableFloorRequirement requirement)
+    {
+        return requirement switch
+        {
+            FrozenBuildableFloorRequirement.Wall => tileDef.WLAllowsWallConstruction,
+            FrozenBuildableFloorRequirement.Door => tileDef.WLAllowsDoorConstruction,
+            FrozenBuildableFloorRequirement.Furniture => tileDef.WLAllowsFurnitureConstruction,
+            _ => false,
+        };
+    }
+
+    private bool HasBlueprintAt(EntityUid gridUid, MapGridComponent grid, Vector2i origin, EntityUid? ignoredBlueprint)
+    {
+        foreach (var anchored in _map.GetAnchoredEntities((gridUid, grid), origin))
+        {
+            if (anchored == ignoredBlueprint)
+                continue;
+
+            if (HasComp<PersistentCraftBlueprintComponent>(anchored))
+                return true;
+        }
+
+        return false;
+    }
+
+    private bool HasAdjacentFrozenBoundary(
+        EntityUid gridUid,
+        MapGridComponent grid,
+        Vector2i origin,
+        bool includeBlueprints)
+    {
+        foreach (var direction in CardinalDirections)
+        {
+            foreach (var anchored in _map.GetAnchoredEntities((gridUid, grid), origin + direction))
+            {
+                if (HasComp<FrozenShelterBoundaryComponent>(anchored) ||
+                    HasComp<AirtightComponent>(anchored))
+                {
+                    return true;
+                }
+
+                if (includeBlueprints &&
+                    TryComp(anchored, out PersistentCraftBlueprintComponent? blueprint) &&
+                    IsBoundaryBlueprint(blueprint))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private bool IsBoundaryBlueprint(PersistentCraftBlueprintComponent blueprint)
+    {
+        return _proto.TryIndex<PersistentCraftRecipePrototype>(blueprint.RecipeId, out var recipe) &&
+               recipe.Placement?.FloorRequirement == FrozenBuildableFloorRequirement.Wall;
+    }
+
+    private void PopupPlacementFailure(EntityUid user, bool showPopup, string locKey)
+    {
+        if (!showPopup)
+            return;
+
+        PopupUser(user, locKey);
+    }
+
     private void SendState(ICommonSession session, EntityUid uid)
     {
         RaiseNetworkEvent(new PersistentCraftStateEvent(GetState(uid)), session);
+    }
+
+    private void OpenCraftMenu(EntityUid uid, ICommonSession session)
+    {
+        if (!HasComp<PersistentCraftAccessComponent>(uid))
+            return;
+
+        RaiseNetworkEvent(new OpenPersistentCraftMenuEvent(), session);
+        SendState(session, uid);
     }
 
     private void SendStateToAttachedActor(EntityUid uid)

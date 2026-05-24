@@ -1,0 +1,193 @@
+# /// WL Change
+# FrozenWorld clothing crafted through personal crafting only.
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategorySurvivalClothing
+  category: WLCraftCategoryHunter
+  name: persistent-craft-wl-subcategory-survival-clothing
+  order: 20
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeThermalUnderlayer
+  name: persistent-craft-wl-recipe-thermal-underlayer-name
+  description: persistent-craft-wl-recipe-thermal-underlayer-description
+  displayProto: ClothingUniformJumpsuitWinterWL
+  branch: WLHunter
+  tier: 1
+  requiredNode: WLCraftNodeHunterStarter
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 2.0
+  pointReward: 1
+  ingredients:
+  - proto: WLTornCloth
+    amount: 4
+  results:
+  - proto: ClothingUniformJumpsuitWinterWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeLightInsulatedCoat
+  name: persistent-craft-wl-recipe-light-insulated-coat-name
+  description: persistent-craft-wl-recipe-light-insulated-coat-description
+  displayProto: ClothingOuterWinterCoatLightWL
+  branch: WLHunter
+  tier: 1
+  requiredNode: WLCraftNodeHunterStarter
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 2.4
+  pointReward: 1
+  ingredients:
+  - proto: WLTornCloth
+    amount: 5
+  - proto: WLFrozenBranch
+    amount: 1
+  results:
+  - proto: ClothingOuterWinterCoatLightWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWinterGloves
+  name: persistent-craft-wl-recipe-winter-gloves-name
+  description: persistent-craft-wl-recipe-winter-gloves-description
+  displayProto: ClothingHandsGlovesWinterWL
+  branch: WLHunter
+  tier: 1
+  requiredNode: WLCraftNodeHunterStarter
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 1.6
+  pointReward: 0
+  ingredients:
+  - proto: WLTornCloth
+    amount: 3
+  results:
+  - proto: ClothingHandsGlovesWinterWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWinterBoots
+  name: persistent-craft-wl-recipe-winter-boots-name
+  description: persistent-craft-wl-recipe-winter-boots-description
+  displayProto: ClothingShoesBootsWinterWL
+  branch: WLHunter
+  tier: 1
+  requiredNode: WLCraftNodeHunterStarter
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 1.8
+  pointReward: 0
+  ingredients:
+  - proto: WLTornCloth
+    amount: 3
+  - proto: WLLooseScrap
+    amount: 1
+  results:
+  - proto: ClothingShoesBootsWinterWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWarmInsulatedCoat
+  name: persistent-craft-wl-recipe-warm-insulated-coat-name
+  description: persistent-craft-wl-recipe-warm-insulated-coat-description
+  displayProto: ClothingOuterWinterCoatWarmWL
+  branch: WLHunter
+  tier: 2
+  requiredNode: WLCraftNodeHunterField
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 3.0
+  pointReward: 1
+  ingredients:
+  - proto: WLTornCloth
+    amount: 7
+  - proto: WLLooseScrap
+    amount: 1
+  results:
+  - proto: ClothingOuterWinterCoatWarmWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWinterHelmet
+  name: persistent-craft-wl-recipe-winter-helmet-name
+  description: persistent-craft-wl-recipe-winter-helmet-description
+  displayProto: ClothingHeadHelmetWinterWL
+  branch: WLHunter
+  tier: 2
+  requiredNode: WLCraftNodeHunterField
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 2.2
+  pointReward: 0
+  ingredients:
+  - proto: WLTornCloth
+    amount: 3
+  - proto: WLLooseScrap
+    amount: 2
+  results:
+  - proto: ClothingHeadHelmetWinterWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWinterInsulatedCoat
+  name: persistent-craft-wl-recipe-winter-insulated-coat-name
+  description: persistent-craft-wl-recipe-winter-insulated-coat-description
+  displayProto: ClothingOuterWinterCoatWL
+  branch: WLHunter
+  tier: 3
+  requiredNode: WLCraftNodeHunterField
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 3.8
+  pointReward: 1
+  ingredients:
+  - proto: WLTornCloth
+    amount: 9
+  - proto: WLLooseScrap
+    amount: 3
+  results:
+  - proto: ClothingOuterWinterCoatWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeArcticInsulatedCoat
+  name: persistent-craft-wl-recipe-arctic-insulated-coat-name
+  description: persistent-craft-wl-recipe-arctic-insulated-coat-description
+  displayProto: ClothingOuterWinterCoatArcticWL
+  branch: WLHunter
+  tier: 4
+  requiredNode: WLCraftNodeHunterField
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 4.6
+  pointReward: 1
+  ingredients:
+  - proto: WLTornCloth
+    amount: 12
+  - proto: WLLooseScrap
+    amount: 4
+  results:
+  - proto: ClothingOuterWinterCoatArcticWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeExtremeInsulatedCoat
+  name: persistent-craft-wl-recipe-extreme-insulated-coat-name
+  description: persistent-craft-wl-recipe-extreme-insulated-coat-description
+  displayProto: ClothingOuterWinterCoatExtremeWL
+  branch: WLHunter
+  tier: 5
+  requiredNode: WLCraftNodeHunterField
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 5.5
+  pointReward: 2
+  ingredients:
+  - proto: WLTornCloth
+    amount: 16
+  - proto: WLLooseScrap
+    amount: 6
+  results:
+  - proto: ClothingOuterWinterCoatExtremeWL
+    amount: 1

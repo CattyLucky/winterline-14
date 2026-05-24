@@ -25,7 +25,7 @@ public sealed partial class FrozenShelterBoundaryComponent : Component
     public bool BlocksWeather = true;
 
     /// <summary>
-    /// Future door integration: if true, an opened door should mark the room cache dirty and stop blocking.
+    /// If true, an opened door still closes the room shape but stops contributing weather protection.
     /// </summary>
     [DataField]
     public bool LeakWhenOpen = true;

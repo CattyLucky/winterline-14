@@ -315,7 +315,7 @@ public sealed partial class PersistentCraftStationWindow : DefaultWindow
             _state,
             _viewModel,
             recipe => HasRequirement(_state, recipe),
-            HasLocalMaterials,
+            recipe => recipe.Placement != null || HasLocalMaterials(recipe),
             (recipe, query) => _textResolver.MatchesRecipeSearch(recipe, query));
 
         container.AddChild(CreateBranchHeader(branch, branchState, branchData.UnlockedRecipes.Count, branchRecipes.Count));
@@ -472,7 +472,7 @@ public sealed partial class PersistentCraftStationWindow : DefaultWindow
         var loaded = _state?.Loaded == true;
         var requirementMet = _state != null && HasRequirement(_state, recipe);
         var hasMaterials = GetHasLocalMaterials(recipe);
-        var canCraft = loaded && requirementMet && hasMaterials;
+        var canCraft = loaded && requirementMet && (hasMaterials || recipe.Placement != null);
         var accent = GetAccent(recipe.Branch);
 
         return !requirementMet
@@ -491,7 +491,10 @@ public sealed partial class PersistentCraftStationWindow : DefaultWindow
 
     private Control CreateRecipeStatusBadge(PersistentCraftRecipePrototype recipe)
     {
-        var statusKey = GetStatusKey(_state?.Loaded == true, _state != null && HasRequirement(_state, recipe), GetHasLocalMaterials(recipe));
+        var statusKey = GetStatusKey(
+            _state?.Loaded == true,
+            _state != null && HasRequirement(_state, recipe),
+            recipe.Placement != null || GetHasLocalMaterials(recipe));
         var foreground = GetRecipeMetaColor(recipe);
         var background = foreground.WithAlpha(0.16f);
 
@@ -563,7 +566,9 @@ public sealed partial class PersistentCraftStationWindow : DefaultWindow
 
     private string BuildHeaderInfoMarkup(PersistentCraftRecipePrototype recipe)
     {
-        var resultText = recipe.Results.Count == 0
+        var resultText = recipe.Placement != null
+            ? _textResolver.FormatPlacement(recipe.Placement)
+            : recipe.Results.Count == 0
             ? Loc.GetString("persistent-craft-none")
             : FormatResult(recipe.Results[0]);
 
@@ -673,6 +678,11 @@ public sealed partial class PersistentCraftStationWindow : DefaultWindow
 
     private string BuildResultMarkup(PersistentCraftRecipePrototype recipe)
     {
+        if (recipe.Placement != null)
+        {
+            return $"[color={DescriptionText.ToHex()}]- {FormattedMessage.EscapeText(_textResolver.FormatPlacement(recipe.Placement))}[/color]";
+        }
+
         var builder = new StringBuilder();
         for (var i = 0; i < recipe.Results.Count; i++)
         {

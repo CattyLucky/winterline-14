@@ -20,6 +20,8 @@ public readonly record struct FrozenShelterRoomThermalInfo(
     float LeakRatio,
     float WeatherProtectionRatio,
     float AverageInsulation,
+    FrozenRoomFloorTier FloorTier,
+    float AverageFloorInsulation,
     float RoomHeatBonus)
 {
     public static readonly FrozenShelterRoomThermalInfo None = new(
@@ -28,6 +30,8 @@ public readonly record struct FrozenShelterRoomThermalInfo(
         0,
         1f,
         0f,
+        0f,
+        FrozenRoomFloorTier.None,
         0f,
         0f);
 

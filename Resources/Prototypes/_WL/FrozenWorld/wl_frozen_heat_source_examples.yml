@@ -122,6 +122,84 @@
     autoConsumeFuel: true
 
 - type: entity
+  id: WLFiretubeGenerator
+  parent: GeneratorBasic
+  name: firetube heat generator
+  description: A tall, riveted fire-tube generator built to anchor a real boiler room. It turns packed fuel into a wide, steady heat plume for a finished shelter, but it is heavy, loud, and hungry.
+  components:
+  - type: Sprite
+    sprite: _WL/firetube.rsi
+    snapCardinals: true
+    layers:
+    - state: icon1
+      map: [ "fuel_state" ]
+  - type: GenericVisualizer
+    visuals:
+      enum.FrozenHeatSourceFuelVisuals.Burning:
+        fuel_state:
+          True: { state: icon }
+          False: { state: icon1 }
+  - type: Fixtures
+    fixtures:
+      fix1:
+        shape:
+          !type:PhysShapeAabb
+          bounds: "-0.70,-0.70,0.70,0.70"
+        density: 260
+        mask:
+        - MachineMask
+        layer:
+        - MachineLayer
+  - type: AmbientSound
+    range: 9
+    volume: -3
+    sound:
+      path: /Audio/Ambience/Objects/engine_hum.ogg
+    enabled: false
+  - type: PointLight
+    radius: 6
+    energy: 3
+    color: "#FF7A2F"
+    castShadows: false
+    enabled: false
+  - type: Appearance
+  - type: FrozenHeatSource
+    enabled: false
+    dynamic: false
+    innerRadius: 6
+    outerRadius: 18
+    heatBonus: 95
+    transferEfficiency: 1.15
+  - type: Storage
+    openOnActivate: false
+    showVerb: false
+    grid:
+    - 0,0,4,3
+    maxItemSize: Large
+    whitelist:
+      components:
+      - FrozenFuel
+  - type: UserInterface
+    interfaces:
+      enum.StorageUiKey.Key:
+        type: StorageBoundUserInterface
+      enum.FrozenWorldUiKey.HeatSourceFuel:
+        type: FrozenHeatSourceFuelBoundUserInterface
+  - type: ActivatableUI
+    key: enum.FrozenWorldUiKey.HeatSourceFuel
+  - type: ContainerContainer
+    containers:
+      storagebase: !type:Container
+        ents: [ ]
+  - type: FrozenHeatSourceFuel
+    fuelContainerId: storagebase
+    requiresIgnition: true
+    canIgniteWithItem: true
+    allowUiIgnition: true
+    burnRate: 1.5
+    autoConsumeFuel: true
+
+- type: entity
   id: WLBonfireFuelUiExample
   parent: Bonfire
   name: bonfire (WL fuel UI example)

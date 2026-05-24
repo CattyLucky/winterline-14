@@ -9,6 +9,9 @@ public static class PersistentCraftingHelper
         if (!string.IsNullOrWhiteSpace(recipe.DisplayProto))
             return recipe.DisplayProto;
 
+        if (recipe.Placement != null && !string.IsNullOrWhiteSpace(recipe.Placement.Proto))
+            return recipe.Placement.Proto;
+
         return recipe.Results.Count > 0
             ? recipe.Results[0].Proto
             : null;

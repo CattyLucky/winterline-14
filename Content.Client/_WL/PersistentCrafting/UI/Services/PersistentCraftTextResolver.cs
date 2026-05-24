@@ -33,6 +33,10 @@ public sealed class PersistentCraftTextResolver
         if (MetadataIndex.TryGetName(recipe.ID, out var cached))
             return cached;
 
+        var recipeName = TryLoc(recipe.Name);
+        if (!string.IsNullOrWhiteSpace(recipeName))
+            return recipeName;
+
         var displayProto = PersistentCraftingHelper.GetDisplayPrototypeId(recipe);
         if (!string.IsNullOrWhiteSpace(displayProto) &&
             _prototype.TryIndex<EntityPrototype>(displayProto, out var prototype) &&
@@ -48,6 +52,10 @@ public sealed class PersistentCraftTextResolver
     {
         if (MetadataIndex.TryGetDescription(recipe.ID, out var cached))
             return cached;
+
+        var recipeDescription = TryLoc(recipe.Description);
+        if (!string.IsNullOrWhiteSpace(recipeDescription))
+            return recipeDescription;
 
         var displayProto = PersistentCraftingHelper.GetDisplayPrototypeId(recipe);
         if (!string.IsNullOrWhiteSpace(displayProto) &&
@@ -234,6 +242,11 @@ public sealed class PersistentCraftTextResolver
     public string FormatResult(PersistentCraftResult result)
     {
         return $"{ResolveEntityName(result.Proto)} x{result.Amount}";
+    }
+
+    public string FormatPlacement(PersistentCraftPlacement placement)
+    {
+        return ResolveEntityName(placement.Proto);
     }
 
     private PersistentCraftCategoryPrototype? GetCategoryPrototype(string categoryId)

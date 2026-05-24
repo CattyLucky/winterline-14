@@ -1,0 +1,195 @@
+# /// WL Change
+# Player-built shelter structures placed only through _WL/PersistentCrafting.
+
+- type: entity
+  id: WLPersistentCraftBlueprint
+  name: construction blueprint
+  description: A planned shelter structure. Build it to turn it into a real structure.
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Transform
+    anchored: true
+  - type: Sprite
+    color: '#3F38'
+  - type: Clickable
+  - type: InteractionOutline
+  - type: PersistentCraftBlueprint
+
+- type: entity
+  id: WLPrimitiveWoodWallBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: primitive wood wall blueprint
+  components:
+  - type: Sprite
+    sprite: Structures/Walls/wood.rsi
+    state: full
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Walls/wood.rsi
+    state: full
+
+- type: entity
+  id: WLPrimitiveWoodDoorBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: primitive wood door blueprint
+  components:
+  - type: Sprite
+    sprite: Structures/Doors/MineralDoors/wood_door.rsi
+    state: closed
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Doors/MineralDoors/wood_door.rsi
+    state: closed
+
+- type: entity
+  id: WLPrimitiveWorkbenchBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: primitive workbench blueprint
+  components:
+  - type: Sprite
+    sprite: Structures/Furniture/Tables/wood.rsi
+    state: full
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Furniture/Tables/wood.rsi
+    state: full
+
+- type: entity
+  id: WLFiretubeGeneratorBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: firetube generator blueprint
+  components:
+  - type: Sprite
+    sprite: _WL/firetube.rsi
+    state: icon1
+    color: '#3F38'
+  - type: Icon
+    sprite: _WL/firetube.rsi
+    state: icon1
+
+- type: entity
+  id: WLPrimitiveWoodWall
+  parent: BaseWall
+  name: primitive wood wall
+  description: A rough insulated wall for the first frozen shelters.
+  components:
+  - type: Sprite
+    sprite: Structures/Walls/wood.rsi
+  - type: Icon
+    sprite: Structures/Walls/wood.rsi
+  - type: Damageable
+    damageModifierSet: Wood
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 220
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+      - !type:PlaySoundBehavior
+        sound:
+          collection: WoodDestroyHeavy
+    - trigger:
+        !type:DamageTrigger
+        damage: 90
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          collection: WoodDestroyHeavy
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          WLFrozenBranch:
+            min: 1
+            max: 2
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+  - type: IconSmooth
+    key: woods
+    base: wood
+  - type: FrozenShelterBoundary
+    insulation: 0.55
+
+- type: entity
+  id: WLPrimitiveWoodDoor
+  parent: BaseMaterialDoorNavMap
+  name: primitive wood door
+  description: A crude door that closes a shelter but leaks heat when left open.
+  components:
+  - type: Sprite
+    sprite: Structures/Doors/MineralDoors/wood_door.rsi
+  - type: Door
+    openSound:
+      path: /Audio/Effects/door_open.ogg
+    closeSound:
+      path: /Audio/Effects/door_close.ogg
+  - type: Damageable
+    damageModifierSet: Wood
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 140
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+    - trigger:
+        !type:DamageTrigger
+        damage: 55
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          collection: WoodDestroy
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          WLFrozenBranch:
+            min: 1
+            max: 2
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+  - type: FrozenShelterBoundary
+    insulation: 0.45
+    leakWhenOpen: true
+
+- type: entity
+  id: WLPrimitiveWorkbench
+  parent: TableBase
+  name: primitive workbench
+  description: A stable work surface for persistent crafting inside a finished shelter.
+  components:
+  - type: Sprite
+    sprite: Structures/Furniture/Tables/wood.rsi
+  - type: Icon
+    sprite: Structures/Furniture/Tables/wood.rsi
+  - type: Damageable
+    damageModifierSet: Wood
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 100
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+      - !type:PlaySoundBehavior
+        sound:
+          collection: WoodDestroy
+    - trigger:
+        !type:DamageTrigger
+        damage: 20
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          collection: WoodDestroy
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          WLFrozenBranch:
+            min: 1
+            max: 2
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+  - type: IconSmooth
+    key: woodtable
+  - type: Tag
+    tags:
+    - Wooden

@@ -359,7 +359,7 @@ public sealed partial class PersistentCraftStationWindow
         var loaded = _state?.Loaded == true;
         var requirementMet = _state != null && HasRequirement(_state, recipe);
         var hasMaterials = GetHasLocalMaterials(recipe);
-        var canCraft = loaded && requirementMet && hasMaterials;
+        var canCraft = loaded && requirementMet && (hasMaterials || recipe.Placement != null);
         var accent = GetAccent(recipe.Branch);
 
         var panel = new PanelContainer
@@ -421,7 +421,9 @@ public sealed partial class PersistentCraftStationWindow
         header.SetData(
             ResolveRecipeName(recipe),
             Color.White,
-            Loc.GetString("persistent-craft-recipe-action"),
+            Loc.GetString(recipe.Placement != null
+                ? "persistent-craft-recipe-action-place"
+                : "persistent-craft-recipe-action"),
             !canCraft);
         header.ActionButton.OnPressed += _ => OnCraftPressed?.Invoke(recipe.ID);
 

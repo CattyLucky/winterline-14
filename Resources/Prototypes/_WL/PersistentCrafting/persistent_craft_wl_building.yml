@@ -1,0 +1,242 @@
+# /// WL Change
+# FrozenWorld building chain. Tile items are crafted here; shelter structures use
+# persistent-craft placement ghosts and never touch vanilla construction recipes.
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryShelterFloors
+  category: WLCraftCategorySettlementHead
+  name: persistent-craft-wl-subcategory-shelter-floors
+  order: 20
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryShelterStructures
+  category: WLCraftCategorySettlementHead
+  name: persistent-craft-wl-subcategory-shelter-structures
+  order: 30
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryShelterGenerators
+  category: WLCraftCategorySettlementHead
+  name: persistent-craft-wl-subcategory-shelter-generators
+  order: 40
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeSnowFoundation
+  name: persistent-craft-wl-recipe-snow-foundation-name
+  description: persistent-craft-wl-recipe-snow-foundation-description
+  displayProto: WLSnowFoundationTileItem
+  branch: WLSettlementHead
+  tier: 1
+  requiredNode: WLCraftNodeSettlementHeadStarter
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterFloors
+  craftTime: 1.2
+  pointReward: 0
+  ingredients:
+  - proto: WLFrozenBranch
+    amount: 2
+  - proto: WLLooseScrap
+    amount: 1
+  results:
+  - proto: WLSnowFoundationTileItem
+    amount: 4
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipePrimitiveWoodFloor
+  name: persistent-craft-wl-recipe-primitive-wood-floor-name
+  description: persistent-craft-wl-recipe-primitive-wood-floor-description
+  displayProto: WLPrimitiveWoodFloorTileItem
+  branch: WLSettlementHead
+  tier: 1
+  requiredNode: WLCraftNodeSettlementHeadStarter
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterFloors
+  craftTime: 1.4
+  pointReward: 1
+  ingredients:
+  - proto: WLFrozenBranch
+    amount: 3
+  results:
+  - proto: WLPrimitiveWoodFloorTileItem
+    amount: 4
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWoodFloor
+  name: persistent-craft-wl-recipe-wood-floor-name
+  description: persistent-craft-wl-recipe-wood-floor-description
+  displayProto: WLWoodFloorTileItem
+  branch: WLSettlementHead
+  tier: 2
+  requiredNode: WLCraftNodeSettlementHeadField
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterFloors
+  craftTime: 1.8
+  pointReward: 0
+  ingredients:
+  - proto: WLFrozenBranch
+    amount: 5
+  - proto: WLTornCloth
+    amount: 1
+  results:
+  - proto: WLWoodFloorTileItem
+    amount: 4
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeStoneFloor
+  name: persistent-craft-wl-recipe-stone-floor-name
+  description: persistent-craft-wl-recipe-stone-floor-description
+  displayProto: WLStoneFloorTileItem
+  branch: WLSettlementHead
+  tier: 2
+  requiredNode: WLCraftNodeSettlementHeadField
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterFloors
+  craftTime: 2.0
+  pointReward: 0
+  ingredients:
+  - proto: WLLooseScrap
+    amount: 4
+  results:
+  - proto: WLStoneFloorTileItem
+    amount: 4
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeInsulatedFloor
+  name: persistent-craft-wl-recipe-insulated-floor-name
+  description: persistent-craft-wl-recipe-insulated-floor-description
+  displayProto: WLInsulatedFloorTileItem
+  branch: WLSettlementHead
+  tier: 3
+  requiredNode: WLCraftNodeSettlementHeadField
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterFloors
+  craftTime: 2.4
+  pointReward: 0
+  ingredients:
+  - proto: WLLooseScrap
+    amount: 3
+  - proto: WLTornCloth
+    amount: 3
+  results:
+  - proto: WLInsulatedFloorTileItem
+    amount: 2
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeRoadFloor
+  name: persistent-craft-wl-recipe-road-floor-name
+  description: persistent-craft-wl-recipe-road-floor-description
+  displayProto: WLRoadFloorTileItem
+  branch: WLSettlementHead
+  tier: 2
+  requiredNode: WLCraftNodeSettlementHeadField
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterFloors
+  craftTime: 1.6
+  pointReward: 0
+  ingredients:
+  - proto: WLLooseScrap
+    amount: 2
+  results:
+  - proto: WLRoadFloorTileItem
+    amount: 4
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipePrimitiveWoodWall
+  name: persistent-craft-wl-recipe-primitive-wood-wall-name
+  description: persistent-craft-wl-recipe-primitive-wood-wall-description
+  displayProto: WLPrimitiveWoodWall
+  branch: WLSettlementHead
+  tier: 1
+  requiredNode: WLCraftNodeSettlementHeadStarter
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterStructures
+  craftTime: 1.8
+  pointReward: 1
+  ingredients:
+  - proto: WLFrozenBranch
+    amount: 3
+  results: []
+  placement:
+    proto: WLPrimitiveWoodWall
+    blueprintProto: WLPrimitiveWoodWallBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Wall
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipePrimitiveWoodDoor
+  name: persistent-craft-wl-recipe-primitive-wood-door-name
+  description: persistent-craft-wl-recipe-primitive-wood-door-description
+  displayProto: WLPrimitiveWoodDoor
+  branch: WLSettlementHead
+  tier: 1
+  requiredNode: WLCraftNodeSettlementHeadStarter
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterStructures
+  craftTime: 2.0
+  pointReward: 1
+  ingredients:
+  - proto: WLFrozenBranch
+    amount: 4
+  - proto: WLTornCloth
+    amount: 1
+  results: []
+  placement:
+    proto: WLPrimitiveWoodDoor
+    blueprintProto: WLPrimitiveWoodDoorBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Door
+    requireAdjacentBoundary: true
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipePrimitiveWorkbench
+  name: persistent-craft-wl-recipe-primitive-workbench-name
+  description: persistent-craft-wl-recipe-primitive-workbench-description
+  displayProto: WLPrimitiveWorkbench
+  branch: WLSettlementHead
+  tier: 2
+  requiredNode: WLCraftNodeSettlementHeadField
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterStructures
+  craftTime: 2.4
+  pointReward: 1
+  ingredients:
+  - proto: WLFrozenBranch
+    amount: 4
+  - proto: WLLooseScrap
+    amount: 1
+  results: []
+  placement:
+    proto: WLPrimitiveWorkbench
+    blueprintProto: WLPrimitiveWorkbenchBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Furniture
+    requireRoom: true
+    minFloorTier: Wood
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeFiretubeGenerator
+  name: persistent-craft-wl-recipe-firetube-generator-name
+  description: persistent-craft-wl-recipe-firetube-generator-description
+  displayProto: WLFiretubeGenerator
+  branch: WLSettlementHead
+  tier: 3
+  requiredNode: WLCraftNodeSettlementHeadField
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterGenerators
+  craftTime: 5.5
+  pointReward: 2
+  ingredients:
+  - proto: WLLooseScrap
+    amount: 10
+  - proto: WLTornCloth
+    amount: 3
+  - proto: WLFrozenBranch
+    amount: 4
+  results: []
+  placement:
+    proto: WLFiretubeGenerator
+    blueprintProto: WLFiretubeGeneratorBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Furniture
+    requireRoom: true
+    minFloorTier: Stone

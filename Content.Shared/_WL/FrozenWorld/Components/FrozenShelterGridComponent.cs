@@ -58,6 +58,12 @@ public sealed partial class FrozenShelterGridComponent : Component
     public int RoomSearchPadding = 4;
 
     /// <summary>
+    /// Whether accepted player-built rooms must include at least one door or door-like portal.
+    /// </summary>
+    [DataField]
+    public bool RequireDoor = true;
+
+    /// <summary>
     /// Default temperature bonus for a closed player-built room, in Celsius/Kelvin delta.
     /// </summary>
     [DataField]
@@ -128,6 +134,9 @@ public sealed partial class FrozenShelterRoomData
     public bool HasFloor;
 
     [DataField]
+    public bool HasDoor;
+
+    [DataField]
     public int TileCount;
 
     [DataField]
@@ -157,6 +166,18 @@ public sealed partial class FrozenShelterRoomData
     /// </summary>
     [DataField]
     public float AverageInsulation = 1f;
+
+    /// <summary>
+    /// Weakest finished floor tier inside this room.
+    /// </summary>
+    [DataField]
+    public FrozenRoomFloorTier FloorTier = FrozenRoomFloorTier.None;
+
+    /// <summary>
+    /// Average insulation of all finished room floor tiles.
+    /// </summary>
+    [DataField]
+    public float AverageFloorInsulation = 0.5f;
 
     [DataField]
     public float TemperatureBonus = 8f;

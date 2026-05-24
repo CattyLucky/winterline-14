@@ -192,6 +192,8 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
                 room.LeakRatio,
                 room.WeatherProtectionRatio,
                 room.AverageInsulation,
+                room.FloorTier,
+                room.AverageFloorInsulation,
                 roomHeatBonus);
         }
 

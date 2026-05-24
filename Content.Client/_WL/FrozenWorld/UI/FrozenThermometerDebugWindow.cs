@@ -87,7 +87,7 @@ public sealed class FrozenThermometerDebugWindow : DefaultWindow
         _weatherExposure.Text = $"Weather exposure here: {state.WeatherExposureFactor * 100f:0.#}% | affects: {state.WeatherAffectsPosition}";
         _shelterName.Text = $"Shelter: {state.ShelterName ?? "Outside"}";
         _roomInfo.Text = state.Room.HasRoom
-            ? $"Room #{state.Room.RoomId}: {state.Room.Tier} | tiles {state.Room.TileCount} | leak {state.Room.LeakRatio * 100f:0.#}% | envelope {state.Room.WeatherProtectionRatio * 100f:0.#}% | insulation {state.Room.AverageInsulation * 100f:0.#}% | room heat {FormatSigned(state.Room.RoomHeatBonus)}°C"
+            ? $"Room #{state.Room.RoomId}: {state.Room.Tier} | floor {state.Room.FloorTier} {state.Room.AverageFloorInsulation * 100f:0.#}% | tiles {state.Room.TileCount} | leak {state.Room.LeakRatio * 100f:0.#}% | envelope {state.Room.WeatherProtectionRatio * 100f:0.#}% | insulation {state.Room.AverageInsulation * 100f:0.#}% | room heat {FormatSigned(state.Room.RoomHeatBonus)}°C"
             : "Room: none";
         _multipliers.Text = $"Multipliers: exposure x{state.ExposureGainMultiplier:0.00} | recovery x{state.RecoveryMultiplier:0.00} | damage x{state.ColdDamageMultiplier:0.00}";
 
