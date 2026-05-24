@@ -154,6 +154,9 @@ public sealed partial class PersistentCraftPlacement
     [DataField("requireRoom")]
     public bool RequireRoom;
 
+    [DataField("forbidRoom")]
+    public bool ForbidRoom;
+
     [DataField("minFloorTier")]
     public FrozenRoomFloorTier MinFloorTier = FrozenRoomFloorTier.None;
 }

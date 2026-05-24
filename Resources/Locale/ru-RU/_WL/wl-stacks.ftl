@@ -1,5 +1,5 @@
-stack-wl-frozen-firewood = стопка промёрзших дров
-stack-wl-frozen-coal = стопка промёрзшего угля
-stack-wl-frozen-branches = стопка промёрзших веток
-stack-wl-loose-scrap = стопка рыхлого лома
-stack-wl-torn-cloth = стопка рваной ткани
+stack-wl-frozen-firewood = промёрзшие дрова
+stack-wl-frozen-coal = промёрзший уголь
+stack-wl-frozen-branches = промёрзшие ветки
+stack-wl-loose-scrap = металлолом
+stack-wl-torn-cloth = рваная ткань

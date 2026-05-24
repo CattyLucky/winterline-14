@@ -6,7 +6,7 @@ namespace Content.Shared.Roles;
 /// </summary>
 public sealed partial class JobPrototype
 {
-    [DataField]
+    [DataField("grantPersistentCraftAccess")]
     public bool GrantPersistentCraftAccess { get; private set; } = false;
 
     [DataField("wlVisibleInLobby")]

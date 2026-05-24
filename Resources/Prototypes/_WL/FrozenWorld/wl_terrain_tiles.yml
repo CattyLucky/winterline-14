@@ -254,6 +254,14 @@
     stackType: WLSnowFoundationTile
 
 - type: entity
+  parent: WLSnowFoundationTileItem
+  id: WLSnowFoundationTileItem30
+  suffix: 30
+  components:
+  - type: Stack
+    count: 30
+
+- type: entity
   name: Primitive Wood Floor
   parent: FloorTileItemBase
   id: WLPrimitiveWoodFloorTileItem
@@ -268,6 +276,14 @@
     - WLFloorPrimitiveWood
   - type: Stack
     stackType: WLPrimitiveWoodFloorTile
+
+- type: entity
+  parent: WLPrimitiveWoodFloorTileItem
+  id: WLPrimitiveWoodFloorTileItem30
+  suffix: 30
+  components:
+  - type: Stack
+    count: 30
 
 - type: entity
   name: Wood Floor
@@ -286,6 +302,14 @@
     stackType: WLWoodFloorTile
 
 - type: entity
+  parent: WLWoodFloorTileItem
+  id: WLWoodFloorTileItem30
+  suffix: 30
+  components:
+  - type: Stack
+    count: 30
+
+- type: entity
   name: Stone Floor
   parent: FloorTileItemBase
   id: WLStoneFloorTileItem
@@ -300,6 +324,14 @@
     - WLFloorStone
   - type: Stack
     stackType: WLStoneFloorTile
+
+- type: entity
+  parent: WLStoneFloorTileItem
+  id: WLStoneFloorTileItem30
+  suffix: 30
+  components:
+  - type: Stack
+    count: 30
 
 - type: entity
   name: Insulated Floor
@@ -318,6 +350,14 @@
     stackType: WLInsulatedFloorTile
 
 - type: entity
+  parent: WLInsulatedFloorTileItem
+  id: WLInsulatedFloorTileItem30
+  suffix: 30
+  components:
+  - type: Stack
+    count: 30
+
+- type: entity
   name: Road Floor
   parent: FloorTileItemBase
   id: WLRoadFloorTileItem
@@ -332,3 +372,11 @@
     - WLRoadFloor
   - type: Stack
     stackType: WLRoadFloorTile
+
+- type: entity
+  parent: WLRoadFloorTileItem
+  id: WLRoadFloorTileItem30
+  suffix: 30
+  components:
+  - type: Stack
+    count: 30

@@ -66,9 +66,12 @@ persistent-craft-placement-popup-invalid-floor = This structure needs a valid WL
 persistent-craft-placement-popup-blocked = The target tile is blocked.
 persistent-craft-placement-popup-requires-boundary = A door needs a nearby wall or boundary.
 persistent-craft-placement-popup-requires-room = This structure must be placed inside a valid room.
+persistent-craft-placement-popup-forbids-room = This structure cannot be placed inside a valid room.
 persistent-craft-placement-popup-requires-floor-tier = This structure needs a stronger room floor.
 persistent-craft-blueprint-build-verb = Build
 persistent-craft-blueprint-cancel-verb = Cancel plan
+persistent-craft-blueprint-popup-not-owner = This is someone else's construction plan.
+persistent-craft-blueprint-popup-cancelled = Construction plan cancelled.
 
 persistent-craft-wl-branch-settlement-head = Settlement Head
 persistent-craft-wl-branch-mechanic = Mechanic
@@ -79,14 +82,13 @@ persistent-craft-wl-category-settlement-head = Settlement Head Craft
 persistent-craft-wl-category-mechanic = Mechanic Craft
 persistent-craft-wl-category-hunter = Hunter Craft
 persistent-craft-wl-category-gatherer-processor = Gatherer-Processor Craft
-persistent-craft-wl-subcategory-stub = Stub Recipes
 persistent-craft-wl-subcategory-shelter-floors = Shelter Floors
 persistent-craft-wl-subcategory-shelter-structures = Shelter Structures
-persistent-craft-wl-subcategory-shelter-generators = Shelter Generators
+persistent-craft-wl-subcategory-shelter-generators = Heat & Generators
 persistent-craft-wl-subcategory-survival-clothing = Survival Clothing
 
-persistent-craft-wl-node-description-starter = Starter node for testing WL personal craft.
-persistent-craft-wl-node-description-unlock = Unlock node for testing branch progression.
+persistent-craft-wl-node-description-starter = Starting recipes for this branch.
+persistent-craft-wl-node-description-unlock = Field recipes for this branch.
 
 persistent-craft-wl-node-settlement-head-starter = Settlement Planning
 persistent-craft-wl-node-settlement-head-field = Settlement Logistics
@@ -96,26 +98,6 @@ persistent-craft-wl-node-hunter-starter = Field Survival
 persistent-craft-wl-node-hunter-field = Tracking Routine
 persistent-craft-wl-node-gatherer-processor-starter = Resource Handling
 persistent-craft-wl-node-gatherer-processor-field = Processing Routine
-
-persistent-craft-wl-recipe-settlement-head-starter-name = Settlement Note Draft
-persistent-craft-wl-recipe-settlement-head-starter-description = Placeholder recipe to verify settlement-head branch flow.
-persistent-craft-wl-recipe-settlement-head-field-name = Logistics Checklist
-persistent-craft-wl-recipe-settlement-head-field-description = Placeholder tier-2 recipe for settlement-head branch.
-
-persistent-craft-wl-recipe-mechanic-starter-name = Scrap Inspection
-persistent-craft-wl-recipe-mechanic-starter-description = Placeholder recipe to verify mechanic branch flow.
-persistent-craft-wl-recipe-mechanic-field-name = Rough Steel Piece
-persistent-craft-wl-recipe-mechanic-field-description = Placeholder tier-2 recipe for mechanic branch.
-
-persistent-craft-wl-recipe-hunter-starter-name = Primitive Fiber Wrap
-persistent-craft-wl-recipe-hunter-starter-description = Placeholder recipe to verify hunter branch flow.
-persistent-craft-wl-recipe-hunter-field-name = Camp Branch Bundle
-persistent-craft-wl-recipe-hunter-field-description = Placeholder tier-2 recipe for hunter branch.
-
-persistent-craft-wl-recipe-gatherer-processor-starter-name = Sorted Branch Pack
-persistent-craft-wl-recipe-gatherer-processor-starter-description = Placeholder recipe to verify gatherer-processor branch flow.
-persistent-craft-wl-recipe-gatherer-processor-field-name = Basic Processed Note
-persistent-craft-wl-recipe-gatherer-processor-field-description = Placeholder tier-2 recipe for gatherer-processor branch.
 
 persistent-craft-wl-recipe-snow-foundation-name = Snow Foundation Underlay
 persistent-craft-wl-recipe-snow-foundation-description = Creates underlay plates. Walls and doors can stand on them, but they do not count as room floor.
@@ -129,14 +111,18 @@ persistent-craft-wl-recipe-insulated-floor-name = Insulated Floor
 persistent-craft-wl-recipe-insulated-floor-description = Creates insulated floor panels that help rooms hold heat.
 persistent-craft-wl-recipe-road-floor-name = Road Floor
 persistent-craft-wl-recipe-road-floor-description = Creates outdoor paving. Roads allow utility placement, but never count as rooms.
+persistent-craft-wl-recipe-campfire-name = Campfire
+persistent-craft-wl-recipe-campfire-description = Places an outdoor campfire blueprint. It can be placed on cleared snow, underlay or outdoor paving, but not inside a valid room.
 persistent-craft-wl-recipe-primitive-wood-wall-name = Primitive Wood Wall
 persistent-craft-wl-recipe-primitive-wood-wall-description = Places a WL shelter wall blueprint. Requires a valid foundation or room floor.
 persistent-craft-wl-recipe-primitive-wood-door-name = Primitive Wood Door
 persistent-craft-wl-recipe-primitive-wood-door-description = Places a WL shelter door blueprint. Requires a valid foundation or room floor and a nearby wall.
 persistent-craft-wl-recipe-primitive-workbench-name = Primitive Workbench
 persistent-craft-wl-recipe-primitive-workbench-description = Places a workbench blueprint inside a valid wood-floor shelter room.
+persistent-craft-wl-recipe-fireplace-name = Fireplace
+persistent-craft-wl-recipe-fireplace-description = Places a safe indoor fireplace blueprint. Requires a valid room with wood or stronger flooring.
 persistent-craft-wl-recipe-firetube-generator-name = Huge Firetube Generator
-persistent-craft-wl-recipe-firetube-generator-description = Places a heavy boiler-room generator blueprint. Requires a valid room with stone or stronger flooring; once built, it throws a wide, powerful heat field but burns through fuel quickly.
+persistent-craft-wl-recipe-firetube-generator-description = Places a heavy generator blueprint. Requires stone or stronger flooring; the generator can be built indoors or outside.
 persistent-craft-wl-recipe-thermal-underlayer-name = Thermal Underlayer
 persistent-craft-wl-recipe-thermal-underlayer-description = A warm inner layer worn under heavier gear to help survive severe cold.
 persistent-craft-wl-recipe-light-insulated-coat-name = Light Insulated Coat

@@ -68,6 +68,32 @@
     state: icon1
 
 - type: entity
+  id: WLCampfireHeatSourceBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: campfire blueprint
+  components:
+  - type: Sprite
+    sprite: _WL/FrozenWorld/HeatSources/wl_campfire.rsi
+    state: off
+    color: '#3F38'
+  - type: Icon
+    sprite: _WL/FrozenWorld/HeatSources/wl_campfire.rsi
+    state: off
+
+- type: entity
+  id: WLFireplaceHeatSourceBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: fireplace blueprint
+  components:
+  - type: Sprite
+    sprite: _WL/FrozenWorld/HeatSources/wl_fireplace_heater.rsi
+    state: off
+    color: '#3F38'
+  - type: Icon
+    sprite: _WL/FrozenWorld/HeatSources/wl_fireplace_heater.rsi
+    state: off
+
+- type: entity
   id: WLPrimitiveWoodWall
   parent: BaseWall
   name: primitive wood wall
@@ -108,7 +134,12 @@
     key: woods
     base: wood
   - type: FrozenShelterBoundary
-    insulation: 0.55
+    insulation: 0.70
+  - type: FrozenShelterDeconstructible
+    doAfter: 3
+    refunds:
+    - proto: WLFrozenBranch
+      count: 2
 
 - type: entity
   id: WLPrimitiveWoodDoor
@@ -148,8 +179,15 @@
       - !type:DoActsBehavior
         acts: [ "Destruction" ]
   - type: FrozenShelterBoundary
-    insulation: 0.45
+    insulation: 0.65
     leakWhenOpen: true
+  - type: FrozenShelterDeconstructible
+    doAfter: 3
+    refunds:
+    - proto: WLFrozenBranch
+      count: 3
+    - proto: WLTornCloth
+      count: 1
 
 - type: entity
   id: WLPrimitiveWorkbench

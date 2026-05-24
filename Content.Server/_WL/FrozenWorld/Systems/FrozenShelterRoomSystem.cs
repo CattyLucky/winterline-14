@@ -44,6 +44,18 @@ public sealed class FrozenShelterRoomSystem : EntitySystem
         new(0, -1),
     };
 
+    private static readonly Vector2i[] WeatherBoundaryMaskDirections =
+    {
+        new(1, 0),
+        new(-1, 0),
+        new(0, 1),
+        new(0, -1),
+        new(1, 1),
+        new(1, -1),
+        new(-1, 1),
+        new(-1, -1),
+    };
+
     [Dependency] private readonly SharedTransformSystem _xform = default!;
     [Dependency] private readonly SharedMapSystem _map = default!;
     [Dependency] private readonly ITileDefinitionManager _tileDefs = default!;
@@ -70,7 +82,24 @@ public sealed class FrozenShelterRoomSystem : EntitySystem
         SubscribeLocalEvent<AirtightChanged>(OnAirtightChanged);
 
         SubscribeLocalEvent<DoorComponent, DoorStateChangedEvent>(OnDoorStateChanged);
+        SubscribeLocalEvent<FrozenShelterForbiddenInRoomComponent, ComponentStartup>(OnRoomForbiddenChanged);
+        SubscribeLocalEvent<FrozenShelterForbiddenInRoomComponent, ComponentShutdown>(OnRoomForbiddenChanged);
+        SubscribeLocalEvent<FrozenShelterForbiddenInRoomComponent, MoveEvent>(OnRoomForbiddenMoved);
         SubscribeLocalEvent<TileChangedEvent>(OnTileChanged);
+    }
+
+    public override void Update(float frameTime)
+    {
+        base.Update(frameTime);
+
+        var query = EntityQueryEnumerator<FrozenShelterGridComponent, MapGridComponent>();
+        while (query.MoveNext(out var gridUid, out var shelterGrid, out var mapGrid))
+        {
+            if (!shelterGrid.IsDirty && shelterGrid.LastSeenTileModifiedTick == mapGrid.LastTileModifiedTick)
+                continue;
+
+            RebuildRooms(gridUid, shelterGrid);
+        }
     }
 
     public void MarkDirty(EntityUid gridUid)
@@ -179,6 +208,9 @@ public sealed class FrozenShelterRoomSystem : EntitySystem
                 continue;
             }
 
+            if (HasRoomForbiddenEntity(gridUid, mapGrid, result.Tiles))
+                continue;
+
             if (acceptedRooms >= Math.Max(1, shelterGrid.MaxRooms))
                 break;
 
@@ -190,10 +222,14 @@ public sealed class FrozenShelterRoomSystem : EntitySystem
             }
 
             var floorQuality = CalculateFloorQuality(gridUid, mapGrid, result.Tiles);
-            var leakRatio = Clamp01Finite(boundaryQuality.LeakRatio, 1f);
-            var protection = 1f - leakRatio;
-            var defaultTemperatureBonus = FiniteOrDefault(shelterGrid.ClosedRoomTemperatureBonus, 8f);
-            var defaultWeatherExposure = Clamp01Finite(shelterGrid.ClosedRoomWeatherExposureMultiplier, 0.35f);
+            var weatherLeakRatio = Clamp01Finite(boundaryQuality.WeatherLeakRatio, 1f);
+            var thermalLeakRatio = Math.Clamp(
+                MathF.Max(weatherLeakRatio, 1f - Clamp01Finite(boundaryQuality.AverageInsulation, 1f)),
+                0f,
+                1f);
+            var thermalProtection = 1f - thermalLeakRatio;
+            var defaultTemperatureBonus = FiniteOrDefault(shelterGrid.ClosedRoomTemperatureBonus, 16f);
+            var defaultWeatherExposure = Clamp01Finite(shelterGrid.ClosedRoomWeatherExposureMultiplier, 0.20f);
             var defaultRecovery = MathF.Max(0f, FiniteOrDefault(shelterGrid.ClosedRoomRecoveryMultiplier, 1.15f));
             var floorHeatMultiplier = GetFloorHeatMultiplier(floorQuality.AverageInsulation);
 
@@ -208,15 +244,15 @@ public sealed class FrozenShelterRoomSystem : EntitySystem
                 TileCount = result.Tiles.Count,
                 MinTile = result.MinTile,
                 MaxTile = result.MaxTile,
-                LeakRatio = leakRatio,
-                Tier = GetRoomTier(leakRatio, shelterGrid),
-                WeatherProtectionRatio = Clamp01Finite(boundaryQuality.WeatherProtectionRatio, protection),
+                LeakRatio = thermalLeakRatio,
+                Tier = GetRoomTier(thermalLeakRatio, shelterGrid),
+                WeatherProtectionRatio = Clamp01Finite(boundaryQuality.WeatherProtectionRatio, 1f - weatherLeakRatio),
                 AverageInsulation = Clamp01Finite(boundaryQuality.AverageInsulation, 1f),
                 FloorTier = floorQuality.Tier,
                 AverageFloorInsulation = Clamp01Finite(floorQuality.AverageInsulation, 0.5f),
-                TemperatureBonus = defaultTemperatureBonus * protection * floorHeatMultiplier,
-                WeatherExposureMultiplier = Math.Clamp(float.Lerp(defaultWeatherExposure, 1f, leakRatio), 0f, 1f),
-                RecoveryMultiplier = MathF.Max(0f, float.Lerp(1f, defaultRecovery, protection)),
+                TemperatureBonus = defaultTemperatureBonus * thermalProtection * floorHeatMultiplier,
+                WeatherExposureMultiplier = Math.Clamp(float.Lerp(defaultWeatherExposure, 1f, weatherLeakRatio), 0f, 1f),
+                RecoveryMultiplier = MathF.Max(0f, float.Lerp(1f, defaultRecovery, thermalProtection)),
             };
 
             shelterGrid.Rooms[roomId] = room;
@@ -503,7 +539,7 @@ public sealed class FrozenShelterRoomSystem : EntitySystem
     {
         foreach (var tile in roomTiles)
         {
-            foreach (var direction in CardinalDirections)
+            foreach (var direction in WeatherBoundaryMaskDirections)
             {
                 var boundaryTile = tile + direction;
                 if (boundaryTiles.TryGetValue(boundaryTile, out var boundary) && boundary.BlocksWeather)
@@ -518,7 +554,7 @@ public sealed class FrozenShelterRoomSystem : EntitySystem
     {
         var boundaryEdges = 0;
         var weatherBlockingEdges = 0;
-        var effectiveWeatherProtection = 0f;
+        var effectiveInsulation = 0f;
         var hasDoor = false;
 
         foreach (var tile in roomTiles)
@@ -534,7 +570,7 @@ public sealed class FrozenShelterRoomSystem : EntitySystem
                 if (boundary.BlocksWeather)
                 {
                     weatherBlockingEdges++;
-                    effectiveWeatherProtection += Clamp01Finite(boundary.Insulation, 1f);
+                    effectiveInsulation += Clamp01Finite(boundary.Insulation, 1f);
                 }
             }
         }
@@ -542,9 +578,9 @@ public sealed class FrozenShelterRoomSystem : EntitySystem
         if (boundaryEdges <= 0)
             return new RoomBoundaryQuality(1f, 0f, 0f, false);
 
-        var protection = Math.Clamp(effectiveWeatherProtection / boundaryEdges, 0f, 1f);
+        var protection = Math.Clamp((float) weatherBlockingEdges / boundaryEdges, 0f, 1f);
         var averageInsulation = weatherBlockingEdges > 0
-            ? Math.Clamp(effectiveWeatherProtection / weatherBlockingEdges, 0f, 1f)
+            ? Math.Clamp(effectiveInsulation / weatherBlockingEdges, 0f, 1f)
             : 0f;
 
         return new RoomBoundaryQuality(1f - protection, protection, averageInsulation, hasDoor);
@@ -576,6 +612,23 @@ public sealed class FrozenShelterRoomSystem : EntitySystem
             return new RoomFloorQuality(FrozenRoomFloorTier.None, 0.5f);
 
         return new RoomFloorQuality(weakestTier, insulation / floorTiles);
+    }
+
+    private bool HasRoomForbiddenEntity(
+        EntityUid gridUid,
+        MapGridComponent grid,
+        IReadOnlyCollection<Vector2i> roomTiles)
+    {
+        foreach (var tile in roomTiles)
+        {
+            foreach (var anchored in _map.GetAnchoredEntities((gridUid, grid), tile))
+            {
+                if (HasComp<FrozenShelterForbiddenInRoomComponent>(anchored))
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     private static float GetFloorHeatMultiplier(float averageFloorInsulation)
@@ -743,6 +796,24 @@ public sealed class FrozenShelterRoomSystem : EntitySystem
             MarkDirty(gridUid);
     }
 
+    private void OnRoomForbiddenChanged(Entity<FrozenShelterForbiddenInRoomComponent> ent, ref ComponentStartup args)
+    {
+        if (TryGetParentGrid(ent.Owner, out var gridUid))
+            MarkDirtyIfTracked(gridUid);
+    }
+
+    private void OnRoomForbiddenChanged(Entity<FrozenShelterForbiddenInRoomComponent> ent, ref ComponentShutdown args)
+    {
+        if (TryGetParentGrid(ent.Owner, out var gridUid))
+            MarkDirtyIfTracked(gridUid);
+    }
+
+    private void OnRoomForbiddenMoved(Entity<FrozenShelterForbiddenInRoomComponent> ent, ref MoveEvent args)
+    {
+        if (TryGetParentGrid(ent.Owner, out var gridUid))
+            MarkDirtyIfTracked(gridUid);
+    }
+
     private void OnBoundaryAnchorChanged(Entity<FrozenShelterBoundaryComponent> ent, ref AnchorStateChangedEvent args)
     {
         if (TryGetParentGrid(ent.Owner, out var gridUid))
@@ -819,7 +890,7 @@ public sealed class FrozenShelterRoomSystem : EntitySystem
         bool IsDoor);
 
     private readonly record struct RoomBoundaryQuality(
-        float LeakRatio,
+        float WeatherLeakRatio,
         float WeatherProtectionRatio,
         float AverageInsulation,
         bool HasDoor);

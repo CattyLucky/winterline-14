@@ -1,5 +1,6 @@
 using Content.Shared._WL.FrozenWorld.Components;
 using Content.Shared._WL.FrozenWorld.Prototypes;
+using Content.Shared.Ghost;
 using Robust.Client.Audio;
 using Robust.Client.Graphics;
 using Robust.Client.Player;
@@ -337,6 +338,9 @@ public sealed class FrozenWeatherVisualSystem : EntitySystem
     {
         if (_player.LocalEntity is not { } localUid)
             return true;
+
+        if (HasComp<GhostComponent>(localUid))
+            return false;
 
         var xform = Transform(localUid);
         var gridUid = xform.ParentUid;

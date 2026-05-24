@@ -1,10 +1,6 @@
-using Content.Client.Construction;
 using Content.Shared._WL.PersistentCrafting;
-using Content.Shared.Input;
 using Robust.Client.Placement;
 using Robust.Shared.Enums;
-using Robust.Shared.Input;
-using Robust.Shared.Input.Binding;
 using Robust.Shared.Map;
 using Robust.Shared.Prototypes;
 
@@ -31,19 +27,6 @@ public sealed class PersistentCraftingSystem : EntitySystem
         SubscribeNetworkEvent<PersistentCraftStateEvent>(OnStateEvent);
         SubscribeNetworkEvent<PersistentCraftRecipeStartedEvent>(OnRecipeStartedEvent);
         SubscribeNetworkEvent<PersistentCraftRecipeFinishedEvent>(OnRecipeFinishedEvent);
-
-        CommandBinds.Builder
-            .BindBefore(
-                ContentKeyFunctions.OpenCraftingMenu,
-                new PointerInputCmdHandler(HandleOpenPersistentCraftMenu, outsidePrediction: true),
-                typeof(ConstructionSystem))
-            .Register<PersistentCraftingSystem>();
-    }
-
-    public override void Shutdown()
-    {
-        base.Shutdown();
-        CommandBinds.Unregister<PersistentCraftingSystem>();
     }
 
     public void RequestState()
@@ -64,14 +47,6 @@ public sealed class PersistentCraftingSystem : EntitySystem
     public void RequestPlacement(string recipeId, EntityCoordinates coordinates, Angle angle)
     {
         RaiseNetworkEvent(new RequestPersistentCraftPlacementEvent(recipeId, GetNetCoordinates(coordinates), angle));
-    }
-
-    private bool HandleOpenPersistentCraftMenu(in PointerInputCmdHandler.PointerInputCmdArgs args)
-    {
-        if (args.State == BoundKeyState.Down)
-            RaiseNetworkEvent(new RequestOpenPersistentCraftMenuEvent());
-
-        return true;
     }
 
     public void OpenSkillsWindow()

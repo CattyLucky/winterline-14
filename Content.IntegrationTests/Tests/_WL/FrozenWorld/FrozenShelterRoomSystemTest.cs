@@ -123,12 +123,14 @@ public sealed class FrozenShelterRoomSystemTest : GameTest
             Assert.That(room.Tier, Is.EqualTo(FrozenShelterRoomTier.Insulated));
             Assert.That(room.WeatherProtectionRatio, Is.EqualTo(1f).Within(0.001f));
             Assert.That(room.AverageInsulation, Is.EqualTo(1f).Within(0.001f));
-            Assert.That(room.TemperatureBonus, Is.EqualTo(7.8f).Within(0.001f));
-            Assert.That(room.WeatherExposureMultiplier, Is.EqualTo(0.35f).Within(0.001f));
+            Assert.That(room.TemperatureBonus, Is.EqualTo(15.6f).Within(0.001f));
+            Assert.That(room.WeatherExposureMultiplier, Is.EqualTo(0.20f).Within(0.001f));
             Assert.That(room.RecoveryMultiplier, Is.EqualTo(1.15f).Within(0.001f));
 
             Assert.That(entManager.TryGetComponent<FrozenShelterWeatherMaskComponent>(gridUid, out var mask), Is.True);
             Assert.That(mask!.WeatherOccludedTiles, Does.Contain(new Vector2i(0, 6)));
+            Assert.That(mask.WeatherOccludedTiles, Does.Contain(new Vector2i(0, 0)));
+            Assert.That(mask.WeatherOccludedTiles, Does.Contain(new Vector2i(12, 12)));
             Assert.That(mask.WeatherOccludedTiles, Does.Contain(new Vector2i(6, 6)));
             Assert.That(mask.WeatherOccludedTiles, Does.Not.Contain(new Vector2i(30, 30)));
         });
@@ -169,7 +171,7 @@ public sealed class FrozenShelterRoomSystemTest : GameTest
             Assert.That(roomSystem.TryGetRoomAt(gridUid, new Vector2i(2, 2), out var room), Is.True);
             Assert.That(room.FloorTier, Is.EqualTo(FrozenRoomFloorTier.Wood));
             Assert.That(room.AverageFloorInsulation, Is.EqualTo(0.45f).Within(0.001f));
-            Assert.That(room.TemperatureBonus, Is.EqualTo(7.8f).Within(0.001f));
+            Assert.That(room.TemperatureBonus, Is.EqualTo(15.6f).Within(0.001f));
         });
     }
 
@@ -405,8 +407,8 @@ public sealed class FrozenShelterRoomSystemTest : GameTest
             Assert.That(room.Tier, Is.EqualTo(FrozenShelterRoomTier.Drafty));
             Assert.That(room.WeatherProtectionRatio, Is.EqualTo(0.75f).Within(0.001f));
             Assert.That(room.AverageInsulation, Is.EqualTo(1f).Within(0.001f));
-            Assert.That(room.TemperatureBonus, Is.EqualTo(5.85f).Within(0.001f));
-            Assert.That(room.WeatherExposureMultiplier, Is.EqualTo(0.5125f).Within(0.001f));
+            Assert.That(room.TemperatureBonus, Is.EqualTo(11.7f).Within(0.001f));
+            Assert.That(room.WeatherExposureMultiplier, Is.EqualTo(0.4f).Within(0.001f));
             Assert.That(room.RecoveryMultiplier, Is.EqualTo(1.1125f).Within(0.001f));
 
             Assert.That(entManager.TryGetComponent<FrozenShelterWeatherMaskComponent>(gridUid, out var mask), Is.True);
@@ -450,7 +452,7 @@ public sealed class FrozenShelterRoomSystemTest : GameTest
             Assert.That(room.LeakRatio, Is.EqualTo(1f / 12f).Within(0.001f));
             Assert.That(room.Tier, Is.EqualTo(FrozenShelterRoomTier.Basic));
             Assert.That(room.WeatherProtectionRatio, Is.EqualTo(11f / 12f).Within(0.001f));
-            Assert.That(room.TemperatureBonus, Is.EqualTo(8f * 11f / 12f * 0.975f).Within(0.001f));
+            Assert.That(room.TemperatureBonus, Is.EqualTo(16f * 11f / 12f * 0.975f).Within(0.001f));
 
             Assert.That(entManager.TryGetComponent<FrozenShelterWeatherMaskComponent>(gridUid, out var mask), Is.True);
             Assert.That(mask!.WeatherOccludedTiles, Does.Contain(new Vector2i(2, 2)));
@@ -490,10 +492,10 @@ public sealed class FrozenShelterRoomSystemTest : GameTest
             Assert.That(roomSystem.TryGetRoomAt(gridUid, new Vector2i(2, 2), out var room), Is.True);
             Assert.That(room.LeakRatio, Is.EqualTo(0.125f).Within(0.001f));
             Assert.That(room.Tier, Is.EqualTo(FrozenShelterRoomTier.Basic));
-            Assert.That(room.WeatherProtectionRatio, Is.EqualTo(0.875f).Within(0.001f));
+            Assert.That(room.WeatherProtectionRatio, Is.EqualTo(1f).Within(0.001f));
             Assert.That(room.AverageInsulation, Is.EqualTo(0.875f).Within(0.001f));
-            Assert.That(room.TemperatureBonus, Is.EqualTo(6.825f).Within(0.001f));
-            Assert.That(room.WeatherExposureMultiplier, Is.EqualTo(0.43125f).Within(0.001f));
+            Assert.That(room.TemperatureBonus, Is.EqualTo(13.65f).Within(0.001f));
+            Assert.That(room.WeatherExposureMultiplier, Is.EqualTo(0.20f).Within(0.001f));
             Assert.That(room.RecoveryMultiplier, Is.EqualTo(1.13125f).Within(0.001f));
 
             Assert.That(entManager.TryGetComponent<FrozenShelterWeatherMaskComponent>(gridUid, out var mask), Is.True);

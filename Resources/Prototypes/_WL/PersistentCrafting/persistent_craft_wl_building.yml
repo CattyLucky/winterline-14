@@ -1,6 +1,11 @@
 # /// WL Change
-# FrozenWorld building chain. Tile items are crafted here; shelter structures use
-# persistent-craft placement ghosts and never touch vanilla construction recipes.
+# FrozenWorld settlement craft.
+#
+# Tile recipes create handheld tile stacks.
+# Structure recipes create personal persistent-craft blueprints, then the player
+# builds those plans with materials. This does not touch vanilla construction.
+
+# --- Subcategories -----------------------------------------------------------
 
 - type: persistentCraftSubCategory
   id: WLCraftSubCategoryShelterFloors
@@ -20,6 +25,8 @@
   name: persistent-craft-wl-subcategory-shelter-generators
   order: 40
 
+# --- Floor And Road Tiles ----------------------------------------------------
+
 - type: persistentCraftRecipe
   id: WLCraftRecipeSnowFoundation
   name: persistent-craft-wl-recipe-snow-foundation-name
@@ -33,13 +40,13 @@
   craftTime: 1.2
   pointReward: 0
   ingredients:
-  - proto: WLFrozenBranch
+  - stackType: WLFrozenBranchStack
     amount: 2
-  - proto: WLLooseScrap
+  - stackType: WLLooseScrapStack
     amount: 1
   results:
   - proto: WLSnowFoundationTileItem
-    amount: 4
+    amount: 8
 
 - type: persistentCraftRecipe
   id: WLCraftRecipePrimitiveWoodFloor
@@ -54,11 +61,11 @@
   craftTime: 1.4
   pointReward: 1
   ingredients:
-  - proto: WLFrozenBranch
+  - stackType: WLFrozenBranchStack
     amount: 3
   results:
   - proto: WLPrimitiveWoodFloorTileItem
-    amount: 4
+    amount: 8
 
 - type: persistentCraftRecipe
   id: WLCraftRecipeWoodFloor
@@ -73,13 +80,13 @@
   craftTime: 1.8
   pointReward: 0
   ingredients:
-  - proto: WLFrozenBranch
+  - stackType: WLFrozenBranchStack
     amount: 5
-  - proto: WLTornCloth
+  - stackType: WLTornClothStack
     amount: 1
   results:
   - proto: WLWoodFloorTileItem
-    amount: 4
+    amount: 8
 
 - type: persistentCraftRecipe
   id: WLCraftRecipeStoneFloor
@@ -94,11 +101,11 @@
   craftTime: 2.0
   pointReward: 0
   ingredients:
-  - proto: WLLooseScrap
+  - stackType: WLLooseScrapStack
     amount: 4
   results:
   - proto: WLStoneFloorTileItem
-    amount: 4
+    amount: 8
 
 - type: persistentCraftRecipe
   id: WLCraftRecipeInsulatedFloor
@@ -113,13 +120,13 @@
   craftTime: 2.4
   pointReward: 0
   ingredients:
-  - proto: WLLooseScrap
+  - stackType: WLLooseScrapStack
     amount: 3
-  - proto: WLTornCloth
+  - stackType: WLTornClothStack
     amount: 3
   results:
   - proto: WLInsulatedFloorTileItem
-    amount: 2
+    amount: 4
 
 - type: persistentCraftRecipe
   id: WLCraftRecipeRoadFloor
@@ -134,11 +141,38 @@
   craftTime: 1.6
   pointReward: 0
   ingredients:
-  - proto: WLLooseScrap
+  - stackType: WLLooseScrapStack
     amount: 2
   results:
   - proto: WLRoadFloorTileItem
+    amount: 8
+
+# --- Outdoor Heat ------------------------------------------------------------
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeCampfire
+  name: persistent-craft-wl-recipe-campfire-name
+  description: persistent-craft-wl-recipe-campfire-description
+  displayProto: WLCampfireHeatSource
+  branch: WLSettlementHead
+  tier: 1
+  requiredNode: WLCraftNodeSettlementHeadStarter
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterGenerators
+  craftTime: 1.6
+  pointReward: 1
+  ingredients:
+  - stackType: WLFrozenBranchStack
     amount: 4
+  results: []
+  placement:
+    proto: WLCampfireHeatSource
+    blueprintProto: WLCampfireHeatSourceBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: OutdoorHeatSource
+    forbidRoom: true
+
+# --- Walls And Doors ---------------------------------------------------------
 
 - type: persistentCraftRecipe
   id: WLCraftRecipePrimitiveWoodWall
@@ -153,7 +187,7 @@
   craftTime: 1.8
   pointReward: 1
   ingredients:
-  - proto: WLFrozenBranch
+  - stackType: WLFrozenBranchStack
     amount: 3
   results: []
   placement:
@@ -175,9 +209,9 @@
   craftTime: 2.0
   pointReward: 1
   ingredients:
-  - proto: WLFrozenBranch
+  - stackType: WLFrozenBranchStack
     amount: 4
-  - proto: WLTornCloth
+  - stackType: WLTornClothStack
     amount: 1
   results: []
   placement:
@@ -186,6 +220,8 @@
     placementMode: SnapgridCenter
     floorRequirement: Door
     requireAdjacentBoundary: true
+
+# --- Indoor Stations And Heat ------------------------------------------------
 
 - type: persistentCraftRecipe
   id: WLCraftRecipePrimitiveWorkbench
@@ -200,9 +236,9 @@
   craftTime: 2.4
   pointReward: 1
   ingredients:
-  - proto: WLFrozenBranch
+  - stackType: WLFrozenBranchStack
     amount: 4
-  - proto: WLLooseScrap
+  - stackType: WLLooseScrapStack
     amount: 1
   results: []
   placement:
@@ -212,6 +248,34 @@
     floorRequirement: Furniture
     requireRoom: true
     minFloorTier: Wood
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeFireplace
+  name: persistent-craft-wl-recipe-fireplace-name
+  description: persistent-craft-wl-recipe-fireplace-description
+  displayProto: WLFireplaceHeatSource
+  branch: WLSettlementHead
+  tier: 2
+  requiredNode: WLCraftNodeSettlementHeadField
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterGenerators
+  craftTime: 3.2
+  pointReward: 1
+  ingredients:
+  - stackType: WLLooseScrapStack
+    amount: 4
+  - stackType: WLFrozenBranchStack
+    amount: 5
+  results: []
+  placement:
+    proto: WLFireplaceHeatSource
+    blueprintProto: WLFireplaceHeatSourceBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Furniture
+    requireRoom: true
+    minFloorTier: Wood
+
+# --- Heavy Heat Machinery ----------------------------------------------------
 
 - type: persistentCraftRecipe
   id: WLCraftRecipeFiretubeGenerator
@@ -226,11 +290,11 @@
   craftTime: 5.5
   pointReward: 2
   ingredients:
-  - proto: WLLooseScrap
+  - stackType: WLLooseScrapStack
     amount: 10
-  - proto: WLTornCloth
+  - stackType: WLTornClothStack
     amount: 3
-  - proto: WLFrozenBranch
+  - stackType: WLFrozenBranchStack
     amount: 4
   results: []
   placement:
@@ -238,5 +302,4 @@
     blueprintProto: WLFiretubeGeneratorBlueprint
     placementMode: SnapgridCenter
     floorRequirement: Furniture
-    requireRoom: true
     minFloorTier: Stone

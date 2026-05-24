@@ -28,6 +28,14 @@
     burnRateMultiplier: 1.25
 
 - type: entity
+  id: WLFrozenBranch30
+  parent: WLFrozenBranch
+  suffix: 30
+  components:
+  - type: Stack
+    count: 30
+
+- type: entity
   id: WLLooseScrap
   parent: BaseItem
   name: loose scrap
@@ -46,6 +54,14 @@
   - type: PhysicalComposition
     materialComposition:
       Steel: 100
+
+- type: entity
+  id: WLLooseScrap30
+  parent: WLLooseScrap
+  suffix: 30
+  components:
+  - type: Stack
+    count: 30
 
 - type: entity
   id: WLTornCloth
@@ -71,3 +87,11 @@
     heatBonusMultiplier: 0.7
     transferEfficiencyMultiplier: 0.8
     burnRateMultiplier: 1.5
+
+- type: entity
+  id: WLTornCloth30
+  parent: WLTornCloth
+  suffix: 30
+  components:
+  - type: Stack
+    count: 30

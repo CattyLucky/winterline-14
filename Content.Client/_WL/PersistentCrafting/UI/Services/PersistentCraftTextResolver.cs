@@ -1,5 +1,6 @@
 using Content.Client._WL.PersistentCrafting.UI.Indexes;
 using Content.Shared._WL.PersistentCrafting;
+using Content.Shared.Stacks;
 using Robust.Shared.Prototypes;
 
 namespace Content.Client._WL.PersistentCrafting.UI.Services;
@@ -26,6 +27,13 @@ public sealed class PersistentCraftTextResolver
         return _prototype.TryIndex<EntityPrototype>(prototypeId, out var prototype)
             ? prototype.Name
             : prototypeId;
+    }
+
+    public string ResolveStackName(string stackTypeId)
+    {
+        return _prototype.TryIndex<StackPrototype>(stackTypeId, out var prototype)
+            ? Loc.GetString(prototype.Name)
+            : stackTypeId;
     }
 
     public string ResolveRecipeName(PersistentCraftRecipePrototype recipe)
@@ -231,7 +239,7 @@ public sealed class PersistentCraftTextResolver
         var name = ingredient.GetSelectorKind() switch
         {
             PersistentCraftIngredientSelectorKind.Proto => ResolveEntityName(ingredient.Proto ?? string.Empty),
-            PersistentCraftIngredientSelectorKind.StackType => ingredient.StackType ?? string.Empty,
+            PersistentCraftIngredientSelectorKind.StackType => ResolveStackName(ingredient.StackType ?? string.Empty),
             PersistentCraftIngredientSelectorKind.Tag => FormatTagIngredientName(ingredient.Tag ?? string.Empty),
             _ => "?",
         };

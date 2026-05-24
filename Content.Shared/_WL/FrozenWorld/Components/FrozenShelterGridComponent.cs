@@ -67,13 +67,13 @@ public sealed partial class FrozenShelterGridComponent : Component
     /// Default temperature bonus for a closed player-built room, in Celsius/Kelvin delta.
     /// </summary>
     [DataField]
-    public float ClosedRoomTemperatureBonus = 8f;
+    public float ClosedRoomTemperatureBonus = 16f;
 
     /// <summary>
     /// Fraction of outdoor weather that penetrates a closed player-built room.
     /// </summary>
     [DataField]
-    public float ClosedRoomWeatherExposureMultiplier = 0.35f;
+    public float ClosedRoomWeatherExposureMultiplier = 0.20f;
 
     /// <summary>
     /// Recovery multiplier used inside a closed player-built room.
@@ -146,8 +146,7 @@ public sealed partial class FrozenShelterRoomData
     public Vector2i MaxTile;
 
     /// <summary>
-    /// 0 = no leak, 1 = fully exposed.
-    /// Door/window logic will write this in a later patch.
+    /// 0 = sealed and well insulated, 1 = fully exposed or useless insulation.
     /// </summary>
     [DataField]
     public float LeakRatio;
@@ -183,7 +182,7 @@ public sealed partial class FrozenShelterRoomData
     public float TemperatureBonus = 8f;
 
     [DataField]
-    public float WeatherExposureMultiplier = 0.35f;
+    public float WeatherExposureMultiplier = 0.20f;
 
     [DataField]
     public float RecoveryMultiplier = 1.15f;

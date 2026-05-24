@@ -20,7 +20,7 @@
   craftTime: 2.0
   pointReward: 1
   ingredients:
-  - proto: WLTornCloth
+  - stackType: WLTornClothStack
     amount: 4
   results:
   - proto: ClothingUniformJumpsuitWinterWL
@@ -39,9 +39,9 @@
   craftTime: 2.4
   pointReward: 1
   ingredients:
-  - proto: WLTornCloth
+  - stackType: WLTornClothStack
     amount: 5
-  - proto: WLFrozenBranch
+  - stackType: WLFrozenBranchStack
     amount: 1
   results:
   - proto: ClothingOuterWinterCoatLightWL
@@ -60,7 +60,7 @@
   craftTime: 1.6
   pointReward: 0
   ingredients:
-  - proto: WLTornCloth
+  - stackType: WLTornClothStack
     amount: 3
   results:
   - proto: ClothingHandsGlovesWinterWL
@@ -79,9 +79,9 @@
   craftTime: 1.8
   pointReward: 0
   ingredients:
-  - proto: WLTornCloth
+  - stackType: WLTornClothStack
     amount: 3
-  - proto: WLLooseScrap
+  - stackType: WLLooseScrapStack
     amount: 1
   results:
   - proto: ClothingShoesBootsWinterWL
@@ -100,9 +100,9 @@
   craftTime: 3.0
   pointReward: 1
   ingredients:
-  - proto: WLTornCloth
+  - stackType: WLTornClothStack
     amount: 7
-  - proto: WLLooseScrap
+  - stackType: WLLooseScrapStack
     amount: 1
   results:
   - proto: ClothingOuterWinterCoatWarmWL
@@ -121,9 +121,9 @@
   craftTime: 2.2
   pointReward: 0
   ingredients:
-  - proto: WLTornCloth
+  - stackType: WLTornClothStack
     amount: 3
-  - proto: WLLooseScrap
+  - stackType: WLLooseScrapStack
     amount: 2
   results:
   - proto: ClothingHeadHelmetWinterWL
@@ -142,9 +142,9 @@
   craftTime: 3.8
   pointReward: 1
   ingredients:
-  - proto: WLTornCloth
+  - stackType: WLTornClothStack
     amount: 9
-  - proto: WLLooseScrap
+  - stackType: WLLooseScrapStack
     amount: 3
   results:
   - proto: ClothingOuterWinterCoatWL
@@ -163,9 +163,9 @@
   craftTime: 4.6
   pointReward: 1
   ingredients:
-  - proto: WLTornCloth
+  - stackType: WLTornClothStack
     amount: 12
-  - proto: WLLooseScrap
+  - stackType: WLLooseScrapStack
     amount: 4
   results:
   - proto: ClothingOuterWinterCoatArcticWL
@@ -184,9 +184,9 @@
   craftTime: 5.5
   pointReward: 2
   ingredients:
-  - proto: WLTornCloth
+  - stackType: WLTornClothStack
     amount: 16
-  - proto: WLLooseScrap
+  - stackType: WLLooseScrapStack
     amount: 6
   results:
   - proto: ClothingOuterWinterCoatExtremeWL

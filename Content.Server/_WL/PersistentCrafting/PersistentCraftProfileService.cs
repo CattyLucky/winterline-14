@@ -179,6 +179,14 @@ public sealed class PersistentCraftProfileService
         }
     }
 
+    public void UnlockAllNodes(PersistentCraftProfileComponent profile)
+    {
+        for (var i = 0; i < _nodeCache.Count; i++)
+        {
+            profile.UnlockedNodes.Add(_nodeCache[i].ID);
+        }
+    }
+
     public bool HasNodeUnlockedOrAutoAvailable(PersistentCraftProfileComponent profile, string nodeId)
     {
         return PersistentCraftNodeRules.HasNodeUnlockedOrAutoAvailable(
