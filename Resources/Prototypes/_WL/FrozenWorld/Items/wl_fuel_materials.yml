@@ -16,8 +16,16 @@
   - type: Sprite
     sprite: _WL/Objects/Misc/materials.rsi
     state: firewood_3
+    layers:
+    - state: firewood_3
+      map: ["base"]
   - type: Stack
     stackType: WLWoodFuelStack
+    baseLayer: base
+    layerStates:
+    - firewood
+    - firewood_2
+    - firewood_3
   - type: FrozenFuel
     fuelSeconds: 70
     priority: 20
