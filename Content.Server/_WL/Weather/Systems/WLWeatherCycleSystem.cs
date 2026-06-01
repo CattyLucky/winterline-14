@@ -20,7 +20,7 @@ namespace Content.Server._WL.Weather.Systems;
 /// This system no longer talks to vanilla WeatherSystem. FrozenWorld weather visual quality is controlled by
 /// FrozenWeatherVisualPrototype profile + RSI state on the client.
 /// </summary>
-public sealed class WLWeatherCycleSystem : EntitySystem
+public sealed partial class WLWeatherCycleSystem : EntitySystem
 {
     [Dependency] private IGameTiming _timing = default!;
     [Dependency] private IPrototypeManager _proto = default!;

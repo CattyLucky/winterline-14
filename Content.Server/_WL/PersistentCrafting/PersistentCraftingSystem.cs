@@ -28,7 +28,7 @@ using Robust.Shared.Timing;
 
 namespace Content.Server._WL.PersistentCrafting;
 
-public sealed class PersistentCraftingSystem : EntitySystem
+public sealed partial class PersistentCraftingSystem : EntitySystem
 {
     private static readonly Vector2i[] CardinalDirections =
     {

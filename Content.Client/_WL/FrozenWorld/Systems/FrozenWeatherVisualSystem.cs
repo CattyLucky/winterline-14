@@ -21,7 +21,7 @@ namespace Content.Client._WL.FrozenWorld.Systems;
 /// applies a high-level visual profile, then feeds resolved renderer constants into FrozenWeatherOverlay.
 /// YAML stays small: profile + RSI state + sound/fade.
 /// </summary>
-public sealed class FrozenWeatherVisualSystem : EntitySystem
+public sealed partial class FrozenWeatherVisualSystem : EntitySystem
 {
     [Dependency] private IPlayerManager _player = default!;
     [Dependency] private IOverlayManager _overlayManager = default!;

@@ -6,7 +6,7 @@ using Robust.Shared.Prototypes;
 
 namespace Content.Client._WL.PersistentCrafting;
 
-public sealed class PersistentCraftingSystem : EntitySystem
+public sealed partial class PersistentCraftingSystem : EntitySystem
 {
     [Dependency] private IPlacementManager _placement = default!;
     [Dependency] private IPrototypeManager _prototype = default!;

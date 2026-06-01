@@ -10,7 +10,7 @@ using Robust.Shared.Prototypes;
 
 namespace Content.Server._WL.Roles;
 
-public sealed class WLRoleSkillSystem : EntitySystem
+public sealed partial class WLRoleSkillSystem : EntitySystem
 {
     [Dependency] private IPrototypeManager _prototype = default!;
     [Dependency] private MobThresholdSystem _thresholds = default!;

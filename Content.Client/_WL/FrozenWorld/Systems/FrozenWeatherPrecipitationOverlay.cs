@@ -25,7 +25,7 @@ namespace Content.Client._WL.FrozenWorld.Systems;
 /// 1) write occluded tiles into stencil mask,
 /// 2) draw precipitation parallax through stencil.
 /// </summary>
-public sealed class FrozenWeatherPrecipitationOverlay : Overlay
+public sealed partial class FrozenWeatherPrecipitationOverlay : Overlay
 {
     private static readonly ProtoId<ShaderPrototype> StencilMask = "StencilMask";
     private static readonly ProtoId<ShaderPrototype> StencilDraw = "StencilDraw";

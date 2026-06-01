@@ -58,9 +58,11 @@
   - type: Sprite
     sprite: _WL/Objects/Misc/materials.rsi
     state: log
-  - type: Log
-    spawnedPrototype: WLWoodPlank1
-    spawnCount: 4
+  - type: ToolRefinable
+    qualityNeeded: Sawing
+    refineResult:
+    - id: WLWoodPlank1
+      amount: 4
 
 # --- Tier 3: Charcoal --------------------------------------------------------
 

@@ -6,7 +6,7 @@ using Robust.Shared.Console;
 namespace Content.Server._WL.PersistentCrafting;
 
 [AdminCommand(AdminFlags.Host)]
-public sealed class PersistentCraftResetCommand : IConsoleCommand
+public sealed partial class PersistentCraftResetCommand : IConsoleCommand
 {
     [Dependency] private IEntityManager _entityManager = default!;
     [Dependency] private IPlayerManager _playerManager = default!;

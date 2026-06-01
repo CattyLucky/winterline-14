@@ -20,7 +20,6 @@
   weight: 20
   icon: JobIconHeadOfPersonnel
   startingGear: null # /// WL Change
-  canBeAntag: false # /// WL Change
   supervisors: job-supervisors-nobody
   access:
   - Maintenance
@@ -47,7 +46,6 @@
   weight: 10
   icon: JobIconStationEngineer
   startingGear: null # /// WL Change
-  canBeAntag: false # /// WL Change
   supervisors: job-supervisors-wl-settlement-head
   access:
   - Maintenance
@@ -71,7 +69,6 @@
   weight: 10
   icon: JobIconShaftMiner
   startingGear: null # /// WL Change
-  canBeAntag: false # /// WL Change
   supervisors: job-supervisors-wl-settlement-head
   access:
   - Maintenance
@@ -96,7 +93,6 @@
   weight: 10
   icon: JobIconMedicalDoctor
   startingGear: null # /// WL Change
-  canBeAntag: false # /// WL Change
   supervisors: job-supervisors-wl-settlement-head
   access:
   - Maintenance

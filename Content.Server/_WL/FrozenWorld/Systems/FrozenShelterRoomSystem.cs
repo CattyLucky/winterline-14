@@ -34,7 +34,7 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 ///
 /// This intentionally does not simulate pressure, oxygen, roof layers or material heat conductivity yet.
 /// </summary>
-public sealed class FrozenShelterRoomSystem : EntitySystem
+public sealed partial class FrozenShelterRoomSystem : EntitySystem
 {
     private static readonly Vector2i[] CardinalDirections =
     {

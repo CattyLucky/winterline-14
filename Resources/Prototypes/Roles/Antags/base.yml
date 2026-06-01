@@ -11,6 +11,10 @@
   - ERTMedical
   - ERTJanitor
   - CBURN
+  - WLSettlementHead # /// WL Change
+  - WLMechanic # /// WL Change
+  - WLHunter # /// WL Change
+  - WLGathererProcessor # /// WL Change
   blacklist:
     components:
     - AntagImmune

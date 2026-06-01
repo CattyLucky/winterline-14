@@ -78,7 +78,7 @@ public readonly record struct CachedShelterArea(
 /// - point queries use a map-keyed shelter cache instead of scanning every FrozenShelterComponent
 ///   every time FrozenThermalQuerySystem asks for local temperature.
 /// </summary>
-public sealed class FrozenShelterSystem : EntitySystem
+public sealed partial class FrozenShelterSystem : EntitySystem
 {
     private const int PlayerBuiltRoomPriority = 1000;
 

@@ -16,7 +16,7 @@ namespace Content.Client._WL.FrozenWorld.Systems;
 /// Actual snow precipitation is rendered in world space by FrozenWeatherPrecipitationOverlay.
 /// This overlay only owns the storm-pressure UI effect.
 /// </summary>
-public sealed class FrozenWeatherOverlay : Overlay
+public sealed partial class FrozenWeatherOverlay : Overlay
 {
     [Dependency] private IPrototypeManager _proto = default!;
 
