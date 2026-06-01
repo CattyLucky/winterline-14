@@ -559,7 +559,7 @@ public sealed class FrozenShelterRoomSystemTest : GameTest
         int max,
         Func<Vector2i, string> boundaryPrototype,
         Tile? floorTile = null,
-        string? defaultDoorPrototype = TestClosedDoorProto)
+        string defaultDoorPrototype = TestClosedDoorProto)
     {
         var gridUid = grid.Owner;
         var boundaries = new Dictionary<Vector2i, EntityUid>();

@@ -23,7 +23,11 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
     {
         ["WLFrozenBranch"] = "WLFrozenBranchStack",
         ["WLLooseScrap"] = "WLLooseScrapStack",
+        ["WLRoughStone"] = "WLRoughStoneStack",
         ["WLTornCloth"] = "WLTornClothStack",
+        ["WLWoodPlank"] = "WLWoodPlankStack",
+        ["WLMetalParts"] = "WLMetalPartsStack",
+        ["WLPreparedCloth"] = "WLPreparedClothStack",
     };
 
     [Test]
@@ -150,11 +154,15 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
         {
             Assert.Multiple(() =>
             {
-                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeSnowFoundation", "WLFrozenBranchStack", 2);
-                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeSnowFoundation", "WLLooseScrapStack", 1);
-                AssertRecipeHasStackIngredient(proto, "WLCraftRecipePrimitiveWoodFloor", "WLFrozenBranchStack", 3);
-                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeWoodFloor", "WLFrozenBranchStack", 5);
-                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeWoodFloor", "WLTornClothStack", 1);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeSnowFoundation", "WLWoodPlankStack", 2);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeSnowFoundation", "WLMetalPartsStack", 1);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipePrimitiveWoodFloor", "WLWoodPlankStack", 3);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeWoodFloor", "WLWoodPlankStack", 5);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeWoodFloor", "WLPreparedClothStack", 1);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeStoneFloor", "WLRoughStoneStack", 4);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeRoadFloor", "WLRoughStoneStack", 3);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeFireplace", "WLRoughStoneStack", 4);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeFiretubeGenerator", "WLRoughStoneStack", 4);
             });
         });
     }
@@ -200,6 +208,7 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
             {
                 AssertStackEntity(proto, componentFactory, "WLFrozenBranch30", "WLFrozenBranchStack", 30);
                 AssertStackEntity(proto, componentFactory, "WLLooseScrap30", "WLLooseScrapStack", 30);
+                AssertStackEntity(proto, componentFactory, "WLRoughStone30", "WLRoughStoneStack", 30);
                 AssertStackEntity(proto, componentFactory, "WLTornCloth30", "WLTornClothStack", 30);
                 AssertStackEntity(proto, componentFactory, "WLSnowFoundationTileItem30", "WLSnowFoundationTile", 30);
                 AssertStackEntity(proto, componentFactory, "WLPrimitiveWoodFloorTileItem30", "WLPrimitiveWoodFloorTile", 30);
@@ -225,8 +234,8 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
                 AssertDeconstructible(proto, componentFactory, "WLPrimitiveWoodWall", ("WLFrozenBranch", 2));
                 AssertDeconstructible(proto, componentFactory, "WLPrimitiveWoodDoor", ("WLFrozenBranch", 3), ("WLTornCloth", 1));
                 AssertDeconstructible(proto, componentFactory, "WLCampfireHeatSource", ("WLFrozenBranch", 3));
-                AssertDeconstructible(proto, componentFactory, "WLFireplaceHeatSource", ("WLLooseScrap", 3), ("WLFrozenBranch", 3));
-                AssertDeconstructible(proto, componentFactory, "WLFiretubeGenerator", ("WLLooseScrap", 7), ("WLTornCloth", 2), ("WLFrozenBranch", 2));
+                AssertDeconstructible(proto, componentFactory, "WLFireplaceHeatSource", ("WLRoughStone", 3), ("WLLooseScrap", 1));
+                AssertDeconstructible(proto, componentFactory, "WLFiretubeGenerator", ("WLLooseScrap", 7), ("WLRoughStone", 3), ("WLTornCloth", 2));
             });
         });
     }

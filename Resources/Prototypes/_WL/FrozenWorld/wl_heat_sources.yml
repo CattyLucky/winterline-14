@@ -209,10 +209,10 @@
   - type: FrozenShelterDeconstructible
     doAfter: 3
     refunds:
+    - proto: WLRoughStone
+      count: 3
     - proto: WLLooseScrap
-      count: 3
-    - proto: WLFrozenBranch
-      count: 3
+      count: 1
 
 # --- Heavy Heat Machinery ----------------------------------------------------
 
@@ -298,7 +298,7 @@
     refunds:
     - proto: WLLooseScrap
       count: 7
+    - proto: WLRoughStone
+      count: 3
     - proto: WLTornCloth
-      count: 2
-    - proto: WLFrozenBranch
       count: 2

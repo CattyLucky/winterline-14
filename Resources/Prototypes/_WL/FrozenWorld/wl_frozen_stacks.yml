@@ -19,6 +19,13 @@
 
 - type: stack
   parent: BaseMediumStack
+  id: WLRoughStoneStack
+  name: stack-wl-rough-stone
+  icon: { sprite: /Textures/Objects/Materials/ore.rsi, state: iron }
+  spawn: WLRoughStone
+
+- type: stack
+  parent: BaseMediumStack
   id: WLTornClothStack
   name: stack-wl-torn-cloth
   icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: cloth }

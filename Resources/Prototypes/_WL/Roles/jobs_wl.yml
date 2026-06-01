@@ -61,7 +61,7 @@
   description: job-description-wl-hunter
   setPreference: true
   wlVisibleInLobby: true
-  grantPersistentCraftAccess: false
+  grantPersistentCraftAccess: true
   wlSkillColdExposureGainMultiplier: 0.8
   wlSkillColdRecoveryMultiplier: 1.15
   wlSkillColdDamageMultiplier: 0.75

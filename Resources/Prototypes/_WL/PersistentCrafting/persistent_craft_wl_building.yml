@@ -4,6 +4,12 @@
 # Tile recipes create handheld tile stacks.
 # Structure recipes create personal persistent-craft blueprints, then the player
 # builds those plans with materials. This does not touch vanilla construction.
+#
+# Material roles:
+# - WLFrozenBranchStack: crude wood for first shelter construction.
+# - WLLooseScrapStack: metal fittings, frames, and machinery.
+# - WLRoughStoneStack: masonry, heavy floors, and outdoor paving.
+# - WLTornClothStack: clothing, seals, and insulation.
 
 # --- Subcategories -----------------------------------------------------------
 
@@ -97,7 +103,7 @@
   subCategory: WLCraftSubCategoryShelterFloors
   craftTime: 2.0
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLRoughStoneStack
     amount: 4
   results:
   - proto: WLStoneFloorTileItem
@@ -135,8 +141,8 @@
   subCategory: WLCraftSubCategoryShelterFloors
   craftTime: 1.6
   ingredients:
-  - stackType: WLMetalPartsStack
-    amount: 2
+  - stackType: WLRoughStoneStack
+    amount: 3
   results:
   - proto: WLRoadFloorTileItem
     amount: 8
@@ -276,10 +282,10 @@
   subCategory: WLCraftSubCategoryShelterGenerators
   craftTime: 3.2
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLRoughStoneStack
     amount: 4
-  - stackType: WLWoodPlankStack
-    amount: 5
+  - stackType: WLLooseScrapStack
+    amount: 2
   results: []
   placement:
     proto: WLFireplaceHeatSource
@@ -307,8 +313,10 @@
     amount: 10
   - stackType: WLPreparedClothStack
     amount: 3
-  - stackType: WLWoodPlankStack
+  - stackType: WLRoughStoneStack
     amount: 4
+  - stackType: WLTornClothStack
+    amount: 2
   results: []
   placement:
     proto: WLFiretubeGenerator

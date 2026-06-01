@@ -67,6 +67,30 @@
     count: 30
 
 - type: entity
+  id: WLRoughStone
+  parent: BaseItem
+  name: rough stone
+  description: Broken stone from frozen ground and old masonry. Useful for heavy floors, fireplaces, and rugged outdoor paving.
+  components:
+  - type: Sprite
+    sprite: Objects/Materials/ore.rsi
+    state: iron
+    color: "#77716a"
+  - type: Item
+    size: Small
+  - type: Stack
+    stackType: WLRoughStoneStack
+    count: 1
+
+- type: entity
+  id: WLRoughStone30
+  parent: WLRoughStone
+  suffix: 30
+  components:
+  - type: Stack
+    count: 30
+
+- type: entity
   id: WLTornCloth
   parent: BaseItem
   name: torn cloth

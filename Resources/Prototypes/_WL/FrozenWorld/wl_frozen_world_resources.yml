@@ -352,3 +352,68 @@
     - prototype: WLDenseCoalFuel1
       minCount: 1
       maxCount: 1
+
+# --- Rough Stone Resource Points ---------------------------------------------
+
+- type: entity
+  id: WLRoughStonePileDebug
+  parent: WLBaseResourcePoint
+  name: rough stone pile
+  suffix: WL, Debug
+  description: Broken frozen masonry and loose stone. Heavy, but useful for proper floors.
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/orebox.rsi
+    state: orebox
+    color: "#77716a"
+  - type: WLResourcePoint
+    charges: 2
+    maxCharges: 2
+    gatherTime: 3.5
+    loot:
+    - prototype: WLRoughStone
+      minCount: 2
+      maxCount: 4
+
+- type: entity
+  id: WLFrozenRubbleOutcropDebug
+  parent: WLBaseResourcePoint
+  name: frozen rubble outcrop
+  suffix: WL, Debug
+  description: A compact pile of cracked stone locked into the ice. Good material for floors and heat-safe masonry.
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/orebox.rsi
+    state: orebox
+    color: "#6f6962"
+  - type: WLResourcePoint
+    charges: 4
+    maxCharges: 4
+    gatherTime: 5.0
+    loot:
+    - prototype: WLRoughStone
+      minCount: 3
+      maxCount: 5
+
+- type: entity
+  id: WLOldMasonryRuinDebug
+  parent: WLBaseResourcePoint
+  name: old masonry ruin
+  suffix: WL, Debug
+  description: A collapsed stone ruin buried under frost. Slow to break apart, but rich in heavy building material.
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/orebox.rsi
+    state: orebox
+    color: "#5f5b55"
+  - type: WLResourcePoint
+    charges: 5
+    maxCharges: 5
+    gatherTime: 6.0
+    loot:
+    - prototype: WLRoughStone
+      minCount: 4
+      maxCount: 7
+    - prototype: WLLooseScrap
+      minCount: 1
+      maxCount: 2
