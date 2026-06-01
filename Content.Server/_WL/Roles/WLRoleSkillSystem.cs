@@ -46,7 +46,6 @@ public sealed class WLRoleSkillSystem : EntitySystem
         skills.MobThresholdBonus = MathF.Max(0f, job.WlSkillMobThresholdBonus);
 
         ApplyMobThresholdBonus(args.Mob, skills, previousThresholdBonus);
-        Dirty(args.Mob, skills);
     }
 
     private void OnMeleeHit(MeleeHitEvent args)
