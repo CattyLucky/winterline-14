@@ -15,8 +15,8 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 /// </summary>
 public sealed partial class FrozenHeatSourceFuelUiSystem : EntitySystem
 {
-    [Dependency] private readonly UserInterfaceSystem _ui = default!;
-    [Dependency] private readonly StorageSystem _storage = default!;
+    [Dependency] private UserInterfaceSystem _ui = default!;
+    [Dependency] private StorageSystem _storage = default!;
 
     private const float LiveUpdateInterval = 0.5f;
     private float _liveUpdateAccumulator;

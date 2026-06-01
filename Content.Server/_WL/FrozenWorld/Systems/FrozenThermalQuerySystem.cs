@@ -34,14 +34,14 @@ public readonly record struct FrozenEnvironmentalTemperatureResult(
 /// </summary>
 public sealed partial class FrozenThermalQuerySystem : EntitySystem
 {
-    [Dependency] private readonly FrozenHeatFieldSystem _heatField = default!;
-    [Dependency] private readonly FrozenDynamicHeatSourceSystem _dynamicHeat = default!;
-    [Dependency] private readonly FrozenRoomHeatSystem _roomHeat = default!;
-    [Dependency] private readonly FrozenSurfaceProtectionSystem _protection = default!;
-    [Dependency] private readonly FrozenShelterSystem _shelter = default!;
-    [Dependency] private readonly FrozenShelterRoomSystem _rooms = default!;
-    [Dependency] private readonly InventorySystem _inventory = default!;
-    [Dependency] private readonly SharedTransformSystem _xform = default!;
+    [Dependency] private FrozenHeatFieldSystem _heatField = default!;
+    [Dependency] private FrozenDynamicHeatSourceSystem _dynamicHeat = default!;
+    [Dependency] private FrozenRoomHeatSystem _roomHeat = default!;
+    [Dependency] private FrozenSurfaceProtectionSystem _protection = default!;
+    [Dependency] private FrozenShelterSystem _shelter = default!;
+    [Dependency] private FrozenShelterRoomSystem _rooms = default!;
+    [Dependency] private InventorySystem _inventory = default!;
+    [Dependency] private SharedTransformSystem _xform = default!;
 
     /// <summary>
     /// Required 0..1 severity gap between the coldest body part and the second-coldest body part

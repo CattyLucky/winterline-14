@@ -20,10 +20,10 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 /// </summary>
 public sealed partial class FrozenColdExposureSystem : EntitySystem
 {
-    [Dependency] private readonly AlertsSystem _alerts = default!;
-    [Dependency] private readonly DamageableSystem _damage = default!;
-    [Dependency] private readonly IPrototypeManager _proto = default!;
-    [Dependency] private readonly FrozenThermalQuerySystem _thermal = default!;
+    [Dependency] private AlertsSystem _alerts = default!;
+    [Dependency] private DamageableSystem _damage = default!;
+    [Dependency] private IPrototypeManager _proto = default!;
+    [Dependency] private FrozenThermalQuerySystem _thermal = default!;
 
     private const float UpdateInterval = 1f;
 

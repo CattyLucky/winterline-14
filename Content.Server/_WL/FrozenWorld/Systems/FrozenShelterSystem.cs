@@ -82,8 +82,8 @@ public sealed class FrozenShelterSystem : EntitySystem
 {
     private const int PlayerBuiltRoomPriority = 1000;
 
-    [Dependency] private readonly SharedTransformSystem _xform = default!;
-    [Dependency] private readonly FrozenShelterRoomSystem _rooms = default!;
+    [Dependency] private SharedTransformSystem _xform = default!;
+    [Dependency] private FrozenShelterRoomSystem _rooms = default!;
 
     private readonly Dictionary<EntityUid, List<CachedShelterArea>> _sheltersByMap = new();
     private bool _shelterCacheDirty = true;

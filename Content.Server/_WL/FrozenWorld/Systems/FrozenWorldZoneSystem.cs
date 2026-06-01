@@ -21,9 +21,9 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 /// </summary>
 public sealed partial class FrozenWorldZoneSystem : EntitySystem
 {
-    [Dependency] private readonly EntityLookupSystem _lookup = default!;
-    [Dependency] private readonly IPrototypeManager _proto = default!;
-    [Dependency] private readonly BiomeSystem _biome = default!;
+    [Dependency] private EntityLookupSystem _lookup = default!;
+    [Dependency] private IPrototypeManager _proto = default!;
+    [Dependency] private BiomeSystem _biome = default!;
 
     public void GenerateZones(EntityUid worldGridUid, Entity<FrozenWorldComponent> world, FrozenWorldProfilePrototype profile)
     {

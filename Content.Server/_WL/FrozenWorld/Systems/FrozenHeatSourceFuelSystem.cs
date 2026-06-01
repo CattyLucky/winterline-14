@@ -29,18 +29,18 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 /// </summary>
 public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
 {
-    [Dependency] private readonly FrozenDynamicHeatSourceSystem _dynamicHeat = default!;
-    [Dependency] private readonly FrozenHeatFieldSystem _heatField = default!;
-    [Dependency] private readonly FrozenRoomHeatSystem _roomHeat = default!;
-    [Dependency] private readonly FrozenHeatSourceFuelUiSystem _fuelUi = default!;
-    [Dependency] private readonly AppearanceSystem _appearance = default!;
-    [Dependency] private readonly SharedContainerSystem _container = default!;
-    [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
-    [Dependency] private readonly SharedAmbientSoundSystem _ambientSound = default!;
-    [Dependency] private readonly SharedPointLightSystem _pointLight = default!;
-    [Dependency] private readonly SharedPopupSystem _popup = default!;
-    [Dependency] private readonly StackSystem _stack = default!;
-    [Dependency] private readonly UserInterfaceSystem _ui = default!;
+    [Dependency] private FrozenDynamicHeatSourceSystem _dynamicHeat = default!;
+    [Dependency] private FrozenHeatFieldSystem _heatField = default!;
+    [Dependency] private FrozenRoomHeatSystem _roomHeat = default!;
+    [Dependency] private FrozenHeatSourceFuelUiSystem _fuelUi = default!;
+    [Dependency] private AppearanceSystem _appearance = default!;
+    [Dependency] private SharedContainerSystem _container = default!;
+    [Dependency] private SharedDoAfterSystem _doAfter = default!;
+    [Dependency] private SharedAmbientSoundSystem _ambientSound = default!;
+    [Dependency] private SharedPointLightSystem _pointLight = default!;
+    [Dependency] private SharedPopupSystem _popup = default!;
+    [Dependency] private StackSystem _stack = default!;
+    [Dependency] private UserInterfaceSystem _ui = default!;
 
     private const float UpdateInterval = 1f;
     private const float MinBurnRate = 0.001f;

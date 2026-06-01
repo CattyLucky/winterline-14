@@ -12,8 +12,8 @@ namespace Content.Server._WL.Roles;
 
 public sealed class WLRoleSkillSystem : EntitySystem
 {
-    [Dependency] private readonly IPrototypeManager _prototype = default!;
-    [Dependency] private readonly MobThresholdSystem _thresholds = default!;
+    [Dependency] private IPrototypeManager _prototype = default!;
+    [Dependency] private MobThresholdSystem _thresholds = default!;
 
     public override void Initialize()
     {

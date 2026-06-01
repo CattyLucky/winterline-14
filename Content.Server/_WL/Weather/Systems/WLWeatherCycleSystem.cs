@@ -22,8 +22,8 @@ namespace Content.Server._WL.Weather.Systems;
 /// </summary>
 public sealed class WLWeatherCycleSystem : EntitySystem
 {
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly IPrototypeManager _proto = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private IPrototypeManager _proto = default!;
 
     private const float DefaultGameplayFadeSeconds = 8f;
 

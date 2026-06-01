@@ -27,11 +27,11 @@ public sealed partial class PersistentCraftStationWindow : DefaultWindow
 {
     private sealed record RecipeEntryControls(ContainerButton Button, PanelContainer IconPanel);
 
-    [Dependency] private readonly IEntityManager _entityManager = default!;
-    [Dependency] private readonly ISharedPlayerManager _player = default!;
-    [Dependency] private readonly IPrototypeManager _prototype = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly IUserInterfaceManager _uiManager = default!;
+    [Dependency] private IEntityManager _entityManager = default!;
+    [Dependency] private ISharedPlayerManager _player = default!;
+    [Dependency] private IPrototypeManager _prototype = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private IUserInterfaceManager _uiManager = default!;
     private readonly TagSystem _tag;
 
     private static readonly Color WindowBackground = PersistentCraftUiTheme.SurfaceWindow;

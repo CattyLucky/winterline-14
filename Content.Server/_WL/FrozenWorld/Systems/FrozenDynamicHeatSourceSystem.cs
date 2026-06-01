@@ -16,9 +16,9 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 /// </summary>
 public sealed partial class FrozenDynamicHeatSourceSystem : EntitySystem
 {
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly SharedMapSystem _map = default!;
-    [Dependency] private readonly FrozenShelterRoomSystem _rooms = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private SharedMapSystem _map = default!;
+    [Dependency] private FrozenShelterRoomSystem _rooms = default!;
 
     private const float ChunkSize = 8f;
     private static readonly TimeSpan DynamicIndexRebuildInterval = TimeSpan.FromSeconds(0.25);

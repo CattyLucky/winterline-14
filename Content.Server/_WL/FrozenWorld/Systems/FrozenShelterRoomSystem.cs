@@ -56,9 +56,9 @@ public sealed class FrozenShelterRoomSystem : EntitySystem
         new(-1, -1),
     };
 
-    [Dependency] private readonly SharedTransformSystem _xform = default!;
-    [Dependency] private readonly SharedMapSystem _map = default!;
-    [Dependency] private readonly ITileDefinitionManager _tileDefs = default!;
+    [Dependency] private SharedTransformSystem _xform = default!;
+    [Dependency] private SharedMapSystem _map = default!;
+    [Dependency] private ITileDefinitionManager _tileDefs = default!;
 
     private EntityQuery<FrozenShelterBoundaryComponent> _explicitBoundaryQuery;
 

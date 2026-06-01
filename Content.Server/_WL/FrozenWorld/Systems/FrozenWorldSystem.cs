@@ -45,17 +45,17 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 /// </summary>
 public sealed partial class FrozenWorldSystem : EntitySystem
 {
-    [Dependency] private readonly AtmosphereSystem _atmos = default!;
-    [Dependency] private readonly BiomeSystem _biome = default!;
-    [Dependency] private readonly MetaDataSystem _meta = default!;
-    [Dependency] private readonly IPrototypeManager _proto = default!;
-    [Dependency] private readonly IRobustRandom _random = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly ShuttleSystem _shuttles = default!;
-    [Dependency] private readonly FrozenWorldZoneSystem _zones = default!;
-    [Dependency] private readonly FrozenWorldClimateSystem _climate = default!;
-    [Dependency] private readonly FrozenWorldPoiStampSystem _poiStamps = default!;
-    [Dependency] private readonly WLWeatherCycleSystem _weatherCycle = default!;
+    [Dependency] private AtmosphereSystem _atmos = default!;
+    [Dependency] private BiomeSystem _biome = default!;
+    [Dependency] private MetaDataSystem _meta = default!;
+    [Dependency] private IPrototypeManager _proto = default!;
+    [Dependency] private IRobustRandom _random = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private ShuttleSystem _shuttles = default!;
+    [Dependency] private FrozenWorldZoneSystem _zones = default!;
+    [Dependency] private FrozenWorldClimateSystem _climate = default!;
+    [Dependency] private FrozenWorldPoiStampSystem _poiStamps = default!;
+    [Dependency] private WLWeatherCycleSystem _weatherCycle = default!;
 
     private readonly HashSet<EntityUid> _configuredStations = new();
     private readonly Dictionary<EntityUid, FrozenWorldPendingSetup> _pendingSetups = new();

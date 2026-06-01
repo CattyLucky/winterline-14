@@ -18,7 +18,7 @@ public sealed partial class PersistentCraftPlacementWindow : DefaultWindow
 {
     private static readonly IReadOnlyList<PersistentCraftRecipePrototype> EmptyRecipes = Array.Empty<PersistentCraftRecipePrototype>();
 
-    [Dependency] private readonly IPrototypeManager _prototype = default!;
+    [Dependency] private IPrototypeManager _prototype = default!;
 
     private PersistentCraftClientPrototypeCache? _prototypeCache;
     private PersistentCraftState? _state;

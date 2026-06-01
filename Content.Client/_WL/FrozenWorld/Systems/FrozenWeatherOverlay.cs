@@ -18,7 +18,7 @@ namespace Content.Client._WL.FrozenWorld.Systems;
 /// </summary>
 public sealed class FrozenWeatherOverlay : Overlay
 {
-    [Dependency] private readonly IPrototypeManager _proto = default!;
+    [Dependency] private IPrototypeManager _proto = default!;
 
     private static readonly ProtoId<ShaderPrototype> VignetteShader = "FrozenWeatherVignette";
 

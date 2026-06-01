@@ -8,8 +8,8 @@ namespace Content.Client._WL.PersistentCrafting;
 
 public sealed class PersistentCraftingSystem : EntitySystem
 {
-    [Dependency] private readonly IPlacementManager _placement = default!;
-    [Dependency] private readonly IPrototypeManager _prototype = default!;
+    [Dependency] private IPlacementManager _placement = default!;
+    [Dependency] private IPrototypeManager _prototype = default!;
     private const float InventoryRefreshInterval = 0.5f;
 
     private PersistentCraftClientPrototypeCache _prototypeCache = default!;

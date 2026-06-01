@@ -13,10 +13,10 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 /// </summary>
 public sealed class FrozenWorldClimateSystem : EntitySystem
 {
-    [Dependency] private readonly FrozenWorldAtmosphereTemperatureSystem _temperature = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly IPrototypeManager _proto = default!;
-    [Dependency] private readonly MetaDataSystem _meta = default!;
+    [Dependency] private FrozenWorldAtmosphereTemperatureSystem _temperature = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private IPrototypeManager _proto = default!;
+    [Dependency] private MetaDataSystem _meta = default!;
 
     private float _accumulator;
     private const float RecalculateInterval = 0.5f;
