@@ -1,0 +1,23 @@
+<ui:PersistentCraftPlacementWindow
+    xmlns="https://spacestation14.io"
+    xmlns:ui="clr-namespace:Content.Client._WL.PersistentCrafting.UI"
+    Title="{Loc 'persistent-craft-placement-window-title'}"
+    SetSize="820 720"
+    Resizable="True"
+    MinWidth="640"
+    MinHeight="520">
+    <BoxContainer Orientation="Vertical" Margin="12 12 12 12">
+        <Label
+            Name="HintLabel"
+            Access="Public"
+            Text="{Loc 'persistent-craft-placement-window-hint'}"
+            Margin="0 0 0 8" />
+        <ScrollContainer VerticalExpand="True">
+            <BoxContainer
+                Name="RecipeList"
+                Access="Public"
+                Orientation="Vertical"
+                HorizontalExpand="True" />
+        </ScrollContainer>
+    </BoxContainer>
+</ui:PersistentCraftPlacementWindow>

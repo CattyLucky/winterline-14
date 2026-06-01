@@ -1,5 +1,10 @@
 stack-wl-frozen-firewood = промёрзшие дрова
+stack-wl-charcoal = сухой древесный уголь
 stack-wl-frozen-coal = промёрзший уголь
+stack-wl-dense-coal = плотный промёрзший уголь
 stack-wl-frozen-branches = промёрзшие ветки
 stack-wl-loose-scrap = металлолом
 stack-wl-torn-cloth = рваная ткань
+stack-wl-wood-planks = подготовленные доски
+stack-wl-metal-parts = отсортированные детали
+stack-wl-prepared-cloth = подготовленная ткань

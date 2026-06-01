@@ -5,7 +5,7 @@ namespace Content.Shared._WL.FrozenWorld.Components;
 
 /// <summary>
 /// Marks an entity as a gatherable resource point for FrozenWorld.
-/// Player interacts with empty hand → DoAfter → receives loot → charges decrease.
+/// Player interacts with empty hand -> DoAfter -> receives loot -> charges decrease.
 /// When charges reach 0, the entity is replaced or deleted.
 /// </summary>
 [RegisterComponent]

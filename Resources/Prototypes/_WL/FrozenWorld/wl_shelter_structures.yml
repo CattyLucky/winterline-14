@@ -19,6 +19,7 @@
   id: WLPrimitiveWoodWallBlueprint
   parent: WLPersistentCraftBlueprint
   name: primitive wood wall blueprint
+  categories: [ HideSpawnMenu ]
   components:
   - type: Sprite
     sprite: Structures/Walls/wood.rsi
@@ -32,6 +33,7 @@
   id: WLPrimitiveWoodDoorBlueprint
   parent: WLPersistentCraftBlueprint
   name: primitive wood door blueprint
+  categories: [ HideSpawnMenu ]
   components:
   - type: Sprite
     sprite: Structures/Doors/MineralDoors/wood_door.rsi
@@ -45,6 +47,7 @@
   id: WLPrimitiveWorkbenchBlueprint
   parent: WLPersistentCraftBlueprint
   name: primitive workbench blueprint
+  categories: [ HideSpawnMenu ]
   components:
   - type: Sprite
     sprite: Structures/Furniture/Tables/wood.rsi
@@ -55,9 +58,24 @@
     state: full
 
 - type: entity
+  id: WLResearchTableBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: research table blueprint
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Furniture/Tables/generic.rsi
+    state: full
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Furniture/Tables/generic.rsi
+    state: full
+
+- type: entity
   id: WLFiretubeGeneratorBlueprint
   parent: WLPersistentCraftBlueprint
   name: firetube generator blueprint
+  categories: [ HideSpawnMenu ]
   components:
   - type: Sprite
     sprite: _WL/firetube.rsi
@@ -71,6 +89,7 @@
   id: WLCampfireHeatSourceBlueprint
   parent: WLPersistentCraftBlueprint
   name: campfire blueprint
+  categories: [ HideSpawnMenu ]
   components:
   - type: Sprite
     sprite: _WL/FrozenWorld/HeatSources/wl_campfire.rsi
@@ -84,6 +103,7 @@
   id: WLFireplaceHeatSourceBlueprint
   parent: WLPersistentCraftBlueprint
   name: fireplace blueprint
+  categories: [ HideSpawnMenu ]
   components:
   - type: Sprite
     sprite: _WL/FrozenWorld/HeatSources/wl_fireplace_heater.rsi
@@ -231,3 +251,47 @@
   - type: Tag
     tags:
     - Wooden
+
+- type: entity
+  id: WLResearchTable
+  parent: TableBase
+  name: research table
+  description: A dedicated table for studying settlement technologies.
+  components:
+  - type: Sprite
+    sprite: Structures/Furniture/Tables/generic.rsi
+  - type: Icon
+    sprite: Structures/Furniture/Tables/generic.rsi
+  - type: Damageable
+    damageModifierSet: Wood
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 100
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+      - !type:PlaySoundBehavior
+        sound:
+          collection: WoodDestroy
+    - trigger:
+        !type:DamageTrigger
+        damage: 20
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          collection: WoodDestroy
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          WLWoodPlank1:
+            min: 1
+            max: 2
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+  - type: IconSmooth
+    key: metaltable
+    base: state_
+  - type: PersistentCraftResearchBench
+    doAfter: 12
+    pointReward: 1

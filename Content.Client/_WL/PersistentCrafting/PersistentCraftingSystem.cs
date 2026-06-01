@@ -15,6 +15,7 @@ public sealed class PersistentCraftingSystem : EntitySystem
     private PersistentCraftClientPrototypeCache _prototypeCache = default!;
     private UI.PersistentCraftStationWindow? _craftWindow;
     private UI.PersistentCraftingWindow? _skillsWindow;
+    private UI.PersistentCraftPlacementWindow? _placementWindow;
     private PersistentCraftState? _latestState;
     private float _inventoryRefreshAccumulator;
 
@@ -51,6 +52,9 @@ public sealed class PersistentCraftingSystem : EntitySystem
 
     public void OpenSkillsWindow()
     {
+        if (_latestState?.CanResearch != true)
+            return;
+
         EnsureSkillsWindow();
         _skillsWindow!.ResetInitialTabSelection();
         _skillsWindow.ApplyFullscreenLayout();
@@ -65,6 +69,9 @@ public sealed class PersistentCraftingSystem : EntitySystem
 
     private void ToggleSkillsWindowFromCraft()
     {
+        if (_latestState?.CanResearch != true)
+            return;
+
         EnsureSkillsWindow();
 
         if (_skillsWindow!.IsOpen)
@@ -107,6 +114,9 @@ public sealed class PersistentCraftingSystem : EntitySystem
             if (_skillsWindow is { IsOpen: true })
                 _skillsWindow.Close();
 
+            if (_placementWindow is { IsOpen: true })
+                _placementWindow.Close();
+
             return;
         }
 
@@ -120,8 +130,12 @@ public sealed class PersistentCraftingSystem : EntitySystem
     private void OnStateEvent(PersistentCraftStateEvent ev, EntitySessionEventArgs args)
     {
         _latestState = ev.State;
+        if (!ev.State.CanResearch && _skillsWindow is { IsOpen: true })
+            _skillsWindow.Close();
+
         RefreshCraftWindow();
         RefreshSkillWindow();
+        RefreshPlacementWindow();
     }
 
     private void OnRecipeStartedEvent(PersistentCraftRecipeStartedEvent ev, EntitySessionEventArgs args)
@@ -144,6 +158,8 @@ public sealed class PersistentCraftingSystem : EntitySystem
         _craftWindow.OnCraftPressed += OnCraftRequestedFromWindow;
         _craftWindow.OnOpenSkillsPressed -= ToggleSkillsWindowFromCraft;
         _craftWindow.OnOpenSkillsPressed += ToggleSkillsWindowFromCraft;
+        _craftWindow.OnOpenPlacementPressed -= TogglePlacementWindowFromCraft;
+        _craftWindow.OnOpenPlacementPressed += TogglePlacementWindowFromCraft;
     }
 
     private void OnCraftRequestedFromWindow(string recipeId)
@@ -156,6 +172,32 @@ public sealed class PersistentCraftingSystem : EntitySystem
         }
 
         RequestCraft(recipeId);
+    }
+
+    private void TogglePlacementWindowFromCraft()
+    {
+        EnsurePlacementWindow();
+
+        if (_placementWindow!.IsOpen)
+        {
+            _placementWindow.Close();
+            return;
+        }
+
+        _placementWindow.OpenCentered();
+        RefreshPlacementWindow();
+    }
+
+    private void OnPlacementRequestedFromWindow(string recipeId)
+    {
+        if (!_prototype.TryIndex<PersistentCraftRecipePrototype>(recipeId, out var recipe) ||
+            recipe.Placement == null)
+        {
+            return;
+        }
+
+        StartPlacement(recipe);
+        _placementWindow?.Close();
     }
 
     private void StartPlacement(PersistentCraftRecipePrototype recipe)
@@ -180,6 +222,16 @@ public sealed class PersistentCraftingSystem : EntitySystem
             _skillsWindow = new UI.PersistentCraftingWindow(_prototypeCache);
     }
 
+    private void EnsurePlacementWindow()
+    {
+        _placementWindow ??= new UI.PersistentCraftPlacementWindow(_prototypeCache);
+        if (_placementWindow.Disposed)
+            _placementWindow = new UI.PersistentCraftPlacementWindow(_prototypeCache);
+
+        _placementWindow.OnPlacementPressed -= OnPlacementRequestedFromWindow;
+        _placementWindow.OnPlacementPressed += OnPlacementRequestedFromWindow;
+    }
+
     private void RefreshCraftWindow()
     {
         if (_craftWindow == null || _craftWindow.Disposed || !_craftWindow.IsOpen || _latestState == null)
@@ -197,6 +249,14 @@ public sealed class PersistentCraftingSystem : EntitySystem
             _latestState,
             _prototypeCache,
             RequestUnlock);
+    }
+
+    private void RefreshPlacementWindow()
+    {
+        if (_placementWindow == null || _placementWindow.Disposed || !_placementWindow.IsOpen || _latestState == null)
+            return;
+
+        _placementWindow.UpdateState(_latestState, _prototypeCache);
     }
 }
 

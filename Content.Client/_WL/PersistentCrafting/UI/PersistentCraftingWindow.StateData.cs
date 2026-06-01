@@ -82,6 +82,7 @@ public sealed partial class PersistentCraftingWindow
 
         return PersistentCraftNodeAvailabilityResolver.HasNodeUnlockedOrAutoAvailable(
             _state,
+            _state.ResearchBranches,
             nodeId,
             ResolveNodePrototypeOrNull,
             _reusablePath);

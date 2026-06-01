@@ -9,6 +9,7 @@ public enum PersistentCraftUnlockFailure
     AlreadyUnlocked,
     MissingPrerequisites,
     NotEnoughPoints,
+    InaccessibleBranch,
 }
 
 public sealed class PersistentCraftUnlockService
@@ -25,6 +26,12 @@ public sealed class PersistentCraftUnlockService
         PersistentCraftNodePrototype node,
         out PersistentCraftUnlockFailure failure)
     {
+        if (!_profileService.IsBranchAccessible(profile, node.Branch))
+        {
+            failure = PersistentCraftUnlockFailure.InaccessibleBranch;
+            return false;
+        }
+
         if (PersistentCraftingHelper.IsAutoUnlockedNode(node))
         {
             failure = PersistentCraftUnlockFailure.AutoUnlockedNode;

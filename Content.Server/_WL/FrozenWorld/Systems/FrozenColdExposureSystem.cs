@@ -8,6 +8,7 @@ using Content.Shared.FixedPoint;
 using Robust.Shared.Prototypes;
 using Content.Shared._WL.FrozenWorld;
 using Content.Shared._WL.FrozenWorld.Components;
+using Content.Shared._WL.Roles;
 
 namespace Content.Server._WL.FrozenWorld.Systems;
 
@@ -77,7 +78,9 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
     {
         if (snapshot.TotalColdSeverity <= 0f)
         {
-            var recoveryRate = exposure.RecoveryRate * snapshot.RecoveryMultiplier;
+            var recoveryRate = exposure.RecoveryRate
+                               * snapshot.RecoveryMultiplier
+                               * GetColdRecoveryMultiplier(uid);
             exposure.Exposure = MathF.Max(0f, exposure.Exposure - recoveryRate * frameTime);
             exposure.DamageAccumulator = 0f;
             exposure.LastColdSeverity = 0f;
@@ -89,7 +92,9 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
         }
 
         var oldStage = exposure.LastStage;
-        var gainRate = exposure.ExposureGainRate * snapshot.ExposureGainMultiplier;
+        var gainRate = exposure.ExposureGainRate
+                       * snapshot.ExposureGainMultiplier
+                       * GetColdExposureGainMultiplier(uid);
         var maxExposure = MathF.Max(0f, exposure.MaxExposure);
         exposure.Exposure = Math.Clamp(
             exposure.Exposure + gainRate * snapshot.TotalColdSeverity * frameTime,
@@ -129,7 +134,9 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
         if (snapshot.TotalColdSeverity <= 0f)
             return;
 
-        var amount = baseAmount * snapshot.ColdDamageMultiplier;
+        var amount = baseAmount
+                     * snapshot.ColdDamageMultiplier
+                     * GetColdDamageMultiplier(uid);
         exposure.LastDamageAmount = amount;
 
         if (amount <= 0f)
@@ -225,5 +232,26 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
             FrozenColdStage.Critical => (exposure.CriticalDamage, exposure.CriticalDamageInterval),
             _ => (0f, 0f),
         };
+    }
+
+    private float GetColdExposureGainMultiplier(EntityUid uid)
+    {
+        return TryComp(uid, out WLRoleSkillsComponent? skills)
+            ? MathF.Max(0f, skills.ColdExposureGainMultiplier)
+            : 1f;
+    }
+
+    private float GetColdRecoveryMultiplier(EntityUid uid)
+    {
+        return TryComp(uid, out WLRoleSkillsComponent? skills)
+            ? MathF.Max(0f, skills.ColdRecoveryMultiplier)
+            : 1f;
+    }
+
+    private float GetColdDamageMultiplier(EntityUid uid)
+    {
+        return TryComp(uid, out WLRoleSkillsComponent? skills)
+            ? MathF.Max(0f, skills.ColdDamageMultiplier)
+            : 1f;
     }
 }

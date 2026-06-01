@@ -25,16 +25,25 @@ public sealed class PersistentCraftState
 {
     public bool Loaded;
     public List<PersistentCraftBranchState> BranchStates;
+    public List<string> AccessibleBranches;
+    public List<string> ResearchBranches;
     public List<string> UnlockedNodes;
+    public bool CanResearch;
 
     public PersistentCraftState(
         bool loaded,
         List<PersistentCraftBranchState> branchStates,
-        List<string> unlockedNodes)
+        List<string> accessibleBranches,
+        List<string> researchBranches,
+        List<string> unlockedNodes,
+        bool canResearch)
     {
         Loaded = loaded;
         BranchStates = branchStates;
+        AccessibleBranches = accessibleBranches;
+        ResearchBranches = researchBranches;
         UnlockedNodes = unlockedNodes;
+        CanResearch = canResearch;
     }
 }
 

@@ -1,4 +1,4 @@
-# /// WL Change
+﻿# /// WL Change
 # FrozenWorld settlement craft.
 #
 # Tile recipes create handheld tile stacks.
@@ -9,7 +9,7 @@
 
 - type: persistentCraftSubCategory
   id: WLCraftSubCategoryShelterFloors
-  category: WLCraftCategorySettlementHead
+  category: WLCraftCategoryGathererProcessor
   name: persistent-craft-wl-subcategory-shelter-floors
   order: 20
 
@@ -32,17 +32,16 @@
   name: persistent-craft-wl-recipe-snow-foundation-name
   description: persistent-craft-wl-recipe-snow-foundation-description
   displayProto: WLSnowFoundationTileItem
-  branch: WLSettlementHead
+  branch: WLGathererProcessor
   tier: 1
-  requiredNode: WLCraftNodeSettlementHeadStarter
-  category: WLCraftCategorySettlementHead
+  requiredNode: WLCraftNodeGathererTilesT1
+  category: WLCraftCategoryGathererProcessor
   subCategory: WLCraftSubCategoryShelterFloors
   craftTime: 1.2
-  pointReward: 0
   ingredients:
-  - stackType: WLFrozenBranchStack
+  - stackType: WLWoodPlankStack
     amount: 2
-  - stackType: WLLooseScrapStack
+  - stackType: WLMetalPartsStack
     amount: 1
   results:
   - proto: WLSnowFoundationTileItem
@@ -53,15 +52,14 @@
   name: persistent-craft-wl-recipe-primitive-wood-floor-name
   description: persistent-craft-wl-recipe-primitive-wood-floor-description
   displayProto: WLPrimitiveWoodFloorTileItem
-  branch: WLSettlementHead
+  branch: WLGathererProcessor
   tier: 1
-  requiredNode: WLCraftNodeSettlementHeadStarter
-  category: WLCraftCategorySettlementHead
+  requiredNode: WLCraftNodeGathererTilesT1
+  category: WLCraftCategoryGathererProcessor
   subCategory: WLCraftSubCategoryShelterFloors
   craftTime: 1.4
-  pointReward: 1
   ingredients:
-  - stackType: WLFrozenBranchStack
+  - stackType: WLWoodPlankStack
     amount: 3
   results:
   - proto: WLPrimitiveWoodFloorTileItem
@@ -72,17 +70,16 @@
   name: persistent-craft-wl-recipe-wood-floor-name
   description: persistent-craft-wl-recipe-wood-floor-description
   displayProto: WLWoodFloorTileItem
-  branch: WLSettlementHead
+  branch: WLGathererProcessor
   tier: 2
-  requiredNode: WLCraftNodeSettlementHeadField
-  category: WLCraftCategorySettlementHead
+  requiredNode: WLCraftNodeGathererTilesT2
+  category: WLCraftCategoryGathererProcessor
   subCategory: WLCraftSubCategoryShelterFloors
   craftTime: 1.8
-  pointReward: 0
   ingredients:
-  - stackType: WLFrozenBranchStack
+  - stackType: WLWoodPlankStack
     amount: 5
-  - stackType: WLTornClothStack
+  - stackType: WLPreparedClothStack
     amount: 1
   results:
   - proto: WLWoodFloorTileItem
@@ -93,15 +90,14 @@
   name: persistent-craft-wl-recipe-stone-floor-name
   description: persistent-craft-wl-recipe-stone-floor-description
   displayProto: WLStoneFloorTileItem
-  branch: WLSettlementHead
+  branch: WLGathererProcessor
   tier: 2
-  requiredNode: WLCraftNodeSettlementHeadField
-  category: WLCraftCategorySettlementHead
+  requiredNode: WLCraftNodeGathererTilesT2
+  category: WLCraftCategoryGathererProcessor
   subCategory: WLCraftSubCategoryShelterFloors
   craftTime: 2.0
-  pointReward: 0
   ingredients:
-  - stackType: WLLooseScrapStack
+  - stackType: WLMetalPartsStack
     amount: 4
   results:
   - proto: WLStoneFloorTileItem
@@ -112,17 +108,16 @@
   name: persistent-craft-wl-recipe-insulated-floor-name
   description: persistent-craft-wl-recipe-insulated-floor-description
   displayProto: WLInsulatedFloorTileItem
-  branch: WLSettlementHead
+  branch: WLGathererProcessor
   tier: 3
-  requiredNode: WLCraftNodeSettlementHeadField
-  category: WLCraftCategorySettlementHead
+  requiredNode: WLCraftNodeGathererTilesT3
+  category: WLCraftCategoryGathererProcessor
   subCategory: WLCraftSubCategoryShelterFloors
   craftTime: 2.4
-  pointReward: 0
   ingredients:
-  - stackType: WLLooseScrapStack
+  - stackType: WLMetalPartsStack
     amount: 3
-  - stackType: WLTornClothStack
+  - stackType: WLPreparedClothStack
     amount: 3
   results:
   - proto: WLInsulatedFloorTileItem
@@ -133,15 +128,14 @@
   name: persistent-craft-wl-recipe-road-floor-name
   description: persistent-craft-wl-recipe-road-floor-description
   displayProto: WLRoadFloorTileItem
-  branch: WLSettlementHead
+  branch: WLGathererProcessor
   tier: 2
-  requiredNode: WLCraftNodeSettlementHeadField
-  category: WLCraftCategorySettlementHead
+  requiredNode: WLCraftNodeGathererTilesT2
+  category: WLCraftCategoryGathererProcessor
   subCategory: WLCraftSubCategoryShelterFloors
   craftTime: 1.6
-  pointReward: 0
   ingredients:
-  - stackType: WLLooseScrapStack
+  - stackType: WLMetalPartsStack
     amount: 2
   results:
   - proto: WLRoadFloorTileItem
@@ -160,7 +154,6 @@
   category: WLCraftCategorySettlementHead
   subCategory: WLCraftSubCategoryShelterGenerators
   craftTime: 1.6
-  pointReward: 1
   ingredients:
   - stackType: WLFrozenBranchStack
     amount: 4
@@ -181,13 +174,12 @@
   displayProto: WLPrimitiveWoodWall
   branch: WLSettlementHead
   tier: 1
-  requiredNode: WLCraftNodeSettlementHeadStarter
+  requiredNode: WLCraftNodeSettlementHeadShelterT1
   category: WLCraftCategorySettlementHead
   subCategory: WLCraftSubCategoryShelterStructures
   craftTime: 1.8
-  pointReward: 1
   ingredients:
-  - stackType: WLFrozenBranchStack
+  - stackType: WLWoodPlankStack
     amount: 3
   results: []
   placement:
@@ -203,15 +195,14 @@
   displayProto: WLPrimitiveWoodDoor
   branch: WLSettlementHead
   tier: 1
-  requiredNode: WLCraftNodeSettlementHeadStarter
+  requiredNode: WLCraftNodeSettlementHeadShelterT1
   category: WLCraftCategorySettlementHead
   subCategory: WLCraftSubCategoryShelterStructures
   craftTime: 2.0
-  pointReward: 1
   ingredients:
-  - stackType: WLFrozenBranchStack
+  - stackType: WLWoodPlankStack
     amount: 4
-  - stackType: WLTornClothStack
+  - stackType: WLPreparedClothStack
     amount: 1
   results: []
   placement:
@@ -230,15 +221,14 @@
   displayProto: WLPrimitiveWorkbench
   branch: WLSettlementHead
   tier: 2
-  requiredNode: WLCraftNodeSettlementHeadField
+  requiredNode: WLCraftNodeSettlementHeadWorkshopT2
   category: WLCraftCategorySettlementHead
   subCategory: WLCraftSubCategoryShelterStructures
   craftTime: 2.4
-  pointReward: 1
   ingredients:
-  - stackType: WLFrozenBranchStack
+  - stackType: WLWoodPlankStack
     amount: 4
-  - stackType: WLLooseScrapStack
+  - stackType: WLMetalPartsStack
     amount: 1
   results: []
   placement:
@@ -250,21 +240,45 @@
     minFloorTier: Wood
 
 - type: persistentCraftRecipe
+  id: WLCraftRecipeResearchTable
+  name: persistent-craft-wl-recipe-research-table-name
+  description: persistent-craft-wl-recipe-research-table-description
+  displayProto: WLResearchTable
+  branch: WLSettlementHead
+  tier: 1
+  requiredNode: WLCraftNodeSettlementHeadStarter
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterStructures
+  craftTime: 2.2
+  ingredients:
+  - stackType: WLFrozenBranchStack
+    amount: 5
+  - stackType: WLLooseScrapStack
+    amount: 3
+  - stackType: WLTornClothStack
+    amount: 2
+  results: []
+  placement:
+    proto: WLResearchTable
+    blueprintProto: WLResearchTableBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Furniture
+
+- type: persistentCraftRecipe
   id: WLCraftRecipeFireplace
   name: persistent-craft-wl-recipe-fireplace-name
   description: persistent-craft-wl-recipe-fireplace-description
   displayProto: WLFireplaceHeatSource
   branch: WLSettlementHead
   tier: 2
-  requiredNode: WLCraftNodeSettlementHeadField
+  requiredNode: WLCraftNodeSettlementHeadHeatT2
   category: WLCraftCategorySettlementHead
   subCategory: WLCraftSubCategoryShelterGenerators
   craftTime: 3.2
-  pointReward: 1
   ingredients:
-  - stackType: WLLooseScrapStack
+  - stackType: WLMetalPartsStack
     amount: 4
-  - stackType: WLFrozenBranchStack
+  - stackType: WLWoodPlankStack
     amount: 5
   results: []
   placement:
@@ -284,17 +298,16 @@
   displayProto: WLFiretubeGenerator
   branch: WLSettlementHead
   tier: 3
-  requiredNode: WLCraftNodeSettlementHeadField
+  requiredNode: WLCraftNodeSettlementHeadGeneratorT3
   category: WLCraftCategorySettlementHead
   subCategory: WLCraftSubCategoryShelterGenerators
   craftTime: 5.5
-  pointReward: 2
   ingredients:
-  - stackType: WLLooseScrapStack
+  - stackType: WLMetalPartsStack
     amount: 10
-  - stackType: WLTornClothStack
+  - stackType: WLPreparedClothStack
     amount: 3
-  - stackType: WLFrozenBranchStack
+  - stackType: WLWoodPlankStack
     amount: 4
   results: []
   placement:

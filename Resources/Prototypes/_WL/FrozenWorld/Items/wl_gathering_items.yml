@@ -1,16 +1,20 @@
 # /// WL Change
-# Предметы добычи для FrozenWorld — выпадают из ResourcePoint при сборе.
-# Стартовые ресурсы: ветки, металлолом, ткань.
+# FrozenWorld raw gathering materials.
+#
+# Keep these simple and broad: recipes consume the stack types below, while
+# higher-tier resource points control yield and access through their loot tables.
+
+# --- Tier 1: Raw Survival Materials -----------------------------------------
 
 - type: entity
   id: WLFrozenBranch
   parent: BaseItem
   name: frozen branch
-  description: A dead branch coated in ice. Needs to thaw before it burns well, but it's wood nonetheless.
+  description: A dead branch glazed with ice. It burns poorly until dried, but it is still wood.
   components:
   - type: Sprite
-    sprite: Objects/Materials/materials.rsi
-    state: wood
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: scrap_wood
   - type: Item
     size: Small
   - type: Stack
@@ -21,11 +25,11 @@
     materialComposition:
       Wood: 100
   - type: FrozenFuel
-    fuelSeconds: 40
+    fuelSeconds: 35
     priority: 10
-    heatBonusMultiplier: 0.9
+    heatBonusMultiplier: 0.85
     transferEfficiencyMultiplier: 0.9
-    burnRateMultiplier: 1.25
+    burnRateMultiplier: 1.35
 
 - type: entity
   id: WLFrozenBranch30
@@ -39,12 +43,11 @@
   id: WLLooseScrap
   parent: BaseItem
   name: loose scrap
-  description: A bent chunk of scrap metal salvaged from the ruins. Useful for crude tools and repairs.
+  description: Bent metal scraps salvaged from frozen ruins. Useful for crude tools, repairs and shelter work.
   components:
   - type: Sprite
-    sprite: Objects/Materials/Sheets/metal.rsi
-    state: steel
-    color: "#8a8a7a"
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: scrap_steel
   - type: Item
     size: Small
   - type: Stack
@@ -67,10 +70,10 @@
   id: WLTornCloth
   parent: BaseItem
   name: torn cloth
-  description: A strip of weathered fabric. Not much on its own, but cloth is cloth out here.
+  description: A weathered strip of fabric. Weak as gear, useful as padding, wrapping or desperate tinder.
   components:
   - type: Sprite
-    sprite: Objects/Materials/materials.rsi
+    sprite: _WL/Objects/Misc/materials.rsi
     state: cloth
   - type: Item
     size: Small
@@ -82,11 +85,11 @@
     materialComposition:
       Cloth: 100
   - type: FrozenFuel
-    fuelSeconds: 12
+    fuelSeconds: 10
     priority: 0
-    heatBonusMultiplier: 0.7
+    heatBonusMultiplier: 0.65
     transferEfficiencyMultiplier: 0.8
-    burnRateMultiplier: 1.5
+    burnRateMultiplier: 1.75
 
 - type: entity
   id: WLTornCloth30
@@ -95,3 +98,110 @@
   components:
   - type: Stack
     count: 30
+
+# --- Processed Craft Materials ----------------------------------------------
+
+- type: entity
+  id: WLWoodPlank
+  parent: BaseItem
+  name: prepared planks
+  description: Frozen timber cut into usable boards for shelter work and sturdy tools.
+  suffix: Full
+  components:
+  - type: Sprite
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: plank_3
+  - type: Item
+    size: Small
+  - type: Stack
+    stackType: WLWoodPlankStack
+  - type: Material
+  - type: PhysicalComposition
+    materialComposition:
+      Wood: 100
+
+- type: entity
+  id: WLWoodPlank10
+  parent: WLWoodPlank
+  suffix: 10
+  components:
+  - type: Stack
+    count: 10
+
+- type: entity
+  id: WLWoodPlank1
+  parent: WLWoodPlank
+  suffix: Single
+  components:
+  - type: Stack
+    count: 1
+
+- type: entity
+  id: WLMetalParts
+  parent: BaseItem
+  name: sorted metal parts
+  description: Cleaned fittings, plates and fasteners sorted from loose scrap.
+  suffix: Full
+  components:
+  - type: Sprite
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: scrap_parts_3
+  - type: Item
+    size: Small
+  - type: Stack
+    stackType: WLMetalPartsStack
+  - type: Material
+  - type: PhysicalComposition
+    materialComposition:
+      Steel: 100
+
+- type: entity
+  id: WLMetalParts10
+  parent: WLMetalParts
+  suffix: 10
+  components:
+  - type: Stack
+    count: 10
+
+- type: entity
+  id: WLMetalParts1
+  parent: WLMetalParts
+  suffix: Single
+  components:
+  - type: Stack
+    count: 1
+
+- type: entity
+  id: WLPreparedCloth
+  parent: BaseItem
+  name: prepared cloth
+  description: Cleaned and folded fabric ready for clothing, padding and field supplies.
+  suffix: Full
+  components:
+  - type: Sprite
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: thread
+  - type: Item
+    size: Small
+  - type: Stack
+    stackType: WLPreparedClothStack
+  - type: Material
+  - type: PhysicalComposition
+    materialComposition:
+      Cloth: 100
+
+- type: entity
+  id: WLPreparedCloth10
+  parent: WLPreparedCloth
+  suffix: 10
+  components:
+  - type: Stack
+    count: 10
+
+- type: entity
+  id: WLPreparedCloth1
+  parent: WLPreparedCloth
+  suffix: Single
+  components:
+  - type: Stack
+    count: 1

@@ -477,12 +477,6 @@ public sealed partial class PersistentCraftStationWindow
             PersistentCraftUiTheme.SurfacePanelAlt,
             PersistentCraftUiTheme.TextMuted,
             PersistentCraftUiTheme.BorderSoft));
-        header.MetaContainer.AddChild(new Control { MinSize = new Vector2(1, 4) });
-        header.MetaContainer.AddChild(CreateMetaBadge(
-            $"{Loc.GetString("persistent-craft-recipe-points")}: +{PersistentCraftingHelper.GetPointReward(recipe)}",
-            PersistentCraftUiTheme.SurfacePanelAlt,
-            accent,
-            accent.WithAlpha(0.35f)));
 
         return header;
     }

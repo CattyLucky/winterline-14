@@ -38,8 +38,8 @@ public sealed partial class PersistentCraftRecipePrototype : IPrototype
     [DataField("craftTime")]
     public float CraftTime = 2f;
 
-    [DataField("pointReward")]
-    public int PointReward;
+    [DataField("allowResourceProcessingBonus")]
+    public bool AllowResourceProcessingBonus;
 
     [DataField("ingredients", required: true)]
     public List<PersistentCraftIngredient> Ingredients = new();

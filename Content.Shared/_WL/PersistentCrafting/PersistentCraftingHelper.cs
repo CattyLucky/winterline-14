@@ -22,11 +22,6 @@ public static class PersistentCraftingHelper
         return node.Cost <= 0;
     }
 
-    public static int GetPointReward(PersistentCraftRecipePrototype recipe)
-    {
-        return Math.Max(0, recipe.PointReward);
-    }
-
     public static string GetTierDisplayLabel(int tier)
     {
         return tier > 0 ? ToRoman(tier) : tier.ToString();

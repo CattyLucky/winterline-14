@@ -10,19 +10,19 @@
     ambientTemperatureOffset: 0
     spawnAttempts: 50
     spawns:
-    - prototype: WLFrozenBranchPileDebug
+    - prototype: WLResourceFrozenBranchPileT1
       weight: 3
       minCount: 2
       maxCount: 4
       minSeparation: 10
       clearanceRadius: 1.0
-    - prototype: WLLooseScrapPileDebug
+    - prototype: WLResourceLooseScrapPileT1
       weight: 2
       minCount: 1
       maxCount: 3
       minSeparation: 10
       clearanceRadius: 1.0
-    - prototype: WLTornSupplyBagDebug
+    - prototype: WLResourceTornSupplyBagT1
       weight: 1
       minCount: 1
       maxCount: 2
@@ -35,19 +35,19 @@
     ambientTemperatureOffset: -4
     spawnAttempts: 60
     spawns:
-    - prototype: WLSmallCoalOutcropDebug
+    - prototype: WLResourceCharcoalPitT2
       weight: 3
       minCount: 3
       maxCount: 5
       minSeparation: 16
       clearanceRadius: 1.5
-    - prototype: WLFrozenDeadwoodClusterDebug
+    - prototype: WLResourceFrozenDeadwoodT2
       weight: 2
       minCount: 2
       maxCount: 4
       minSeparation: 16
       clearanceRadius: 1.5
-    - prototype: WLSmallScrapPileDebug
+    - prototype: WLResourceSmallScrapPileT2
       weight: 1
       minCount: 1
       maxCount: 3
@@ -67,19 +67,19 @@
       maxCount: 3
       minSeparation: 56
     spawns:
-    - prototype: WLCoalOutcropDebug
+    - prototype: WLResourceCoalOutcropT3
       weight: 3
       minCount: 3
       maxCount: 5
       minSeparation: 24
       clearanceRadius: 2.0
-    - prototype: WLScrapWreckDebug
+    - prototype: WLResourceScrapWreckT3
       weight: 2
       minCount: 2
       maxCount: 4
       minSeparation: 24
       clearanceRadius: 2.0
-    - prototype: WLFrozenGroveDebug
+    - prototype: WLResourceFrozenGroveT3
       weight: 2
       minCount: 2
       maxCount: 4
@@ -104,23 +104,41 @@
       maxCount: 3
       minSeparation: 64
     spawns:
-    - prototype: WLLargeCoalVeinDebug
+    - prototype: WLResourceLargeCoalVeinT4
       weight: 3
       minCount: 2
       maxCount: 4
       minSeparation: 40
       clearanceRadius: 2.5
-    - prototype: WLFrozenConvoyWreckDebug
+    - prototype: WLResourceFrozenConvoyWreckT4
       weight: 2
       minCount: 2
       maxCount: 3
       minSeparation: 40
       clearanceRadius: 2.5
-    - prototype: WLOldSupplyCacheDebug
+    - prototype: WLResourceOldSupplyCacheT4
       weight: 1
       minCount: 1
       maxCount: 2
       minSeparation: 40
+      clearanceRadius: 2.5
+    - prototype: WLResourceDeepCoalSeamT5
+      weight: 1
+      minCount: 1
+      maxCount: 2
+      minSeparation: 48
+      clearanceRadius: 2.5
+    - prototype: WLResourceIndustrialRuinT5
+      weight: 1
+      minCount: 1
+      maxCount: 2
+      minSeparation: 48
+      clearanceRadius: 2.5
+    - prototype: WLResourceSealedExpeditionCacheT5
+      weight: 1
+      minCount: 1
+      maxCount: 1
+      minSeparation: 48
       clearanceRadius: 2.5
 
 # Test preset: more POI pressure for rotation/stamping checks.
@@ -133,19 +151,19 @@
     ambientTemperatureOffset: 0
     spawnAttempts: 50
     spawns:
-    - prototype: WLFrozenBranchPileDebug
+    - prototype: WLResourceFrozenBranchPileT1
       weight: 3
       minCount: 2
       maxCount: 4
       minSeparation: 10
       clearanceRadius: 1.0
-    - prototype: WLLooseScrapPileDebug
+    - prototype: WLResourceLooseScrapPileT1
       weight: 2
       minCount: 1
       maxCount: 3
       minSeparation: 10
       clearanceRadius: 1.0
-    - prototype: WLTornSupplyBagDebug
+    - prototype: WLResourceTornSupplyBagT1
       weight: 1
       minCount: 1
       maxCount: 2
@@ -157,19 +175,19 @@
     ambientTemperatureOffset: -4
     spawnAttempts: 60
     spawns:
-    - prototype: WLSmallCoalOutcropDebug
+    - prototype: WLResourceCharcoalPitT2
       weight: 3
       minCount: 3
       maxCount: 5
       minSeparation: 16
       clearanceRadius: 1.5
-    - prototype: WLFrozenDeadwoodClusterDebug
+    - prototype: WLResourceFrozenDeadwoodT2
       weight: 2
       minCount: 2
       maxCount: 4
       minSeparation: 16
       clearanceRadius: 1.5
-    - prototype: WLSmallScrapPileDebug
+    - prototype: WLResourceSmallScrapPileT2
       weight: 1
       minCount: 1
       maxCount: 3
@@ -188,19 +206,19 @@
       maxCount: 4
       minSeparation: 56
     spawns:
-    - prototype: WLCoalOutcropDebug
+    - prototype: WLResourceCoalOutcropT3
       weight: 3
       minCount: 3
       maxCount: 5
       minSeparation: 24
       clearanceRadius: 2.0
-    - prototype: WLScrapWreckDebug
+    - prototype: WLResourceScrapWreckT3
       weight: 2
       minCount: 2
       maxCount: 4
       minSeparation: 24
       clearanceRadius: 2.0
-    - prototype: WLFrozenGroveDebug
+    - prototype: WLResourceFrozenGroveT3
       weight: 2
       minCount: 2
       maxCount: 4
@@ -224,23 +242,41 @@
       maxCount: 4
       minSeparation: 64
     spawns:
-    - prototype: WLLargeCoalVeinDebug
+    - prototype: WLResourceLargeCoalVeinT4
       weight: 3
       minCount: 2
       maxCount: 4
       minSeparation: 40
       clearanceRadius: 2.5
-    - prototype: WLFrozenConvoyWreckDebug
+    - prototype: WLResourceFrozenConvoyWreckT4
       weight: 2
       minCount: 2
       maxCount: 3
       minSeparation: 40
       clearanceRadius: 2.5
-    - prototype: WLOldSupplyCacheDebug
+    - prototype: WLResourceOldSupplyCacheT4
       weight: 1
       minCount: 1
       maxCount: 2
       minSeparation: 40
+      clearanceRadius: 2.5
+    - prototype: WLResourceDeepCoalSeamT5
+      weight: 1
+      minCount: 1
+      maxCount: 2
+      minSeparation: 48
+      clearanceRadius: 2.5
+    - prototype: WLResourceIndustrialRuinT5
+      weight: 1
+      minCount: 1
+      maxCount: 2
+      minSeparation: 48
+      clearanceRadius: 2.5
+    - prototype: WLResourceSealedExpeditionCacheT5
+      weight: 1
+      minCount: 1
+      maxCount: 1
+      minSeparation: 48
       clearanceRadius: 2.5
 
 # Test preset: fewer POI for quick sanity checks.
@@ -253,19 +289,19 @@
     ambientTemperatureOffset: 0
     spawnAttempts: 50
     spawns:
-    - prototype: WLFrozenBranchPileDebug
+    - prototype: WLResourceFrozenBranchPileT1
       weight: 3
       minCount: 2
       maxCount: 4
       minSeparation: 10
       clearanceRadius: 1.0
-    - prototype: WLLooseScrapPileDebug
+    - prototype: WLResourceLooseScrapPileT1
       weight: 2
       minCount: 1
       maxCount: 3
       minSeparation: 10
       clearanceRadius: 1.0
-    - prototype: WLTornSupplyBagDebug
+    - prototype: WLResourceTornSupplyBagT1
       weight: 1
       minCount: 1
       maxCount: 2
@@ -277,19 +313,19 @@
     ambientTemperatureOffset: -4
     spawnAttempts: 60
     spawns:
-    - prototype: WLSmallCoalOutcropDebug
+    - prototype: WLResourceCharcoalPitT2
       weight: 3
       minCount: 3
       maxCount: 5
       minSeparation: 16
       clearanceRadius: 1.5
-    - prototype: WLFrozenDeadwoodClusterDebug
+    - prototype: WLResourceFrozenDeadwoodT2
       weight: 2
       minCount: 2
       maxCount: 4
       minSeparation: 16
       clearanceRadius: 1.5
-    - prototype: WLSmallScrapPileDebug
+    - prototype: WLResourceSmallScrapPileT2
       weight: 1
       minCount: 1
       maxCount: 3
@@ -308,19 +344,19 @@
       maxCount: 2
       minSeparation: 56
     spawns:
-    - prototype: WLCoalOutcropDebug
+    - prototype: WLResourceCoalOutcropT3
       weight: 3
       minCount: 3
       maxCount: 5
       minSeparation: 24
       clearanceRadius: 2.0
-    - prototype: WLScrapWreckDebug
+    - prototype: WLResourceScrapWreckT3
       weight: 2
       minCount: 2
       maxCount: 4
       minSeparation: 24
       clearanceRadius: 2.0
-    - prototype: WLFrozenGroveDebug
+    - prototype: WLResourceFrozenGroveT3
       weight: 2
       minCount: 2
       maxCount: 4
@@ -344,21 +380,39 @@
       maxCount: 2
       minSeparation: 64
     spawns:
-    - prototype: WLLargeCoalVeinDebug
+    - prototype: WLResourceLargeCoalVeinT4
       weight: 3
       minCount: 2
       maxCount: 4
       minSeparation: 40
       clearanceRadius: 2.5
-    - prototype: WLFrozenConvoyWreckDebug
+    - prototype: WLResourceFrozenConvoyWreckT4
       weight: 2
       minCount: 2
       maxCount: 3
       minSeparation: 40
       clearanceRadius: 2.5
-    - prototype: WLOldSupplyCacheDebug
+    - prototype: WLResourceOldSupplyCacheT4
       weight: 1
       minCount: 1
       maxCount: 2
       minSeparation: 40
+      clearanceRadius: 2.5
+    - prototype: WLResourceDeepCoalSeamT5
+      weight: 1
+      minCount: 1
+      maxCount: 2
+      minSeparation: 48
+      clearanceRadius: 2.5
+    - prototype: WLResourceIndustrialRuinT5
+      weight: 1
+      minCount: 1
+      maxCount: 2
+      minSeparation: 48
+      clearanceRadius: 2.5
+    - prototype: WLResourceSealedExpeditionCacheT5
+      weight: 1
+      minCount: 1
+      maxCount: 1
+      minSeparation: 48
       clearanceRadius: 2.5

@@ -5,6 +5,17 @@
   setPreference: true
   wlVisibleInLobby: true
   grantPersistentCraftAccess: true
+  persistentCraftAllBranches: true
+  persistentCraftCanResearch: true
+  persistentCraftResearchAllBranches: true
+  wlSkillGatherTimeMultiplier: 0.85
+  wlSkillGatherYieldMultiplier: 1.35
+  wlSkillProcessingYieldMultiplier: 1.25
+  wlSkillColdExposureGainMultiplier: 0.8
+  wlSkillColdRecoveryMultiplier: 1.15
+  wlSkillColdDamageMultiplier: 0.75
+  wlSkillMeleeDamageMultiplier: 1.15
+  wlSkillMobThresholdBonus: 25
   playTimeTracker: JobWLSettlementHead
   weight: 20
   icon: JobIconHeadOfPersonnel
@@ -26,6 +37,12 @@
   setPreference: true
   wlVisibleInLobby: true
   grantPersistentCraftAccess: true
+  persistentCraftBranches:
+  - WLSettlementHead
+  - WLMechanic
+  - WLGathererProcessor
+  persistentCraftCanResearch: true
+  persistentCraftResearchAllBranches: true
   playTimeTracker: JobWLMechanic
   weight: 10
   icon: JobIconStationEngineer
@@ -44,7 +61,12 @@
   description: job-description-wl-hunter
   setPreference: true
   wlVisibleInLobby: true
-  grantPersistentCraftAccess: true
+  grantPersistentCraftAccess: false
+  wlSkillColdExposureGainMultiplier: 0.8
+  wlSkillColdRecoveryMultiplier: 1.15
+  wlSkillColdDamageMultiplier: 0.75
+  wlSkillMeleeDamageMultiplier: 1.15
+  wlSkillMobThresholdBonus: 25
   playTimeTracker: JobWLHunter
   weight: 10
   icon: JobIconShaftMiner
@@ -64,6 +86,12 @@
   setPreference: true
   wlVisibleInLobby: true
   grantPersistentCraftAccess: true
+  persistentCraftBranches:
+  - WLGathererProcessor
+  - WLFieldMedicine
+  wlSkillGatherTimeMultiplier: 0.85
+  wlSkillGatherYieldMultiplier: 1.35
+  wlSkillProcessingYieldMultiplier: 1.25
   playTimeTracker: JobWLGathererProcessor
   weight: 10
   icon: JobIconMedicalDoctor

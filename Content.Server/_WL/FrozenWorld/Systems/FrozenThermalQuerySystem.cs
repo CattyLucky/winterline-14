@@ -49,6 +49,9 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
     /// Without this, equal full-body cold always reports Torso because Torso is first in BodyParts.
     /// </summary>
     private const float ClearWeakestBodyPartSeverityDelta = 0.10f;
+    private const float SecondaryInsulationLayerEfficiency = 0.35f;
+    private static readonly float MinimumStackedRatedTemperatureCelsius =
+        FrozenInsulationComponent.GetTierRatedTemperatureCelsius(FrozenInsulationTier.Extreme);
 
     private static readonly string[] InsulationInventorySlots =
     {
@@ -242,37 +245,47 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
 
     private FrozenBodyPartValues GetBodyPartRatings(EntityUid uid, FrozenColdExposureComponent exposure)
     {
-        var ratings = new FrozenBodyPartValues(exposure.BaseUnprotectedTemperatureCelsius);
+        var baseRatedTemperature = exposure.BaseUnprotectedTemperatureCelsius;
+        var bestLayerProtection = new FrozenBodyPartValues(0f);
+        var secondaryLayerProtection = new FrozenBodyPartValues(0f);
 
         // Direct modifier on the body itself: species, mutation, temporary status entity, etc.
-        AddInsulationCoverage(uid, ref ratings);
+        AddInsulationCoverage(uid, ref bestLayerProtection, ref secondaryLayerProtection, baseRatedTemperature);
 
         if (TryComp<InventoryComponent>(uid, out _))
         {
-            AddInventoryInsulationCoverage(uid, ref ratings);
+            AddInventoryInsulationCoverage(uid, ref bestLayerProtection, ref secondaryLayerProtection, baseRatedTemperature);
         }
         else
         {
             // Fallback for simple mobs/entities without slot inventory.
             // Do not use this path for humanoids: inventory slots are the authoritative worn-items source.
-            AddDirectChildInsulationCoverage(uid, ref ratings);
+            AddDirectChildInsulationCoverage(uid, ref bestLayerProtection, ref secondaryLayerProtection, baseRatedTemperature);
         }
 
-        return ratings;
+        return BuildStackedBodyPartRatings(baseRatedTemperature, bestLayerProtection, secondaryLayerProtection);
     }
 
-    private void AddInventoryInsulationCoverage(EntityUid uid, ref FrozenBodyPartValues ratings)
+    private void AddInventoryInsulationCoverage(
+        EntityUid uid,
+        ref FrozenBodyPartValues bestLayerProtection,
+        ref FrozenBodyPartValues secondaryLayerProtection,
+        float unprotectedTemperatureCelsius)
     {
         foreach (var slot in InsulationInventorySlots)
         {
             if (!_inventory.TryGetSlotEntity(uid, slot, out var slotEntity) || slotEntity is not { } equipped)
                 continue;
 
-            AddInsulationCoverage(equipped, ref ratings);
+            AddInsulationCoverage(equipped, ref bestLayerProtection, ref secondaryLayerProtection, unprotectedTemperatureCelsius);
         }
     }
 
-    private void AddDirectChildInsulationCoverage(EntityUid uid, ref FrozenBodyPartValues ratings)
+    private void AddDirectChildInsulationCoverage(
+        EntityUid uid,
+        ref FrozenBodyPartValues bestLayerProtection,
+        ref FrozenBodyPartValues secondaryLayerProtection,
+        float unprotectedTemperatureCelsius)
     {
         if (!TryComp(uid, out TransformComponent? xform))
             return;
@@ -280,11 +293,15 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
         var enumerator = xform.ChildEnumerator;
         while (enumerator.MoveNext(out var child))
         {
-            AddInsulationCoverage(child, ref ratings);
+            AddInsulationCoverage(child, ref bestLayerProtection, ref secondaryLayerProtection, unprotectedTemperatureCelsius);
         }
     }
 
-    private void AddInsulationCoverage(EntityUid uid, ref FrozenBodyPartValues ratings)
+    private void AddInsulationCoverage(
+        EntityUid uid,
+        ref FrozenBodyPartValues bestLayerProtection,
+        ref FrozenBodyPartValues secondaryLayerProtection,
+        float unprotectedTemperatureCelsius)
     {
         if (!TryComp<FrozenInsulationComponent>(uid, out var insulation) || !insulation.Enabled)
             return;
@@ -293,11 +310,50 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
             return;
 
         var ratedTemperature = insulation.GetRatedTemperatureCelsius();
+        var layerProtection = MathF.Max(0f, unprotectedTemperatureCelsius - ratedTemperature);
+        if (layerProtection <= 0f)
+            return;
 
         foreach (var part in insulation.Coverage)
         {
-            ratings.ApplyMin(part, ratedTemperature);
+            var bestProtection = bestLayerProtection.Get(part);
+            if (layerProtection > bestProtection)
+            {
+                secondaryLayerProtection.Set(part, secondaryLayerProtection.Get(part) + bestProtection);
+                bestLayerProtection.Set(part, layerProtection);
+            }
+            else
+            {
+                secondaryLayerProtection.Set(part, secondaryLayerProtection.Get(part) + layerProtection);
+            }
         }
+    }
+
+    private static FrozenBodyPartValues BuildStackedBodyPartRatings(
+        float unprotectedTemperatureCelsius,
+        FrozenBodyPartValues bestLayerProtection,
+        FrozenBodyPartValues secondaryLayerProtection)
+    {
+        var ratings = new FrozenBodyPartValues(unprotectedTemperatureCelsius);
+
+        foreach (var part in BodyParts)
+        {
+            var bestProtection = bestLayerProtection.Get(part);
+            if (bestProtection <= 0f)
+                continue;
+
+            var secondaryProtection = secondaryLayerProtection.Get(part);
+            var stackedProtection = bestProtection + secondaryProtection * SecondaryInsulationLayerEfficiency;
+            var stackedRatedTemperature = unprotectedTemperatureCelsius - stackedProtection;
+            var bestLayerRatedTemperature = unprotectedTemperatureCelsius - bestProtection;
+            var minimumRatedTemperature = MathF.Min(MinimumStackedRatedTemperatureCelsius, bestLayerRatedTemperature);
+
+            ratings.Set(
+                part,
+                Math.Clamp(stackedRatedTemperature, minimumRatedTemperature, unprotectedTemperatureCelsius));
+        }
+
+        return ratings;
     }
 
     private float GetFootContactPenaltyCelsius(EntityUid uid)

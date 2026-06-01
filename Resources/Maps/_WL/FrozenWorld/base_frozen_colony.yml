@@ -5,7 +5,7 @@
   forkId: ""
   forkVersion: ""
   time: 04/25/2026 18:59:54
-  entityCount: 7
+  entityCount: 9
 maps:
 - 903
 grids:
@@ -131,4 +131,30 @@ entities:
     - type: Transform
       pos: 1.5,-1.5
       parent: 1
+- proto: SpawnPointObserver
+  entities:
+  - uid: 9
+    components:
+    - type: Transform
+      pos: 1.5,-0.5
+      parent: 1
+- proto: DefaultStationBeacon
+  entities:
+  - uid: 10
+    components:
+    - type: Transform
+      pos: 1.5,-0.5
+      parent: 1
+    - type: NavMapBeacon
+      defaultText: Frostland
+      color: "#9FD8FFFF"
+    - type: WarpPoint
+      location: Frostland
+    - type: Sprite
+      sprite: Objects/Devices/station_beacon.rsi
+      drawdepth: BelowFloor
+      layers:
+      - state: blink
+        visible: false
+        map: ["base"]
 ...

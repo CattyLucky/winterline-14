@@ -1,5 +1,7 @@
-# FrozenWorld outer clothing tiers.
-# Each tier has its own RSI path so placeholder art can be replaced independently.
+# FrozenWorld survival clothing.
+# Keep tiers grouped so crafting can later unlock a whole wearable kit at once.
+
+# --- Tier 1: Light -----------------------------------------------------------
 
 - type: entity
   parent: ClothingOuterWinterCoat
@@ -20,6 +22,62 @@
     - Legs
 
 - type: entity
+  parent: ClothingUniformJumpsuitLibrarian
+  id: ClothingUniformJumpsuitThermalLightWL
+  name: light thermal jumper
+  description: A thin thermal jumper for short trips through light cold.
+  suffix: WL, T1
+  components:
+  - type: FrozenInsulation
+    tier: Light
+    coverage:
+    - Torso
+    - Arms
+    - Legs
+
+- type: entity
+  parent: ClothingHeadHatUshanka
+  id: ClothingHeadHatWinterLightWL
+  name: light winter hat
+  description: A simple insulated hat that keeps the worst wind off your head and face.
+  suffix: WL, T1
+  components:
+  - type: FrozenInsulation
+    tier: Light
+    coverage:
+    - Head
+    - Face
+
+- type: entity
+  parent: ClothingHandsGlovesLeather
+  id: ClothingHandsGlovesWinterLightWL
+  name: light winter gloves
+  description: Thin insulated gloves for handling tools in mild cold.
+  suffix: WL, T1
+  components:
+  - type: FrozenInsulation
+    tier: Light
+    coverage:
+    - Hands
+
+- type: entity
+  parent: ClothingShoesBootsWinter
+  id: ClothingShoesBootsWinterLightWL
+  name: light winter boots
+  description: Light insulated boots for short walks over frozen ground.
+  suffix: WL, T1
+  components:
+  - type: FrozenInsulation
+    tier: Light
+    coverage:
+    - Feet
+  - type: FrozenFootwear
+    surfaceColdPenaltyMultiplier: 0.85
+    surfaceSpeedPenaltyMultiplier: 0.95
+
+# --- Tier 2: Warm ------------------------------------------------------------
+
+- type: entity
   parent: ClothingOuterWinterCoat
   id: ClothingOuterWinterCoatWarmWL
   name: warm insulated coat
@@ -36,6 +94,62 @@
     - Torso
     - Arms
     - Legs
+
+- type: entity
+  parent: ClothingUniformJumpsuitLibrarian
+  id: ClothingUniformJumpsuitThermalWarmWL
+  name: warm thermal jumper
+  description: A padded thermal jumper for regular work below freezing.
+  suffix: WL, T2
+  components:
+  - type: FrozenInsulation
+    tier: Warm
+    coverage:
+    - Torso
+    - Arms
+    - Legs
+
+- type: entity
+  parent: ClothingHeadHatUshanka
+  id: ClothingHeadHatWinterWarmWL
+  name: warm winter hat
+  description: A padded winter hat with enough coverage for routine outdoor work.
+  suffix: WL, T2
+  components:
+  - type: FrozenInsulation
+    tier: Warm
+    coverage:
+    - Head
+    - Face
+
+- type: entity
+  parent: ClothingHandsGlovesLeather
+  id: ClothingHandsGlovesWinterWarmWL
+  name: warm winter gloves
+  description: Padded gloves that keep your fingers useful below freezing.
+  suffix: WL, T2
+  components:
+  - type: FrozenInsulation
+    tier: Warm
+    coverage:
+    - Hands
+
+- type: entity
+  parent: ClothingShoesBootsWinter
+  id: ClothingShoesBootsWinterWarmWL
+  name: warm winter boots
+  description: Padded boots for regular work over packed snow and ice.
+  suffix: WL, T2
+  components:
+  - type: FrozenInsulation
+    tier: Warm
+    coverage:
+    - Feet
+  - type: FrozenFootwear
+    surfaceColdPenaltyMultiplier: 0.60
+    surfaceSpeedPenaltyMultiplier: 0.75
+
+# --- Tier 3: Winter ----------------------------------------------------------
 
 - type: entity
   parent: ClothingOuterWinterCoat
@@ -56,6 +170,70 @@
     - Legs
 
 - type: entity
+  parent: ClothingUniformJumpsuitLibrarian
+  id: ClothingUniformJumpsuitWinterWL
+  name: winter thermal jumper
+  description: A heavy thermal jumper for survival in severe cold.
+  suffix: WL, T3
+  components:
+  - type: FrozenInsulation
+    tier: Winter
+    coverage:
+    - Torso
+    - Arms
+    - Legs
+
+- type: entity
+  parent: ClothingHeadHatUshanka
+  id: ClothingHeadHelmetWinterWL
+  name: winter hat
+  description: A heavy insulated hat that shields the head and face from freezing air.
+  suffix: WL, T3
+  components:
+  - type: FrozenInsulation
+    tier: Winter
+    coverage:
+    - Head
+    - Face
+
+# Backward-compatible alias for the previous WL headwear id.
+- type: entity
+  parent: ClothingHeadHelmetWinterWL
+  id: ClothingHeadHatHoodWinterWL
+  name: winter hat
+  description: A heavy insulated hat that shields the head and face from freezing air.
+  suffix: WL, T3, Alias
+
+- type: entity
+  parent: ClothingHandsGlovesLeather
+  id: ClothingHandsGlovesWinterWL
+  name: winter gloves
+  description: Heavy insulated gloves for severe cold.
+  suffix: WL, T3
+  components:
+  - type: FrozenInsulation
+    tier: Winter
+    coverage:
+    - Hands
+
+- type: entity
+  parent: ClothingShoesBootsWinter
+  id: ClothingShoesBootsWinterWL
+  name: winter boots
+  description: Heavy insulated boots built for frozen terrain.
+  suffix: WL, T3
+  components:
+  - type: FrozenInsulation
+    tier: Winter
+    coverage:
+    - Feet
+  - type: FrozenFootwear
+    surfaceColdPenaltyMultiplier: 0.25
+    surfaceSpeedPenaltyMultiplier: 0.50
+
+# --- Tier 4: Arctic ----------------------------------------------------------
+
+- type: entity
   parent: ClothingOuterWinterCoat
   id: ClothingOuterWinterCoatArcticWL
   name: arctic insulated coat
@@ -72,6 +250,62 @@
     - Torso
     - Arms
     - Legs
+
+- type: entity
+  parent: ClothingUniformJumpsuitLibrarian
+  id: ClothingUniformJumpsuitThermalArcticWL
+  name: arctic thermal jumper
+  description: A dense thermal jumper made for long exposure to brutal cold.
+  suffix: WL, T4
+  components:
+  - type: FrozenInsulation
+    tier: Arctic
+    coverage:
+    - Torso
+    - Arms
+    - Legs
+
+- type: entity
+  parent: ClothingHeadHatUshanka
+  id: ClothingHeadHatWinterArcticWL
+  name: arctic winter hat
+  description: A dense insulated hat for long exposure to brutal cold.
+  suffix: WL, T4
+  components:
+  - type: FrozenInsulation
+    tier: Arctic
+    coverage:
+    - Head
+    - Face
+
+- type: entity
+  parent: ClothingHandsGlovesLeather
+  id: ClothingHandsGlovesWinterArcticWL
+  name: arctic winter gloves
+  description: Dense insulated gloves for long work in brutal cold.
+  suffix: WL, T4
+  components:
+  - type: FrozenInsulation
+    tier: Arctic
+    coverage:
+    - Hands
+
+- type: entity
+  parent: ClothingShoesBootsWinter
+  id: ClothingShoesBootsWinterArcticWL
+  name: arctic winter boots
+  description: Dense insulated boots for long work across frozen terrain.
+  suffix: WL, T4
+  components:
+  - type: FrozenInsulation
+    tier: Arctic
+    coverage:
+    - Feet
+  - type: FrozenFootwear
+    surfaceColdPenaltyMultiplier: 0.15
+    surfaceSpeedPenaltyMultiplier: 0.35
+
+# --- Tier 5: Extreme ---------------------------------------------------------
 
 - type: entity
   parent: ClothingOuterWinterCoat
@@ -91,66 +325,56 @@
     - Arms
     - Legs
 
-# Supporting FrozenWorld clothing.
-
 - type: entity
-  parent: ClothingUniformJumpsuitColorGrey
-  id: ClothingUniformJumpsuitWinterWL
-  name: thermal underlayer
-  description: A warm inner layer for survival in severe cold.
-  suffix: WL
+  parent: ClothingUniformJumpsuitLibrarian
+  id: ClothingUniformJumpsuitThermalExtremeWL
+  name: extreme thermal jumper
+  description: A reinforced thermal jumper for the deepest freeze.
+  suffix: WL, T5
   components:
   - type: FrozenInsulation
-    tier: Warm
+    tier: Extreme
     coverage:
     - Torso
     - Arms
     - Legs
 
 - type: entity
-  parent: ClothingHeadHelmetBasic
-  id: ClothingHeadHelmetWinterWL
-  name: winter helmet
-  description: An insulated helmet that shields the head and face from freezing air.
-  suffix: WL
+  parent: ClothingHeadHatUshanka
+  id: ClothingHeadHatWinterExtremeWL
+  name: extreme winter hat
+  description: A reinforced insulated hat for the deepest freeze.
+  suffix: WL, T5
   components:
   - type: FrozenInsulation
-    tier: Winter
+    tier: Extreme
     coverage:
     - Head
     - Face
 
-# Backward-compatible alias for previous WL headwear id.
-- type: entity
-  parent: ClothingHeadHelmetWinterWL
-  id: ClothingHeadHatHoodWinterWL
-  name: winter helmet
-  description: An insulated helmet that shields the head and face from freezing air.
-  suffix: WL, Alias
-
 - type: entity
   parent: ClothingHandsGlovesLeather
-  id: ClothingHandsGlovesWinterWL
-  name: winter gloves
-  description: Insulated gloves for extreme cold.
-  suffix: WL
+  id: ClothingHandsGlovesWinterExtremeWL
+  name: extreme winter gloves
+  description: Reinforced insulated gloves for the deepest freeze.
+  suffix: WL, T5
   components:
   - type: FrozenInsulation
-    tier: Winter
+    tier: Extreme
     coverage:
     - Hands
 
 - type: entity
   parent: ClothingShoesBootsWinter
-  id: ClothingShoesBootsWinterWL
-  name: winter boots
-  description: Insulated boots built for frozen terrain.
-  suffix: WL
+  id: ClothingShoesBootsWinterExtremeWL
+  name: extreme winter boots
+  description: Reinforced insulated boots for the deepest freeze.
+  suffix: WL, T5
   components:
   - type: FrozenInsulation
-    tier: Winter
+    tier: Extreme
     coverage:
     - Feet
   - type: FrozenFootwear
-    surfaceColdPenaltyMultiplier: 0.25
-    surfaceSpeedPenaltyMultiplier: 0.5
+    surfaceColdPenaltyMultiplier: 0.05
+    surfaceSpeedPenaltyMultiplier: 0.20

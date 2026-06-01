@@ -68,6 +68,8 @@ public sealed class PersistentCraftingSystem : EntitySystem
     private PersistentCraftUnlockService _unlockService = default!;
     private PersistentCraftCraftExecutionService _craftExecutionService = default!;
     private List<PersistentCraftNodePrototype> _nodeCache = new();
+    private Dictionary<string, PersistentCraftBranchProfile> _researchBranchProgress = new();
+    private HashSet<string> _researchUnlockedNodes = new();
 
     public override void Initialize()
     {
@@ -83,15 +85,20 @@ public sealed class PersistentCraftingSystem : EntitySystem
             _stacks,
             _hands,
             _profileService);
+        InitializeRoundResearch();
         ValidatePrototypeConfiguration();
 
         SubscribeLocalEvent<PlayerSpawnCompleteEvent>(OnPlayerSpawnComplete);
+        SubscribeLocalEvent<RoundRestartCleanupEvent>(OnRoundRestartCleanup);
         SubscribeLocalEvent<PersistentCraftAccessComponent, ComponentStartup>(OnAccessStartup);
         SubscribeLocalEvent<PersistentCraftAccessComponent, ComponentShutdown>(OnAccessShutdown);
         SubscribeLocalEvent<PersistentCraftAccessComponent, PlayerAttachedEvent>(OnAccessPlayerAttached);
         SubscribeLocalEvent<PersistentCraftAccessComponent, PlayerDetachedEvent>(OnAccessPlayerDetached);
         SubscribeLocalEvent<PersistentCraftAccessComponent, OpenPersistentCraftMenuActionEvent>(OnOpenCraftMenu);
         SubscribeLocalEvent<PersistentCraftAccessComponent, PersistentCraftDoAfterEvent>(OnCraftDoAfter);
+        SubscribeLocalEvent<PersistentCraftResearchBenchComponent, InteractHandEvent>(OnResearchBenchInteract);
+        SubscribeLocalEvent<PersistentCraftResearchBenchComponent, GetVerbsEvent<InteractionVerb>>(OnResearchBenchGetVerbs);
+        SubscribeLocalEvent<PersistentCraftResearchBenchComponent, PersistentCraftResearchDoAfterEvent>(OnResearchDoAfter);
         SubscribeLocalEvent<PersistentCraftBlueprintComponent, InteractHandEvent>(OnBlueprintInteract);
         SubscribeLocalEvent<PersistentCraftBlueprintComponent, InteractUsingEvent>(OnBlueprintInteractUsing);
         SubscribeLocalEvent<PersistentCraftBlueprintComponent, GetVerbsEvent<InteractionVerb>>(OnBlueprintGetVerbs);
@@ -108,6 +115,27 @@ public sealed class PersistentCraftingSystem : EntitySystem
     {
         base.Update(frameTime);
         CleanupStaleRateLimitEntries();
+    }
+
+    private void InitializeRoundResearch()
+    {
+        _researchBranchProgress = _profileService.CreateDefaultBranchProfiles();
+        _researchUnlockedNodes = new HashSet<string>();
+        EnsureRoundResearchAutoNodes();
+    }
+
+    private void EnsureRoundResearchAutoNodes()
+    {
+        var researchProfile = CreateResearchAccessProfile(_profileService.CreateAllBranchAccess());
+        _profileService.EnsureAutoTierNodesUnlocked(researchProfile);
+    }
+
+    private void OnRoundRestartCleanup(RoundRestartCleanupEvent args)
+    {
+        InitializeRoundResearch();
+        _lastCraftRequestTime.Clear();
+        _lastUnlockRequestTime.Clear();
+        _lastRateLimitCleanup = TimeSpan.Zero;
     }
 
     /// <summary>
@@ -229,9 +257,6 @@ public sealed class PersistentCraftingSystem : EntitySystem
 
             if (recipe.CraftTime < 0f)
                 Log.Warning($"[PersistentCraft] Recipe '{recipe.ID}' has negative craftTime '{recipe.CraftTime}'.");
-
-            if (recipe.PointReward < 0)
-                Log.Warning($"[PersistentCraft] Recipe '{recipe.ID}' has negative pointReward '{recipe.PointReward}'.");
 
             if (!nodesById.TryGetValue(recipe.RequiredNode, out var requiredNode))
             {
@@ -384,19 +409,32 @@ public sealed class PersistentCraftingSystem : EntitySystem
         {
             var defaultProfile = new PersistentCraftProfileComponent
             {
-                BranchProgress = _profileService.CreateDefaultBranchProfiles(),
+                BranchProgress = _researchBranchProgress,
+                AccessibleBranches = _profileService.CreateAllBranchAccess(),
+                ResearchBranches = new HashSet<string>(),
+                UnlockedNodes = _researchUnlockedNodes,
             };
 
             return new PersistentCraftState(
                 false,
                 _profileService.BuildBranchStates(defaultProfile),
-                new List<string>());
+                _profileService.BuildAccessibleBranchList(defaultProfile),
+                new List<string>(),
+                _profileService.BuildUnlockedNodeState(defaultProfile),
+                false);
         }
+
+        var visibleBranches = new HashSet<string>(profile.AccessibleBranches);
+        visibleBranches.UnionWith(profile.ResearchBranches);
+        var stateProfile = CreateResearchAccessProfile(visibleBranches);
 
         return new PersistentCraftState(
             profile.Loaded,
-            _profileService.BuildBranchStates(profile),
-            profile.UnlockedNodes.OrderBy(id => id).ToList());
+            _profileService.BuildBranchStates(stateProfile),
+            _profileService.BuildAccessibleBranchList(profile),
+            BuildOrderedBranchList(profile.ResearchBranches),
+            _profileService.BuildUnlockedNodeState(stateProfile),
+            profile.CanResearch);
     }
 
     public bool IsLoaded(EntityUid uid)
@@ -409,7 +447,7 @@ public sealed class PersistentCraftingSystem : EntitySystem
         if (!TryComp(uid, out PersistentCraftProfileComponent? profile))
             return false;
 
-        ResetRoundProfile(uid, profile, profile.CharacterName);
+        ResetRoundProfile(uid, profile, profile.CharacterName, null);
         return true;
     }
 
@@ -475,16 +513,29 @@ public sealed class PersistentCraftingSystem : EntitySystem
     private void OnPlayerSpawnComplete(PlayerSpawnCompleteEvent args)
     {
         if (ShouldGrantPersistentCraftAccess(args.JobId))
-            EnsurePersistentCraftReady(args.Mob, args.Profile.Name, resetProfile: true);
+            EnsurePersistentCraftReady(args.Mob, args.Profile.Name, args.JobId, resetProfile: true);
     }
 
-    private void ResetRoundProfile(EntityUid uid, PersistentCraftProfileComponent profile, string characterName)
+    private void ResetRoundProfile(
+        EntityUid uid,
+        PersistentCraftProfileComponent profile,
+        string characterName,
+        string? jobId)
     {
         profile.CharacterName = characterName;
-        profile.BranchProgress = _profileService.CreateDefaultBranchProfiles();
-        profile.UnlockedNodes.Clear();
-        _profileService.UnlockAllNodes(profile);
+        profile.BranchProgress = _researchBranchProgress;
+        profile.AccessibleBranches = jobId == null && profile.AccessibleBranches.Count > 0
+            ? new HashSet<string>(profile.AccessibleBranches)
+            : ResolveAccessibleBranches(jobId);
+        profile.CanResearch = jobId == null
+            ? profile.CanResearch
+            : ResolveCanResearch(jobId);
+        profile.ResearchBranches = jobId == null && profile.ResearchBranches.Count > 0
+            ? new HashSet<string>(profile.ResearchBranches)
+            : ResolveResearchBranches(jobId);
+        profile.UnlockedNodes = _researchUnlockedNodes;
         profile.Loaded = true;
+        EnsureRoundResearchAutoNodes();
 
         SendStateToAttachedActor(uid);
     }
@@ -649,7 +700,15 @@ public sealed class PersistentCraftingSystem : EntitySystem
         if (!_proto.TryIndex<PersistentCraftNodePrototype>(ev.NodeId, out var node))
             return;
 
-        if (!_unlockService.TryUnlockNode(profile, node, out var failure))
+        if (!CanResearch(profile))
+        {
+            _popup.PopupEntity(Loc.GetString("persistent-craft-research-popup-no-access"), user, user);
+            SendState(args.SenderSession, user);
+            return;
+        }
+
+        var researchProfile = CreateResearchAccessProfile(profile.ResearchBranches);
+        if (!_unlockService.TryUnlockNode(researchProfile, node, out var failure))
         {
             var failureLoc = failure switch
             {
@@ -657,6 +716,7 @@ public sealed class PersistentCraftingSystem : EntitySystem
                 PersistentCraftUnlockFailure.AlreadyUnlocked => "persistent-craft-popup-already-unlocked",
                 PersistentCraftUnlockFailure.MissingPrerequisites => "persistent-craft-popup-prerequisite",
                 PersistentCraftUnlockFailure.NotEnoughPoints => "persistent-craft-popup-not-enough-points",
+                PersistentCraftUnlockFailure.InaccessibleBranch => "persistent-craft-popup-branch-locked",
                 _ => null,
             };
 
@@ -671,7 +731,7 @@ public sealed class PersistentCraftingSystem : EntitySystem
             user,
             user);
 
-        SendState(args.SenderSession, user);
+        SendStateToCraftUsers();
     }
 
     private void OnCraftDoAfter(EntityUid uid, PersistentCraftAccessComponent component, PersistentCraftDoAfterEvent args)
@@ -721,24 +781,87 @@ public sealed class PersistentCraftingSystem : EntitySystem
 
         _craftExecutionService.ConsumeIngredientPlan(plan);
         _craftExecutionService.SpawnResults(args.User, recipe);
-        _craftExecutionService.GrantCraftPoints(args.User, recipe);
 
         _popup.PopupEntity(
             Loc.GetString("persistent-craft-station-popup-crafted", ("recipe", ResolveRecipeName(recipe))),
             args.User,
             args.User);
 
-        var pointsReward = PersistentCraftingHelper.GetPointReward(recipe);
-        if (pointsReward > 0)
-        {
-            _popup.PopupEntity(
-                Loc.GetString("persistent-craft-popup-points-gained", ("points", pointsReward)),
-                args.User,
-                args.User);
-        }
-
         SendCraftRecipeExecutionToAttachedActor(args.User, recipe.ID, PersistentCraftRecipeExecutionResult.Completed);
         SendStateToAttachedActor(args.User);
+    }
+
+    private void OnResearchBenchInteract(EntityUid uid, PersistentCraftResearchBenchComponent component, InteractHandEvent args)
+    {
+        if (args.Handled)
+            return;
+
+        args.Handled = TryStartResearchDoAfter(uid, component, args.User, true);
+    }
+
+    private void OnResearchBenchGetVerbs(
+        EntityUid uid,
+        PersistentCraftResearchBenchComponent component,
+        GetVerbsEvent<InteractionVerb> args)
+    {
+        if (!args.CanAccess || !args.CanInteract)
+            return;
+
+        if (!CanResearch(args.User, false))
+            return;
+
+        args.Verbs.Add(new InteractionVerb
+        {
+            Text = Loc.GetString("persistent-craft-research-verb"),
+            Act = () => TryStartResearchDoAfter(uid, component, args.User, true),
+        });
+    }
+
+    private void OnResearchDoAfter(EntityUid uid, PersistentCraftResearchBenchComponent component, PersistentCraftResearchDoAfterEvent args)
+    {
+        if (args.Handled)
+            return;
+
+        if (!Exists(args.User))
+            return;
+
+        args.Handled = true;
+
+        if (args.Cancelled)
+        {
+            SendStateToAttachedActor(args.User);
+            return;
+        }
+
+        if (!TryComp(args.User, out PersistentCraftProfileComponent? profile) ||
+            !CanResearch(profile))
+        {
+            PopupUser(args.User, "persistent-craft-research-popup-no-access");
+            SendStateToAttachedActor(args.User);
+            return;
+        }
+
+        var reward = Math.Max(0, component.PointReward);
+        var researchProfile = CreateResearchAccessProfile(profile.ResearchBranches);
+        var granted = _profileService.GrantBranchPoints(
+            researchProfile,
+            profile.ResearchBranches,
+            reward);
+
+        if (granted <= 0)
+        {
+            PopupUser(args.User, "persistent-craft-research-popup-no-access");
+            SendStateToAttachedActor(args.User);
+            return;
+        }
+
+        _popup.PopupEntity(
+            Loc.GetString("persistent-craft-research-popup-points-gained", ("points", reward)),
+            args.User,
+            args.User);
+
+        SendStateToCraftUsers();
+        TryStartResearchDoAfter(uid, component, args.User, false);
     }
 
     private void OnBlueprintInteract(EntityUid uid, PersistentCraftBlueprintComponent component, InteractHandEvent args)
@@ -982,22 +1105,12 @@ public sealed class PersistentCraftingSystem : EntitySystem
         }
 
         _craftExecutionService.ConsumeIngredientPlan(plan);
-        _craftExecutionService.GrantCraftPoints(args.User, recipe);
         QueueDel(uid);
 
         _popup.PopupEntity(
             Loc.GetString("persistent-craft-placement-popup-placed", ("recipe", ResolveRecipeName(recipe))),
             args.User,
             args.User);
-
-        var pointsReward = PersistentCraftingHelper.GetPointReward(recipe);
-        if (pointsReward > 0)
-        {
-            _popup.PopupEntity(
-                Loc.GetString("persistent-craft-popup-points-gained", ("points", pointsReward)),
-                args.User,
-                args.User);
-        }
 
         SendCraftRecipeExecutionToAttachedActor(args.User, recipe.ID, PersistentCraftRecipeExecutionResult.Completed);
         SendStateToAttachedActor(args.User);
@@ -1023,6 +1136,40 @@ public sealed class PersistentCraftingSystem : EntitySystem
         };
 
         return _doAfter.TryStartDoAfter(doAfter);
+    }
+
+    private bool TryStartResearchDoAfter(
+        EntityUid bench,
+        PersistentCraftResearchBenchComponent component,
+        EntityUid user,
+        bool showPopup)
+    {
+        if (!CanResearch(user, showPopup))
+            return false;
+
+        var doAfter = new DoAfterArgs(
+            EntityManager,
+            user,
+            MathF.Max(1f, component.DoAfter),
+            new PersistentCraftResearchDoAfterEvent(),
+            bench,
+            target: bench,
+            used: bench)
+        {
+            BreakOnMove = true,
+            BreakOnDamage = true,
+            NeedHand = false,
+            RequireCanInteract = true,
+            BlockDuplicate = true,
+        };
+
+        if (!_doAfter.TryStartDoAfter(doAfter))
+            return false;
+
+        if (showPopup)
+            PopupUser(user, "persistent-craft-research-popup-started");
+
+        return true;
     }
 
     private bool TryStartPlacementDoAfter(EntityUid blueprint, EntityUid user, PersistentCraftRecipePrototype recipe)
@@ -1313,17 +1460,25 @@ public sealed class PersistentCraftingSystem : EntitySystem
         SendState(session, uid);
     }
 
-    private void EnsurePersistentCraftReady(EntityUid uid, string? characterName = null, bool resetProfile = false)
+    private void EnsurePersistentCraftReady(
+        EntityUid uid,
+        string? characterName = null,
+        string? jobId = null,
+        bool resetProfile = false)
     {
         EnsureComp<PersistentCraftAccessComponent>(uid);
-        EnsurePersistentCraftProfileReady(uid, characterName, resetProfile);
+        EnsurePersistentCraftProfileReady(uid, characterName, jobId, resetProfile);
     }
 
-    private void EnsurePersistentCraftProfileReady(EntityUid uid, string? characterName = null, bool resetProfile = false)
+    private void EnsurePersistentCraftProfileReady(
+        EntityUid uid,
+        string? characterName = null,
+        string? jobId = null,
+        bool resetProfile = false)
     {
         var profile = EnsureComp<PersistentCraftProfileComponent>(uid);
         if (resetProfile || !profile.Loaded)
-            ResetRoundProfile(uid, profile, characterName ?? MetaData(uid).EntityName);
+            ResetRoundProfile(uid, profile, characterName ?? MetaData(uid).EntityName, jobId);
     }
 
     private bool ShouldGrantPersistentCraftAccess(string? jobId)
@@ -1333,12 +1488,138 @@ public sealed class PersistentCraftingSystem : EntitySystem
                job.GrantPersistentCraftAccess;
     }
 
+    private bool CanResearch(EntityUid user, bool showPopup)
+    {
+        if (!HasComp<PersistentCraftAccessComponent>(user) ||
+            !TryComp(user, out PersistentCraftProfileComponent? profile) ||
+            !profile.Loaded)
+        {
+            if (showPopup)
+                PopupUser(user, "persistent-craft-popup-loading");
+
+            return false;
+        }
+
+        if (CanResearch(profile))
+            return true;
+
+        if (showPopup)
+            PopupUser(user, "persistent-craft-research-popup-no-access");
+
+        return false;
+    }
+
+    private static bool CanResearch(PersistentCraftProfileComponent profile)
+    {
+        return profile.Loaded &&
+               profile.CanResearch &&
+               profile.ResearchBranches.Count > 0;
+    }
+
+    private HashSet<string> ResolveAccessibleBranches(string? jobId)
+    {
+        if (jobId == null ||
+            !_proto.TryIndex<JobPrototype>(jobId, out var job))
+        {
+            return _profileService.CreateAllBranchAccess();
+        }
+
+        if (job.PersistentCraftAllBranches)
+            return _profileService.CreateAllBranchAccess();
+
+        if (job.PersistentCraftBranches.Count > 0)
+            return CreateSpecificBranchAccess(job.PersistentCraftBranches);
+
+        return _branchRegistry.ById.ContainsKey(jobId)
+            ? CreateSpecificBranchAccess(new[] { jobId })
+            : _profileService.CreateAllBranchAccess();
+    }
+
+    private bool ResolveCanResearch(string? jobId)
+    {
+        return jobId != null &&
+               _proto.TryIndex<JobPrototype>(jobId, out var job) &&
+               job.PersistentCraftCanResearch;
+    }
+
+    private HashSet<string> ResolveResearchBranches(string? jobId)
+    {
+        if (jobId == null ||
+            !_proto.TryIndex<JobPrototype>(jobId, out var job) ||
+            !job.PersistentCraftCanResearch)
+        {
+            return new HashSet<string>();
+        }
+
+        if (job.PersistentCraftResearchAllBranches)
+            return _profileService.CreateAllBranchAccess();
+
+        if (job.PersistentCraftResearchBranches.Count > 0)
+            return CreateSpecificBranchAccess(job.PersistentCraftResearchBranches);
+
+        return _branchRegistry.ById.ContainsKey(jobId)
+            ? CreateSpecificBranchAccess(new[] { jobId })
+            : new HashSet<string>();
+    }
+
+    private HashSet<string> CreateSpecificBranchAccess(IEnumerable<string> branchIds)
+    {
+        var result = new HashSet<string>();
+        foreach (var branchId in branchIds)
+        {
+            if (string.IsNullOrWhiteSpace(branchId) ||
+                !_branchRegistry.ById.ContainsKey(branchId))
+            {
+                continue;
+            }
+
+            result.Add(branchId);
+        }
+
+        return result;
+    }
+
+    private List<string> BuildOrderedBranchList(HashSet<string> branches)
+    {
+        var result = new List<string>(branches.Count);
+        for (var i = 0; i < _branchRegistry.OrderedBranchIds.Count; i++)
+        {
+            var branch = _branchRegistry.OrderedBranchIds[i];
+            if (branches.Contains(branch))
+                result.Add(branch);
+        }
+
+        return result;
+    }
+
+    private PersistentCraftProfileComponent CreateResearchAccessProfile(HashSet<string> branches)
+    {
+        return new PersistentCraftProfileComponent
+        {
+            BranchProgress = _researchBranchProgress,
+            AccessibleBranches = new HashSet<string>(branches),
+            ResearchBranches = new HashSet<string>(branches),
+            UnlockedNodes = _researchUnlockedNodes,
+            CanResearch = true,
+            Loaded = true,
+        };
+    }
+
     private void SendStateToAttachedActor(EntityUid uid)
     {
         if (!TryComp(uid, out ActorComponent? actor))
             return;
 
         SendState(actor.PlayerSession, uid);
+    }
+
+    private void SendStateToCraftUsers()
+    {
+        var query = EntityQueryEnumerator<PersistentCraftAccessComponent, ActorComponent>();
+        while (query.MoveNext(out var uid, out _, out var actor))
+        {
+            SendState(actor.PlayerSession, uid);
+        }
     }
 
     private void SendCraftRecipeExecutionToAttachedActor(
