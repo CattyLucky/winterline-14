@@ -215,31 +215,6 @@
 # --- Indoor Stations And Heat ------------------------------------------------
 
 - type: persistentCraftRecipe
-  id: WLCraftRecipePrimitiveWorkbench
-  name: persistent-craft-wl-recipe-primitive-workbench-name
-  description: persistent-craft-wl-recipe-primitive-workbench-description
-  displayProto: WLPrimitiveWorkbench
-  branch: WLSettlementHead
-  tier: 2
-  requiredNode: WLCraftNodeSettlementHeadWorkshopT2
-  category: WLCraftCategorySettlementHead
-  subCategory: WLCraftSubCategoryShelterStructures
-  craftTime: 2.4
-  ingredients:
-  - stackType: WLWoodPlankStack
-    amount: 4
-  - stackType: WLMetalPartsStack
-    amount: 1
-  results: []
-  placement:
-    proto: WLPrimitiveWorkbench
-    blueprintProto: WLPrimitiveWorkbenchBlueprint
-    placementMode: SnapgridCenter
-    floorRequirement: Furniture
-    requireRoom: true
-    minFloorTier: Wood
-
-- type: persistentCraftRecipe
   id: WLCraftRecipeResearchTable
   name: persistent-craft-wl-recipe-research-table-name
   description: persistent-craft-wl-recipe-research-table-description
@@ -263,6 +238,31 @@
     blueprintProto: WLResearchTableBlueprint
     placementMode: SnapgridCenter
     floorRequirement: Furniture
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipePrimitiveWorkbench
+  name: persistent-craft-wl-recipe-primitive-workbench-name
+  description: persistent-craft-wl-recipe-primitive-workbench-description
+  displayProto: WLPrimitiveWorkbench
+  branch: WLSettlementHead
+  tier: 2
+  requiredNode: WLCraftNodeSettlementHeadWorkshopT2
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterStructures
+  craftTime: 2.4
+  ingredients:
+  - stackType: WLWoodPlankStack
+    amount: 4
+  - stackType: WLMetalPartsStack
+    amount: 1
+  results: []
+  placement:
+    proto: WLPrimitiveWorkbench
+    blueprintProto: WLPrimitiveWorkbenchBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Furniture
+    requireRoom: true
+    minFloorTier: Wood
 
 - type: persistentCraftRecipe
   id: WLCraftRecipeFireplace
