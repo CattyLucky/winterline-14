@@ -1,5 +1,6 @@
 using Content.Client._WL.PersistentCrafting.UI.Indexes;
 using Content.Shared._WL.PersistentCrafting;
+using Content.Shared.Stacks;
 using Robust.Shared.Prototypes;
 
 namespace Content.Client._WL.PersistentCrafting.UI.Services;
@@ -28,10 +29,21 @@ public sealed class PersistentCraftTextResolver
             : prototypeId;
     }
 
+    public string ResolveStackName(string stackTypeId)
+    {
+        return _prototype.TryIndex<StackPrototype>(stackTypeId, out var prototype)
+            ? Loc.GetString(prototype.Name)
+            : stackTypeId;
+    }
+
     public string ResolveRecipeName(PersistentCraftRecipePrototype recipe)
     {
         if (MetadataIndex.TryGetName(recipe.ID, out var cached))
             return cached;
+
+        var recipeName = TryLoc(recipe.Name);
+        if (!string.IsNullOrWhiteSpace(recipeName))
+            return recipeName;
 
         var displayProto = PersistentCraftingHelper.GetDisplayPrototypeId(recipe);
         if (!string.IsNullOrWhiteSpace(displayProto) &&
@@ -48,6 +60,10 @@ public sealed class PersistentCraftTextResolver
     {
         if (MetadataIndex.TryGetDescription(recipe.ID, out var cached))
             return cached;
+
+        var recipeDescription = TryLoc(recipe.Description);
+        if (!string.IsNullOrWhiteSpace(recipeDescription))
+            return recipeDescription;
 
         var displayProto = PersistentCraftingHelper.GetDisplayPrototypeId(recipe);
         if (!string.IsNullOrWhiteSpace(displayProto) &&
@@ -223,7 +239,7 @@ public sealed class PersistentCraftTextResolver
         var name = ingredient.GetSelectorKind() switch
         {
             PersistentCraftIngredientSelectorKind.Proto => ResolveEntityName(ingredient.Proto ?? string.Empty),
-            PersistentCraftIngredientSelectorKind.StackType => ingredient.StackType ?? string.Empty,
+            PersistentCraftIngredientSelectorKind.StackType => ResolveStackName(ingredient.StackType ?? string.Empty),
             PersistentCraftIngredientSelectorKind.Tag => FormatTagIngredientName(ingredient.Tag ?? string.Empty),
             _ => "?",
         };
@@ -234,6 +250,11 @@ public sealed class PersistentCraftTextResolver
     public string FormatResult(PersistentCraftResult result)
     {
         return $"{ResolveEntityName(result.Proto)} x{result.Amount}";
+    }
+
+    public string FormatPlacement(PersistentCraftPlacement placement)
+    {
+        return ResolveEntityName(placement.Proto);
     }
 
     private PersistentCraftCategoryPrototype? GetCategoryPrototype(string categoryId)

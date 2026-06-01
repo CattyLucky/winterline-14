@@ -1,0 +1,77 @@
+# /// WL Change
+# Temporary POI prototypes for testing FrozenWorld template stamping (Patch 07.4).
+
+- type: frozenWorldPoi
+  id: WLMeatballMagnetPoi
+  name: meatball wreck
+  mapPath: /Maps/Salvage/meatball.yml
+  stampPrototype: WLZoneMarkerWork
+  size: 64, 64
+  anchorOffset: 16, 16
+  minClearance: 8
+  allowedZones:
+  - WorkField
+  - ExpeditionField
+  maxPerRound: 6
+  allowRotation: false
+  allowMirroring: false
+  requiresClearArea: true
+  stampTiles: true
+  stampEmptyTiles: false
+  stampEntities: true
+
+- type: frozenWorldPoi
+  id: WLVeganMeatballMagnetPoi
+  name: vegan meatball wreck
+  mapPath: /Maps/Salvage/vegan-meatball.yml
+  stampPrototype: WLZoneMarkerExpedition
+  size: 64, 64
+  anchorOffset: 16, 16
+  minClearance: 8
+  allowedZones:
+  - ExpeditionField
+  maxPerRound: 4
+  allowRotation: false
+  allowMirroring: false
+  requiresClearArea: true
+  stampTiles: true
+  stampEmptyTiles: false
+  stampEntities: true
+
+# Heavy test variant: same POI template, but rotation enabled for 07.6 checks.
+- type: frozenWorldPoi
+  id: WLMeatballMagnetPoiHeavyRot
+  name: meatball wreck (heavy rot)
+  mapPath: /Maps/Salvage/meatball.yml
+  stampPrototype: WLZoneMarkerWork
+  size: 64, 64
+  anchorOffset: 16, 16
+  minClearance: 8
+  allowedZones:
+  - WorkField
+  - ExpeditionField
+  maxPerRound: 6
+  allowRotation: true
+  allowMirroring: false
+  requiresClearArea: true
+  stampTiles: true
+  stampEmptyTiles: false
+  stampEntities: true
+
+- type: frozenWorldPoi
+  id: WLVeganMeatballMagnetPoiHeavyRot
+  name: vegan meatball wreck (heavy rot)
+  mapPath: /Maps/Salvage/vegan-meatball.yml
+  stampPrototype: WLZoneMarkerExpedition
+  size: 64, 64
+  anchorOffset: 16, 16
+  minClearance: 8
+  allowedZones:
+  - ExpeditionField
+  maxPerRound: 4
+  allowRotation: true
+  allowMirroring: false
+  requiresClearArea: true
+  stampTiles: true
+  stampEmptyTiles: false
+  stampEntities: true

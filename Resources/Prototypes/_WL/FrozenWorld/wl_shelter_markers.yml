@@ -1,0 +1,14 @@
+- type: entity
+  id: WLFrozenBaseShelterMarker
+  name: frozen base shelter marker
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Transform
+  - type: FrozenShelter
+    name: Base
+    size: 18, 12
+    offset: 0, 0
+    priority: 10
+    weatherExposureMultiplier: 0.15
+    temperatureBonus: 6
+    recoveryMultiplier: 1.25

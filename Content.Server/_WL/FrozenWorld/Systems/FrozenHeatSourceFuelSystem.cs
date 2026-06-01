@@ -31,6 +31,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
 {
     [Dependency] private readonly FrozenDynamicHeatSourceSystem _dynamicHeat = default!;
     [Dependency] private readonly FrozenHeatFieldSystem _heatField = default!;
+    [Dependency] private readonly FrozenRoomHeatSystem _roomHeat = default!;
     [Dependency] private readonly FrozenHeatSourceFuelUiSystem _fuelUi = default!;
     [Dependency] private readonly AppearanceSystem _appearance = default!;
     [Dependency] private readonly SharedContainerSystem _container = default!;
@@ -634,7 +635,10 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
         if (source.Dynamic)
             _dynamicHeat.InvalidateDynamicHeatIndex();
         else
+        {
             _heatField.InvalidateStaticHeatField();
+            _roomHeat.InvalidateRoomHeat();
+        }
     }
 
     private static bool IsBurning(FrozenHeatSourceFuelComponent fuel)
@@ -666,7 +670,10 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
             if (source.Dynamic)
                 _dynamicHeat.InvalidateDynamicHeatIndex();
             else
+            {
                 _heatField.InvalidateStaticHeatField();
+                _roomHeat.InvalidateRoomHeat();
+            }
         }
 
         UpdateBurningPresentation(uid, source, fuel);

@@ -5,7 +5,43 @@
   biome: WLIceWasteland
   mapLightColor: '#D7EFFF'
   atmosphereTemperature: 243.15
+  lightCyclePreset: WLFrostRimDefaultLightCycle
+  enableWeatherCycle: true
+  weatherCyclePreset: WLFrostRimDefaultWeatherCycle
   zonePreset: FrostRimDefaultZones
+  poiStampBatchSize: 4
+  gasMoles:
+  - 21.0
+  - 79.0
+
+- type: frozenWorldProfile
+  id: FrostRimPoiHeavy
+  mapName: Frostland
+  baseName: Frostland Colony Base
+  biome: WLIceWasteland
+  mapLightColor: '#D7EFFF'
+  atmosphereTemperature: 243.15
+  lightCyclePreset: WLFrostRimDefaultLightCycle
+  enableWeatherCycle: true
+  weatherCyclePreset: WLFrostRimDefaultWeatherCycle
+  zonePreset: FrostRimPoiHeavyZones
+  poiStampBatchSize: 4
+  gasMoles:
+  - 21.0
+  - 79.0
+
+- type: frozenWorldProfile
+  id: FrostRimPoiLight
+  mapName: Frostland
+  baseName: Frostland Colony Base
+  biome: WLIceWasteland
+  mapLightColor: '#D7EFFF'
+  atmosphereTemperature: 243.15
+  lightCyclePreset: WLFrostRimDefaultLightCycle
+  enableWeatherCycle: true
+  weatherCyclePreset: WLFrostRimDefaultWeatherCycle
+  zonePreset: FrostRimPoiLightZones
+  poiStampBatchSize: 4
   gasMoles:
   - 21.0
   - 79.0

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Numerics;
 using Content.Shared._WL.FrozenWorld.Prototypes;
 using Robust.Shared.Map;
 using Robust.Shared.Maths;
@@ -11,17 +13,19 @@ public sealed partial class FrozenWorldComponent : Component
     [DataField]
     public ProtoId<FrozenWorldProfilePrototype> Profile;
 
+    /// <summary>
+    /// Main gameplay surface grid for this frozen world.
+    /// Biome, zones, resources, construction, rooms and POI stamps all live on this grid.
+    /// </summary>
     [DataField]
-    public EntityUid? PlanetGrid;
+    public EntityUid? WorldGrid;
 
-    [DataField]
-    public EntityUid? TemporaryBaseGrid;
-
+    /// <summary>
+    /// Settlement/base footprint in WorldGrid local coordinates.
+    /// Zones are measured from this box, not from the whole grid LocalAABB after biome preloading.
+    /// </summary>
     [DataField]
     public Box2 BaseBounds;
-
-    [DataField]
-    public Box2 BaseBoundsWorld;
 
     [DataField]
     public MapId MapId;
@@ -29,22 +33,80 @@ public sealed partial class FrozenWorldComponent : Component
     [DataField]
     public int Seed;
 
+    /// <summary>
+    /// True once BaseBounds were captured for the current round.
+    /// </summary>
     [DataField]
-    public bool BaseStamped;
+    public bool BaseAreaCaptured;
 
     /// <summary>
-    /// Single global ambient temperature of the frozen world in Kelvin.
-    /// Used by survival exposure immediately. Local heat sources do not mutate this value.
+    /// Base ambient temperature of the frozen world in Kelvin, before day/night and weather.
+    /// This is authored by FrozenWorldProfilePrototype.atmosphereTemperature.
+    /// </summary>
+    [DataField]
+    public float BaseAmbientTemperature = 243.15f;
+
+    /// <summary>
+    /// Gameplay ambient temperature in Kelvin after global day/night modifier,
+    /// before per-position weather, zone bands and local heat sources.
     /// </summary>
     [DataField]
     public float AmbientTemperature = 243.15f;
+
+    /// <summary>
+    /// Current day/night temperature delta derived from official LightCycleComponent.
+    /// Delta in Kelvin/Celsius units.
+    /// </summary>
+    [DataField]
+    public float DayNightTemperatureOffset;
+
+    /// <summary>
+    /// Current official LightCycle phase used by FrozenWorldClimateSystem. 0..1.
+    /// </summary>
+    [DataField]
+    public float DayNightPhase;
+
+    /// <summary>
+    /// Outdoor weather temperature delta from FrozenWeatherState gameplay weather.
+    /// Delta in Kelvin/Celsius units.
+    /// </summary>
+    [DataField]
+    public float WeatherTemperatureOffset;
+
+    [DataField]
+    public float WeatherExposureGainMultiplier = 1f;
+
+    [DataField]
+    public float WeatherRecoveryMultiplier = 1f;
+
+    [DataField]
+    public float WeatherColdDamageMultiplier = 1f;
+
+    /// <summary>
+    /// Minimum fraction of outdoor gameplay weather that penetrates shelter.
+    /// The final per-position weather factor is max(this value, shelter.WeatherExposureMultiplier).
+    /// </summary>
+    [DataField]
+    public float WeatherShelterPenetration;
+
+    /// <summary>
+    /// Strongest active weather modifier display name.
+    /// </summary>
+    [DataField]
+    public string? ActiveWeatherName;
+
+    /// <summary>
+    /// Strength of the strongest active weather effect after startup/shutdown fade. 0..1.
+    /// </summary>
+    [DataField]
+    public float WeatherIntensity;
 
     /// <summary>
     /// Minimum environmental gameplay temperature after world/local heat modifiers.
     /// This is a safety clamp for survival calculations, not atmos gas temperature.
     /// </summary>
     [DataField]
-    public float MinEffectiveTemperature = 203.15f;
+    public float MinEffectiveTemperature = 73.15f; // -200C
 
     /// <summary>
     /// Maximum environmental gameplay temperature after world/local heat modifiers.
@@ -69,10 +131,10 @@ public sealed partial class FrozenWorldComponent : Component
 
     /// <summary>
     /// Whether <see cref="FrozenWorldAtmosphereTemperatureSystem"/> is allowed to rewrite
-    /// tile atmosphere temperature on the planet grid when AmbientTemperature changes.
+    /// tile atmosphere temperature on the world grid when AmbientTemperature changes.
     ///
     /// IMPORTANT: this flag does NOT, by itself, make the atmosphere "frozen". The grid
-    /// atmosphere is taken offline in <see cref="FrozenWorldSystem.ConfigurePlanetGrid"/>
+    /// atmosphere is taken offline in <see cref="FrozenWorldSystem.ConfigureWorldGrid"/>
     /// by setting <see cref="GridAtmosphereComponent.Simulated"/> to false. That is the
     /// switch that disables gas diffusion, monstermos and superconductivity.
     ///
@@ -110,6 +172,50 @@ public sealed partial class FrozenWorldComponent : Component
     public bool ZonesGenerated;
 
     /// <summary>
+    /// Runtime POI placements selected by FrozenWorldZoneSystem.
+    /// The stamp pass consumes this list and inserts map/entity templates into WorldGrid.
+    /// </summary>
+    [DataField]
+    public List<FrozenWorldPoiPlacementData> PoiPlacements = new();
+
+    /// <summary>
+    /// True once the current PoiPlacements list has been processed by FrozenWorldPoiStampSystem.
+    /// Batched stamping may leave this false for a few setup updates while templates are loaded gradually.
+    /// </summary>
+    [DataField]
+    public bool PoisStamped;
+
+    /// <summary>
+    /// Cumulative tile count written by the current POI stamp pass. Runtime diagnostics only.
+    /// </summary>
+    [DataField]
+    public int PoiStampedTileCount;
+
+    /// <summary>
+    /// Cumulative entity count moved/spawned by the current POI stamp pass. Runtime diagnostics only.
+    /// </summary>
+    [DataField]
+    public int PoiStampedEntityCount;
+
+    /// <summary>
+    /// Cumulative decal count copied by the current POI stamp pass. Runtime diagnostics only.
+    /// </summary>
+    [DataField]
+    public int PoiStampedDecalCount;
+
+    /// <summary>
+    /// Number of POI stamp batches completed for the current setup. Runtime diagnostics only.
+    /// </summary>
+    [DataField]
+    public int PoiStampBatches;
+
+    /// <summary>
+    /// Exact WorldGrid tile indices written by stamped POI templates during the current setup.
+    /// Runtime-only cache used for targeted POI atmosphere seeding after the final batch.
+    /// </summary>
+    public readonly HashSet<Vector2i> PoiStampedAtmosphereTiles = new();
+
+    /// <summary>
     /// Ambient temperature offsets (Kelvin/Celsius delta) by square distance bands from the base.
     /// Used by FrozenThermalQuerySystem to provide zone-to-zone temperature gameplay.
     /// </summary>
@@ -118,3 +224,44 @@ public sealed partial class FrozenWorldComponent : Component
 }
 
 public readonly record struct FrozenWorldTemperatureBand(float MinDistance, float MaxDistance, float TemperatureOffset);
+
+
+[DataDefinition]
+public sealed partial class FrozenWorldPoiPlacementData
+{
+    [DataField]
+    public ProtoId<FrozenWorldPoiPrototype> Poi;
+
+    [DataField]
+    public string ZoneId = string.Empty;
+
+    /// <summary>
+    /// WorldGrid local placement point. This is normally a tile center.
+    /// </summary>
+    [DataField]
+    public Vector2 Position;
+
+    [DataField]
+    public Box2 Bounds;
+
+    /// <summary>
+    /// 90-degree rotation steps applied by the POI stamper. 0=0deg, 1=90deg, 2=180deg, 3=270deg.
+    /// </summary>
+    [DataField]
+    public int RotationSteps;
+
+    [DataField]
+    public bool MirroredX;
+
+    [DataField]
+    public bool MirroredY;
+
+    [DataField]
+    public bool Stamped;
+
+    [DataField]
+    public EntityUid? StampEntity;
+
+    [DataField]
+    public string? StampFailure;
+}

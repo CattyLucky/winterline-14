@@ -4,7 +4,9 @@ using Robust.Shared.Prototypes;
 namespace Content.Server._WL.FrozenWorld.Components;
 
 /// <summary>
-/// Marker for the main colony/base grid on the frozen world map.
+/// Runtime marker for the main colony/world surface grid configured by FrozenWorldSystem.
+/// This is kept for systems that still need a simple "this grid belongs to the frozen settlement" marker.
+/// Use FrozenWorldMainGridComponent in authored map YAML when selecting the grid explicitly.
 /// </summary>
 [RegisterComponent]
 public sealed partial class FrozenBaseComponent : Component

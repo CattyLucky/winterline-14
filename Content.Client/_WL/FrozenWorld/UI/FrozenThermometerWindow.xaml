@@ -1,38 +1,20 @@
 <ui:FrozenThermometerWindow
     xmlns="https://spacestation14.io"
     xmlns:ui="clr-namespace:Content.Client._WL.FrozenWorld.UI"
-    SetSize="720 620"
+    SetSize="480 150"
     Resizable="True"
-    MinWidth="680"
-    MinHeight="500">
+    MinWidth="420"
+    MinHeight="120">
     <BoxContainer Orientation="Vertical" Margin="12 12 12 12">
-        <PanelContainer Name="TemperaturePanel" HorizontalExpand="True">
+        <BoxContainer Orientation="Horizontal" HorizontalExpand="True">
+            <Label Name="HeaderLabel" Text="Thermometer" HorizontalExpand="True" />
+        </BoxContainer>
+
+        <Control MinSize="1 8" />
+
+        <PanelContainer Name="TemperaturePanel" HorizontalExpand="True" VerticalExpand="True">
             <BoxContainer Orientation="Vertical">
                 <Label Name="EnvironmentalTemperatureLabel" Text="—" />
-            </BoxContainer>
-        </PanelContainer>
-
-        <Control MinSize="1 8" />
-
-        <PanelContainer Name="ExposurePanel" HorizontalExpand="True">
-            <BoxContainer Orientation="Vertical">
-                <Label Name="StageLabel" Text="—" />
-                <Label Name="ExposureLabel" Text="—" />
-                <ProgressBar Name="ExposureBar" MinSize="0 20" MaxValue="1" />
-                <Control MinSize="1 6" />
-                <Label Name="SeverityLabel" Text="—" />
-                <Label Name="WeakestPartLabel" Text="—" />
-            </BoxContainer>
-        </PanelContainer>
-
-        <Control MinSize="1 8" />
-
-        <PanelContainer Name="BodyPartsPanel" HorizontalExpand="True" VerticalExpand="True">
-            <BoxContainer Orientation="Vertical">
-                <Label Name="BodyPartsHeaderLabel" Text="—" />
-                <ScrollContainer VerticalExpand="True">
-                    <BoxContainer Name="BodyPartsContainer" Orientation="Vertical" />
-                </ScrollContainer>
             </BoxContainer>
         </PanelContainer>
     </BoxContainer>

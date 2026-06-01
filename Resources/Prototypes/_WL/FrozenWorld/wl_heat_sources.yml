@@ -1,0 +1,304 @@
+# /// WL Change
+# Real fuel-driven FrozenWorld heat sources.
+#
+# These are placed through _WL/PersistentCrafting blueprints. They use
+# FrozenHeatSourceFuel for fuel UI/ignition and FrozenHeatSource for actual heat.
+
+# --- Outdoor Camp Heat -------------------------------------------------------
+
+- type: entity
+  id: WLCampfireHeatSource
+  parent: BaseStructure
+  name: frozen campfire
+  description: A rough outdoor firepit for the first hours in the frozen wastes. It is useful outside, but too smoky and unsafe for a sealed room.
+  components:
+  - type: Sprite
+    noRot: true
+    sprite: _WL/FrozenWorld/HeatSources/wl_campfire.rsi
+    layers:
+    - state: off
+      map: [ "fuel_state" ]
+  - type: Appearance
+  - type: GenericVisualizer
+    visuals:
+      enum.FrozenHeatSourceFuelVisuals.Burning:
+        fuel_state:
+          True: { state: on }
+          False: { state: off }
+  - type: AmbientSound
+    range: 4
+    volume: -6
+    enabled: false
+    sound:
+      path: /Audio/Ambience/Objects/fireplace.ogg
+  - type: PointLight
+    radius: 4
+    energy: 2
+    color: "#FF8A3D"
+    castShadows: false
+    enabled: false
+  - type: Damageable
+    damageContainer: StructuralInorganic
+    damageModifierSet: Wood
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 50
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          collection: WoodDestroy
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+  - type: FrozenHeatSource
+    enabled: false
+    dynamic: false
+    innerRadius: 1.5
+    outerRadius: 4
+    heatBonus: 45
+    transferEfficiency: 1
+  - type: FrozenShelterForbiddenInRoom
+  - type: Storage
+    openOnActivate: false
+    showVerb: false
+    grid:
+    - 0,0,2,1
+    maxItemSize: Normal
+    whitelist:
+      components:
+      - FrozenFuel
+  - type: UserInterface
+    interfaces:
+      enum.StorageUiKey.Key:
+        type: StorageBoundUserInterface
+      enum.FrozenWorldUiKey.HeatSourceFuel:
+        type: FrozenHeatSourceFuelBoundUserInterface
+  - type: ActivatableUI
+    key: enum.FrozenWorldUiKey.HeatSourceFuel
+  - type: ContainerContainer
+    containers:
+      storagebase: !type:Container
+        ents: [ ]
+  - type: FrozenHeatSourceFuel
+    fuelContainerId: storagebase
+    requiresIgnition: true
+    canIgniteWithItem: true
+    allowUiIgnition: false
+    burnRate: 1
+    autoConsumeFuel: true
+  - type: FrozenShelterDeconstructible
+    doAfter: 2
+    refunds:
+    - proto: WLFrozenBranch
+      count: 3
+
+# --- Indoor Room Heat --------------------------------------------------------
+
+- type: entity
+  id: WLFireplaceHeatSource
+  parent: BaseStructure
+  name: shelter fireplace
+  description: A safer room heater built from scrap and stonework. It keeps a finished shelter warm without filling the room with open camp smoke.
+  components:
+  - type: Sprite
+    sprite: _WL/FrozenWorld/HeatSources/wl_fireplace_heater.rsi
+    snapCardinals: true
+    layers:
+    - state: off
+      map: [ "fuel_base" ]
+    - state: on
+      map: [ "fuel_fire" ]
+      shader: unshaded
+      visible: false
+    - state: on_glow
+      map: [ "fuel_glow" ]
+      shader: unshaded
+      visible: false
+  - type: Appearance
+  - type: GenericVisualizer
+    visuals:
+      enum.FrozenHeatSourceFuelVisuals.Burning:
+        fuel_fire:
+          True: { visible: true }
+          False: { visible: false }
+        fuel_glow:
+          True: { visible: true }
+          False: { visible: false }
+  - type: Fixtures
+    fixtures:
+      fix1:
+        shape:
+          !type:PhysShapeAabb
+          bounds: "-0.55,-0.55,0.55,0.55"
+        density: 160
+        mask:
+        - MachineMask
+        layer:
+        - MidImpassable
+        - LowImpassable
+  - type: AmbientSound
+    range: 6
+    volume: -6
+    enabled: false
+    sound:
+      path: /Audio/Ambience/Objects/fireplace.ogg
+  - type: PointLight
+    radius: 5
+    energy: 2.5
+    color: "#FF7A2F"
+    castShadows: false
+    enabled: false
+  - type: Damageable
+    damageContainer: StructuralInorganic
+    damageModifierSet: Metallic
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 160
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+    - trigger:
+        !type:DamageTrigger
+        damage: 60
+      behaviors:
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          WLLooseScrap:
+            min: 1
+            max: 2
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+  - type: FrozenHeatSource
+    enabled: false
+    dynamic: false
+    innerRadius: 3
+    outerRadius: 7
+    heatBonus: 55
+    transferEfficiency: 1.05
+  - type: Storage
+    openOnActivate: false
+    showVerb: false
+    grid:
+    - 0,0,2,1
+    maxItemSize: Normal
+    whitelist:
+      components:
+      - FrozenFuel
+  - type: UserInterface
+    interfaces:
+      enum.StorageUiKey.Key:
+        type: StorageBoundUserInterface
+      enum.FrozenWorldUiKey.HeatSourceFuel:
+        type: FrozenHeatSourceFuelBoundUserInterface
+  - type: ActivatableUI
+    key: enum.FrozenWorldUiKey.HeatSourceFuel
+  - type: ContainerContainer
+    containers:
+      storagebase: !type:Container
+        ents: [ ]
+  - type: FrozenHeatSourceFuel
+    fuelContainerId: storagebase
+    requiresIgnition: true
+    canIgniteWithItem: true
+    allowUiIgnition: false
+    burnRate: 1
+    autoConsumeFuel: true
+  - type: FrozenShelterDeconstructible
+    doAfter: 3
+    refunds:
+    - proto: WLRoughStone
+      count: 3
+    - proto: WLLooseScrap
+      count: 1
+
+# --- Heavy Heat Machinery ----------------------------------------------------
+
+- type: entity
+  id: WLFiretubeGenerator
+  parent: GeneratorBasic
+  name: firetube heat generator
+  description: A tall, riveted fire-tube generator. It can heat a room or an outdoor work yard if mounted on heavy flooring, but it is loud and hungry.
+  components:
+  - type: Sprite
+    sprite: _WL/firetube.rsi
+    snapCardinals: true
+    layers:
+    - state: icon1
+      map: [ "fuel_state" ]
+  - type: GenericVisualizer
+    visuals:
+      enum.FrozenHeatSourceFuelVisuals.Burning:
+        fuel_state:
+          True: { state: icon }
+          False: { state: icon1 }
+  - type: Fixtures
+    fixtures:
+      fix1:
+        shape:
+          !type:PhysShapeAabb
+          bounds: "-0.70,-0.70,0.70,0.70"
+        density: 260
+        mask:
+        - MachineMask
+        layer:
+        - MachineLayer
+  - type: AmbientSound
+    range: 9
+    volume: -3
+    sound:
+      path: /Audio/Ambience/Objects/engine_hum.ogg
+    enabled: false
+  - type: PointLight
+    radius: 6
+    energy: 3
+    color: "#FF7A2F"
+    castShadows: false
+    enabled: false
+  - type: Appearance
+  - type: FrozenHeatSource
+    enabled: false
+    dynamic: false
+    innerRadius: 6
+    outerRadius: 18
+    heatBonus: 95
+    transferEfficiency: 1.15
+  - type: Storage
+    openOnActivate: false
+    showVerb: false
+    grid:
+    - 0,0,4,3
+    maxItemSize: Large
+    whitelist:
+      components:
+      - FrozenFuel
+  - type: UserInterface
+    interfaces:
+      enum.StorageUiKey.Key:
+        type: StorageBoundUserInterface
+      enum.FrozenWorldUiKey.HeatSourceFuel:
+        type: FrozenHeatSourceFuelBoundUserInterface
+  - type: ActivatableUI
+    key: enum.FrozenWorldUiKey.HeatSourceFuel
+  - type: ContainerContainer
+    containers:
+      storagebase: !type:Container
+        ents: [ ]
+  - type: FrozenHeatSourceFuel
+    fuelContainerId: storagebase
+    requiresIgnition: true
+    canIgniteWithItem: true
+    allowUiIgnition: true
+    burnRate: 1.5
+    autoConsumeFuel: true
+  - type: FrozenShelterDeconstructible
+    doAfter: 5
+    refunds:
+    - proto: WLLooseScrap
+      count: 7
+    - proto: WLRoughStone
+      count: 3
+    - proto: WLTornCloth
+      count: 2

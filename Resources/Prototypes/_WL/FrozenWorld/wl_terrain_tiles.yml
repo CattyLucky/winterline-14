@@ -41,6 +41,9 @@
   wlTerrainTags:
   - Foundation
   - PackedSnow
+  wlAllowsWallConstruction: true
+  wlAllowsDoorConstruction: true
+  wlAllowsFurnitureConstruction: true
 
 - type: tile
   id: WLFloorSteel
@@ -53,7 +56,105 @@
   mobFriction: 1
   wlTerrainTags:
   - Constructed
+  - RoomFloor
+  wlAllowsWallConstruction: true
+  wlAllowsDoorConstruction: true
+  wlAllowsFurnitureConstruction: true
+  wlCountsAsRoomFloor: true
+  wlRoomFloorTier: Metal
+  wlRoomFloorInsulation: 0.40
+
+- type: tile
+  id: WLFloorPrimitiveWood
+  parent: FloorWoodLarge
+  name: tiles-wl-primitive-wood-floor
+  baseTurf: WLPlatingSnowFoundation
+  baseWhitelist:
+  - WLPlatingSnowFoundation
+  itemDrop: WLPrimitiveWoodFloorTileItem
+  wlTerrainTags:
+  - Constructed
+  - RoomFloor
+  - Primitive
+  wlAllowsWallConstruction: true
+  wlAllowsDoorConstruction: true
+  wlAllowsFurnitureConstruction: true
+  wlCountsAsRoomFloor: true
+  wlRoomFloorTier: Primitive
+  wlRoomFloorInsulation: 0.20
+
+- type: tile
+  id: WLFloorWood
+  parent: FloorWood
+  name: tiles-wl-wood-floor
+  baseTurf: WLPlatingSnowFoundation
+  baseWhitelist:
+  - WLPlatingSnowFoundation
+  itemDrop: WLWoodFloorTileItem
+  wlTerrainTags:
+  - Constructed
+  - RoomFloor
+  wlAllowsWallConstruction: true
+  wlAllowsDoorConstruction: true
+  wlAllowsFurnitureConstruction: true
+  wlCountsAsRoomFloor: true
+  wlRoomFloorTier: Wood
+  wlRoomFloorInsulation: 0.45
+
+- type: tile
+  id: WLFloorStone
+  parent: FloorConcrete
+  name: tiles-wl-stone-floor
+  baseTurf: WLPlatingSnowFoundation
+  baseWhitelist:
+  - WLPlatingSnowFoundation
+  itemDrop: WLStoneFloorTileItem
+  wlTerrainTags:
+  - Constructed
+  - RoomFloor
+  wlAllowsWallConstruction: true
+  wlAllowsDoorConstruction: true
+  wlAllowsFurnitureConstruction: true
+  wlCountsAsRoomFloor: true
+  wlRoomFloorTier: Stone
+  wlRoomFloorInsulation: 0.35
+
+- type: tile
+  id: WLFloorInsulated
+  parent: FloorFreezer
+  name: tiles-wl-insulated-floor
+  baseTurf: WLPlatingSnowFoundation
+  baseWhitelist:
+  - WLPlatingSnowFoundation
+  itemDrop: WLInsulatedFloorTileItem
+  wlTerrainTags:
+  - Constructed
+  - RoomFloor
+  - Insulated
+  wlAllowsWallConstruction: true
+  wlAllowsDoorConstruction: true
+  wlAllowsFurnitureConstruction: true
+  wlCountsAsRoomFloor: true
+  wlRoomFloorTier: Insulated
+  wlRoomFloorInsulation: 0.80
+
+- type: tile
+  id: WLRoadFloor
+  parent: FloorSteelPavement
+  name: tiles-wl-road-floor
+  baseTurf: WLPlatingSnowFoundation
+  baseWhitelist:
+  - WLPlatingSnowFoundation
+  itemDrop: WLRoadFloorTileItem
+  wlTerrainTags:
+  - Constructed
   - Road
+  wlAllowsWallConstruction: false
+  wlAllowsDoorConstruction: false
+  wlAllowsFurnitureConstruction: true
+  wlCountsAsRoomFloor: false
+  wlRoomFloorTier: None
+  wlRoomFloorInsulation: 0
 
 - type: frozenSurface
   id: WLFloorSnow
@@ -70,11 +171,71 @@
   speedModifier: 0.75
   footContactPenaltyCelsius: 0
 
+- type: frozenSurface
+  id: WLFloorPrimitiveWood
+  speedModifier: 0.95
+  footContactPenaltyCelsius: 0
+
+- type: frozenSurface
+  id: WLFloorWood
+  speedModifier: 1.00
+  footContactPenaltyCelsius: 0
+
+- type: frozenSurface
+  id: WLFloorStone
+  speedModifier: 1.00
+  footContactPenaltyCelsius: 0
+
+- type: frozenSurface
+  id: WLFloorSteel
+  speedModifier: 1.00
+  footContactPenaltyCelsius: 0
+
+- type: frozenSurface
+  id: WLFloorInsulated
+  speedModifier: 1.00
+  footContactPenaltyCelsius: 0
+
+- type: frozenSurface
+  id: WLRoadFloor
+  speedModifier: 1.10
+  footContactPenaltyCelsius: 0
+
 - type: stack
   id: WLSnowFoundationTile
   name: wl-snow-foundation-tile
   icon: { sprite: Objects/Tiles/tile.rsi, state: wood-large }
   spawn: WLSnowFoundationTileItem
+
+- type: stack
+  id: WLPrimitiveWoodFloorTile
+  name: wl-primitive-wood-floor-tile
+  icon: { sprite: Objects/Tiles/tile.rsi, state: wood-large }
+  spawn: WLPrimitiveWoodFloorTileItem
+
+- type: stack
+  id: WLWoodFloorTile
+  name: wl-wood-floor-tile
+  icon: { sprite: Objects/Tiles/tile.rsi, state: wood }
+  spawn: WLWoodFloorTileItem
+
+- type: stack
+  id: WLStoneFloorTile
+  name: wl-stone-floor-tile
+  icon: { sprite: Objects/Tiles/tile.rsi, state: concrete }
+  spawn: WLStoneFloorTileItem
+
+- type: stack
+  id: WLInsulatedFloorTile
+  name: wl-insulated-floor-tile
+  icon: { sprite: Objects/Tiles/tile.rsi, state: white }
+  spawn: WLInsulatedFloorTileItem
+
+- type: stack
+  id: WLRoadFloorTile
+  name: wl-road-floor-tile
+  icon: { sprite: Objects/Tiles/tile.rsi, state: steel-pavement }
+  spawn: WLRoadFloorTileItem
 
 - type: entity
   name: Wood Planking
@@ -91,3 +252,131 @@
     - WLPlatingSnowFoundation
   - type: Stack
     stackType: WLSnowFoundationTile
+
+- type: entity
+  parent: WLSnowFoundationTileItem
+  id: WLSnowFoundationTileItem30
+  suffix: 30
+  components:
+  - type: Stack
+    count: 30
+
+- type: entity
+  name: Primitive Wood Floor
+  parent: FloorTileItemBase
+  id: WLPrimitiveWoodFloorTileItem
+  description: A rough early floor built over a snow foundation.
+  components:
+  - type: Sprite
+    state: wood-large
+  - type: Item
+    heldPrefix: wood
+  - type: FloorTile
+    outputs:
+    - WLFloorPrimitiveWood
+  - type: Stack
+    stackType: WLPrimitiveWoodFloorTile
+
+- type: entity
+  parent: WLPrimitiveWoodFloorTileItem
+  id: WLPrimitiveWoodFloorTileItem30
+  suffix: 30
+  components:
+  - type: Stack
+    count: 30
+
+- type: entity
+  name: Wood Floor
+  parent: FloorTileItemBase
+  id: WLWoodFloorTileItem
+  description: Finished wooden floor boards for shelter rooms.
+  components:
+  - type: Sprite
+    state: wood
+  - type: Item
+    heldPrefix: wood
+  - type: FloorTile
+    outputs:
+    - WLFloorWood
+  - type: Stack
+    stackType: WLWoodFloorTile
+
+- type: entity
+  parent: WLWoodFloorTileItem
+  id: WLWoodFloorTileItem30
+  suffix: 30
+  components:
+  - type: Stack
+    count: 30
+
+- type: entity
+  name: Stone Floor
+  parent: FloorTileItemBase
+  id: WLStoneFloorTileItem
+  description: Heavy floor slabs suitable for hot machinery.
+  components:
+  - type: Sprite
+    state: concrete
+  - type: Item
+    heldPrefix: generic
+  - type: FloorTile
+    outputs:
+    - WLFloorStone
+  - type: Stack
+    stackType: WLStoneFloorTile
+
+- type: entity
+  parent: WLStoneFloorTileItem
+  id: WLStoneFloorTileItem30
+  suffix: 30
+  components:
+  - type: Stack
+    count: 30
+
+- type: entity
+  name: Insulated Floor
+  parent: FloorTileItemBase
+  id: WLInsulatedFloorTileItem
+  description: Insulated panels that help a shelter hold heat.
+  components:
+  - type: Sprite
+    state: white
+  - type: Item
+    heldPrefix: generic
+  - type: FloorTile
+    outputs:
+    - WLFloorInsulated
+  - type: Stack
+    stackType: WLInsulatedFloorTile
+
+- type: entity
+  parent: WLInsulatedFloorTileItem
+  id: WLInsulatedFloorTileItem30
+  suffix: 30
+  components:
+  - type: Stack
+    count: 30
+
+- type: entity
+  name: Road Floor
+  parent: FloorTileItemBase
+  id: WLRoadFloorTileItem
+  description: Outdoor paving for paths and work yards.
+  components:
+  - type: Sprite
+    state: steel-pavement
+  - type: Item
+    heldPrefix: steel
+  - type: FloorTile
+    outputs:
+    - WLRoadFloor
+  - type: Stack
+    stackType: WLRoadFloorTile
+
+- type: entity
+  parent: WLRoadFloorTileItem
+  id: WLRoadFloorTileItem30
+  suffix: 30
+  components:
+  - type: Stack
+    count: 30

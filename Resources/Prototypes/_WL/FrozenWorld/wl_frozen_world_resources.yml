@@ -1,61 +1,68 @@
 # /// WL Change
-# Ресурсные заглушки для зон FrozenWorld.
-# Этап 2.2+ — базовые объекты мира.
-# Часть объектов уже использует WLResourcePointComponent для тестового сбора.
-
-# ─── SpawnField — стартовые кучки прямо у базы ────────────────────────────────
+# FrozenWorld world resource points by tier.
+#
+# Distance/zone controls live in frozen_world_zone_presets.yml. These entities
+# only describe what the player sees, how long gathering takes and what drops.
 
 - type: entity
-  id: WLFrozenBranchPileDebug
+  id: WLBaseResourcePoint
   parent: BaseStructure
-  name: frozen branch pile
-  suffix: WL, Debug
-  description: A pile of dead branches frozen in the snow. Easy firewood for a desperate start.
+  abstract: true
   categories: [ HideSpawnMenu ]
+
+# --- Tier 1: Spawn Field -----------------------------------------------------
+
+- type: entity
+  id: WLResourceFrozenBranchPileT1
+  parent: WLBaseResourcePoint
+  name: frozen branch pile
+  suffix: WL, Resource, T1
+  description: Dead branches frozen into the snow. Crude fuel and basic building material for the first hours.
   components:
   - type: Sprite
-    sprite: Structures/Decoration/bonfire.rsi
-    state: bonfire_extinguished
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: scrap_wood
   - type: WLResourcePoint
     charges: 3
-    gatherTime: 3.0
+    maxCharges: 3
+    gatherTime: 2.5
     loot:
     - prototype: WLFrozenBranch
       minCount: 2
       maxCount: 4
 
 - type: entity
-  id: WLLooseScrapPileDebug
-  parent: BaseStructure
+  id: WLResourceLooseScrapPileT1
+  parent: WLBaseResourcePoint
   name: loose scrap pile
-  suffix: WL, Debug
-  description: Scattered metal scraps half-buried in the snow. Barely enough to work with.
-  categories: [ HideSpawnMenu ]
+  suffix: WL, Resource, T1
+  description: A small spill of metal scraps half-buried in ice. Barely enough to start building.
   components:
   - type: Sprite
-    sprite: Structures/Storage/closet.rsi
-    state: metalbox
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: scrap_steel
   - type: WLResourcePoint
     charges: 2
-    gatherTime: 3.0
+    maxCharges: 2
+    gatherTime: 2.8
     loot:
     - prototype: WLLooseScrap
       minCount: 2
       maxCount: 3
 
 - type: entity
-  id: WLTornSupplyBagDebug
-  parent: BaseStructure
+  id: WLResourceTornSupplyBagT1
+  parent: WLBaseResourcePoint
   name: torn supply bag
-  suffix: WL, Debug
-  description: A torn supply bag from before the collapse. Whatever is inside has survived the cold.
-  categories: [ HideSpawnMenu ]
+  suffix: WL, Resource, T1
+  description: A ripped emergency bag with a little cloth and salvage still inside.
   components:
   - type: Sprite
-    sprite: Structures/Storage/closet.rsi
-    state: cardboard
+    sprite: _WL/Objects/Materials/Scrap/generic.rsi
+    state: clothing_uniform_trash2
   - type: WLResourcePoint
     charges: 1
+    maxCharges: 1
     gatherTime: 2.0
     loot:
     - prototype: WLTornCloth
@@ -65,159 +72,348 @@
       minCount: 1
       maxCount: 2
 
-# ─── NearField — бедные начальные ресурсы рядом с базой ───────────────────────
+# --- Tier 2: Near Field ------------------------------------------------------
 
 - type: entity
-  id: WLSmallCoalOutcropDebug
-  parent: BaseStructure
-  name: small coal outcrop
-  suffix: WL, Debug
-  description: A small exposed vein of coal just beneath the snow. Barely worth the effort, but it's close.
-  categories: [ HideSpawnMenu ]
+  id: WLResourceFrozenDeadwoodT2
+  parent: WLBaseResourcePoint
+  name: frozen deadwood cluster
+  suffix: WL, Resource, T2
+  description: Dead wood locked in ice. It takes work to break loose, but it yields logs for boards and fuel.
   components:
   - type: Sprite
-    sprite: Structures/Storage/orebox.rsi
-    state: orebox
-    color: "#2a2a2a"
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: log
+  - type: WLResourcePoint
+    charges: 3
+    maxCharges: 3
+    gatherTime: 3.8
+    loot:
+    - prototype: WLLog
+      minCount: 1
+      maxCount: 2
+    - prototype: WLFrozenBranch
+      minCount: 1
+      maxCount: 2
+
+- type: entity
+  id: WLResourceCharcoalPitT2
+  parent: WLBaseResourcePoint
+  name: buried charcoal pit
+  suffix: WL, Resource, T2
+  description: A frozen old firepit with dry charcoal preserved under the snow.
+  components:
+  - type: Sprite
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: coal
   - type: WLResourcePoint
     charges: 2
+    maxCharges: 2
     gatherTime: 4.0
     loot:
+    - prototype: WLCharcoalFuel1
+      minCount: 2
+      maxCount: 3
+
+- type: entity
+  id: WLResourceSmallScrapPileT2
+  parent: WLBaseResourcePoint
+  name: small scrap pile
+  suffix: WL, Resource, T2
+  description: Twisted metal and torn lining from a buried machine shell.
+  components:
+  - type: Sprite
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: scrap_2
+  - type: WLResourcePoint
+    charges: 3
+    maxCharges: 3
+    gatherTime: 3.8
+    loot:
+    - prototype: WLLooseScrap
+      minCount: 2
+      maxCount: 4
+    - prototype: WLTornCloth
+      minCount: 1
+      maxCount: 2
+
+# --- Tier 3: Work Field ------------------------------------------------------
+
+- type: entity
+  id: WLResourceCoalOutcropT3
+  parent: WLBaseResourcePoint
+  name: coal outcrop
+  suffix: WL, Resource, T3
+  description: A solid coal deposit breaking through the frozen ground. The first dependable industrial fuel.
+  components:
+  - type: Sprite
+    sprite: Objects/Materials/ore.rsi
+    state: coal
+  - type: WLResourcePoint
+    charges: 4
+    maxCharges: 4
+    gatherTime: 4.8
+    loot:
+    - prototype: WLCoalFuel1
+      minCount: 2
+      maxCount: 4
+
+- type: entity
+  id: WLResourceScrapWreckT3
+  parent: WLBaseResourcePoint
+  name: scrap wreck
+  suffix: WL, Resource, T3
+  description: The remains of something large and mechanical. A richer source of metal and usable parts.
+  components:
+  - type: Sprite
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: scrap_3
+  - type: WLResourcePoint
+    charges: 4
+    maxCharges: 4
+    gatherTime: 4.8
+    loot:
+    - prototype: WLLooseScrap
+      minCount: 3
+      maxCount: 5
+    - prototype: WLTornCloth
+      minCount: 1
+      maxCount: 2
+
+- type: entity
+  id: WLResourceFrozenGroveT3
+  parent: WLBaseResourcePoint
+  name: frozen grove
+  suffix: WL, Resource, T3
+  description: A cluster of ancient frozen trees. Enough timber here to cut boards for regular shelter work.
+  components:
+  - type: Sprite
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: log
+  - type: WLResourcePoint
+    charges: 4
+    maxCharges: 4
+    gatherTime: 5.0
+    loot:
+    - prototype: WLLog
+      minCount: 2
+      maxCount: 4
+    - prototype: WLFrozenBranch
+      minCount: 2
+      maxCount: 3
+
+# --- Tier 4: Expedition Field ------------------------------------------------
+
+- type: entity
+  id: WLResourceLargeCoalVeinT4
+  parent: WLBaseResourcePoint
+  name: large coal vein
+  suffix: WL, Resource, T4
+  description: A heavy exposed coal vein far from shelter. It can feed the settlement through long cold pushes.
+  components:
+  - type: Sprite
+    sprite: Objects/Materials/ore.rsi
+    state: coal
+    color: "#cfcfe0"
+  - type: WLResourcePoint
+    charges: 5
+    maxCharges: 5
+    gatherTime: 5.8
+    loot:
+    - prototype: WLCoalFuel1
+      minCount: 3
+      maxCount: 5
+    - prototype: WLDenseCoalFuel1
+      minCount: 1
+      maxCount: 2
+
+- type: entity
+  id: WLResourceFrozenConvoyWreckT4
+  parent: WLBaseResourcePoint
+  name: frozen convoy wreck
+  suffix: WL, Resource, T4
+  description: A supply convoy locked under snow. Heavy salvage, fabric and fuel remain in the wreckage.
+  components:
+  - type: Sprite
+    sprite: _WL/Objects/Materials/Scrap/generic.rsi
+    state: balka_trash
+  - type: WLResourcePoint
+    charges: 4
+    maxCharges: 4
+    gatherTime: 5.6
+    loot:
+    - prototype: WLLooseScrap
+      minCount: 4
+      maxCount: 7
+    - prototype: WLTornCloth
+      minCount: 2
+      maxCount: 4
+    - prototype: WLCoalFuel1
+      minCount: 1
+      maxCount: 2
+
+- type: entity
+  id: WLResourceOldSupplyCacheT4
+  parent: WLBaseResourcePoint
+  name: old supply cache
+  suffix: WL, Resource, T4
+  description: A sealed pre-collapse cache. The contents are worn, but still valuable.
+  components:
+  - type: Sprite
+    sprite: _WL/Objects/Materials/Scrap/securedbox.rsi
+    state: icon
+  - type: WLResourcePoint
+    charges: 3
+    maxCharges: 3
+    gatherTime: 5.2
+    loot:
+    - prototype: WLTornCloth
+      minCount: 3
+      maxCount: 5
+    - prototype: WLLooseScrap
+      minCount: 2
+      maxCount: 4
+    - prototype: WLLog
+      minCount: 1
+      maxCount: 2
+
+# --- Tier 5: Deep Expedition Finds ------------------------------------------
+
+- type: entity
+  id: WLResourceDeepCoalSeamT5
+  parent: WLBaseResourcePoint
+  name: deep coal seam
+  suffix: WL, Resource, T5
+  description: Dense black coal exposed in a dangerous distant seam. Premium fuel for late settlement heat.
+  components:
+  - type: Sprite
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: coal
+    color: "#b8c2ff"
+  - type: WLResourcePoint
+    charges: 6
+    maxCharges: 6
+    gatherTime: 6.5
+    loot:
+    - prototype: WLDenseCoalFuel1
+      minCount: 3
+      maxCount: 5
     - prototype: WLCoalFuel1
       minCount: 2
       maxCount: 3
 
 - type: entity
-  id: WLFrozenDeadwoodClusterDebug
-  parent: BaseStructure
-  name: frozen deadwood cluster
-  suffix: WL, Debug
-  description: Dead trees locked in ice. Could be chopped for firewood and rough lumber.
-  categories: [ HideSpawnMenu ]
+  id: WLResourceIndustrialRuinT5
+  parent: WLBaseResourcePoint
+  name: frozen industrial ruin
+  suffix: WL, Resource, T5
+  description: A collapsed industrial shell. Valuable metal, heavy insulation and dense fuel can be recovered here.
   components:
   - type: Sprite
-    sprite: Structures/Decoration/bonfire.rsi
-    state: bonfire_extinguished
-    color: "#8b7355"
-  - type: WLResourcePoint
-    charges: 3
-    gatherTime: 4.0
-    loot:
-    - prototype: WLMaterialWoodFuel1
-      minCount: 2
-      maxCount: 4
-
-- type: entity
-  id: WLSmallScrapPileDebug
-  parent: BaseStructure
-  name: small scrap pile
-  suffix: WL, Debug
-  description: Twisted metal half-buried in snow. Not much, but salvageable.
-  categories: [ HideSpawnMenu ]
-  components:
-  - type: Sprite
-    sprite: Structures/Storage/closet.rsi
-    state: metalbox
-    color: "#888888"
-
-# ─── WorkField — основные рабочие ресурсы ─────────────────────────────────────
-
-- type: entity
-  id: WLCoalOutcropDebug
-  parent: BaseStructure
-  name: coal outcrop
-  suffix: WL, Debug
-  description: A solid coal deposit breaking through the frozen ground. The backbone of early industry.
-  categories: [ HideSpawnMenu ]
-  components:
-  - type: Sprite
-    sprite: Structures/Storage/orebox.rsi
-    state: orebox
-    color: "#1a1a1a"
-  - type: WLResourcePoint
-    charges: 4
-    gatherTime: 5.0
-    loot:
-    - prototype: WLCoalFuel1
-      minCount: 2
-      maxCount: 4
-
-- type: entity
-  id: WLScrapWreckDebug
-  parent: BaseStructure
-  name: scrap wreck
-  suffix: WL, Debug
-  description: The remains of something large and mechanical. A rich source of metal and parts.
-  categories: [ HideSpawnMenu ]
-  components:
-  - type: Sprite
-    sprite: Structures/Storage/closet.rsi
-    state: metalbox
-    color: "#666666"
-
-- type: entity
-  id: WLFrozenGroveDebug
-  parent: BaseStructure
-  name: frozen grove
-  suffix: WL, Debug
-  description: A cluster of ancient frozen trees. Enough wood here to keep fires burning for weeks.
-  categories: [ HideSpawnMenu ]
-  components:
-  - type: Sprite
-    sprite: Structures/Decoration/bonfire.rsi
-    state: bonfire_extinguished
-    color: "#6b5a3e"
-  - type: WLResourcePoint
-    charges: 4
-    gatherTime: 5.0
-    loot:
-    - prototype: WLMaterialWoodFuel1
-      minCount: 3
-      maxCount: 5
-
-# ─── ExpeditionField — дальние ценные объекты ─────────────────────────────────
-
-- type: entity
-  id: WLLargeCoalVeinDebug
-  parent: BaseStructure
-  name: large coal vein
-  suffix: WL, Debug
-  description: A massive exposed coal seam. Enough to fuel the settlement for a long time — if you can reach it.
-  categories: [ HideSpawnMenu ]
-  components:
-  - type: Sprite
-    sprite: Structures/Storage/orebox.rsi
-    state: orebox
-    color: "#111111"
+    sprite: _WL/Objects/Materials/Scrap/generic.rsi
+    state: hv_cabel_trash
   - type: WLResourcePoint
     charges: 5
-    gatherTime: 6.0
+    maxCharges: 5
+    gatherTime: 6.2
     loot:
-    - prototype: WLCoalFuel1
-      minCount: 3
-      maxCount: 5
+    - prototype: WLLooseScrap
+      minCount: 6
+      maxCount: 9
+    - prototype: WLTornCloth
+      minCount: 2
+      maxCount: 4
+    - prototype: WLDenseCoalFuel1
+      minCount: 1
+      maxCount: 2
 
 - type: entity
-  id: WLFrozenConvoyWreckDebug
-  parent: BaseStructure
-  name: frozen convoy wreck
-  suffix: WL, Debug
-  description: The frozen remains of a supply convoy. Valuable salvage, but far from home.
-  categories: [ HideSpawnMenu ]
-  components:
-  - type: Sprite
-    sprite: Structures/Storage/closet.rsi
-    state: metalbox
-    color: "#4a4a4a"
-
-- type: entity
-  id: WLOldSupplyCacheDebug
-  parent: BaseStructure
-  name: old supply cache
-  suffix: WL, Debug
-  description: A pre-collapse supply cache buried under ice and snow. What's left inside?
-  categories: [ HideSpawnMenu ]
+  id: WLResourceSealedExpeditionCacheT5
+  parent: WLBaseResourcePoint
+  name: sealed expedition cache
+  suffix: WL, Resource, T5
+  description: A distant cache from a failed expedition. Rarely intact, always worth the risk.
   components:
   - type: Sprite
     sprite: Structures/Storage/Crates/generic.rsi
     state: closed
+    color: "#b9c7d8"
+  - type: WLResourcePoint
+    charges: 3
+    maxCharges: 3
+    gatherTime: 6.0
+    loot:
+    - prototype: WLTornCloth
+      minCount: 5
+      maxCount: 8
+    - prototype: WLLooseScrap
+      minCount: 4
+      maxCount: 6
+    - prototype: WLDenseCoalFuel1
+      minCount: 1
+      maxCount: 1
+
+# --- Rough Stone Resource Points ---------------------------------------------
+
+- type: entity
+  id: WLRoughStonePileDebug
+  parent: WLBaseResourcePoint
+  name: rough stone pile
+  suffix: WL, Debug
+  description: Broken frozen masonry and loose stone. Heavy, but useful for proper floors.
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/orebox.rsi
+    state: orebox
+    color: "#77716a"
+  - type: WLResourcePoint
+    charges: 2
+    maxCharges: 2
+    gatherTime: 3.5
+    loot:
+    - prototype: WLRoughStone
+      minCount: 2
+      maxCount: 4
+
+- type: entity
+  id: WLFrozenRubbleOutcropDebug
+  parent: WLBaseResourcePoint
+  name: frozen rubble outcrop
+  suffix: WL, Debug
+  description: A compact pile of cracked stone locked into the ice. Good material for floors and heat-safe masonry.
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/orebox.rsi
+    state: orebox
+    color: "#6f6962"
+  - type: WLResourcePoint
+    charges: 4
+    maxCharges: 4
+    gatherTime: 5.0
+    loot:
+    - prototype: WLRoughStone
+      minCount: 3
+      maxCount: 5
+
+- type: entity
+  id: WLOldMasonryRuinDebug
+  parent: WLBaseResourcePoint
+  name: old masonry ruin
+  suffix: WL, Debug
+  description: A collapsed stone ruin buried under frost. Slow to break apart, but rich in heavy building material.
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/orebox.rsi
+    state: orebox
+    color: "#5f5b55"
+  - type: WLResourcePoint
+    charges: 5
+    maxCharges: 5
+    gatherTime: 6.0
+    loot:
+    - prototype: WLRoughStone
+      minCount: 4
+      maxCount: 7
+    - prototype: WLLooseScrap
+      minCount: 1
+      maxCount: 2

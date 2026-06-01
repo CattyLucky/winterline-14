@@ -6,8 +6,9 @@
   components:
   - type: Action
     itemIconStyle: NoItem
+    raiseOnUser: true
     icon:
-      sprite: Interface/Actions/actions_crit.rsi
-      state: lastwords
+      sprite: Structures/Machines/autolathe.rsi
+      state: icon
   - type: InstantAction
     event: !type:OpenPersistentCraftMenuActionEvent

@@ -1,0 +1,512 @@
+# /// WL Change
+# FrozenWorld survival clothing crafted through personal crafting only.
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategorySurvivalClothing
+  category: WLCraftCategoryMechanic
+  name: persistent-craft-wl-subcategory-survival-clothing
+  order: 20
+
+# --- Tier 1: Light -----------------------------------------------------------
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeLightThermalJumper
+  name: persistent-craft-wl-recipe-light-thermal-jumper-name
+  description: persistent-craft-wl-recipe-light-thermal-jumper-description
+  displayProto: ClothingUniformJumpsuitThermalLightWL
+  branch: WLMechanic
+  tier: 1
+  requiredNode: WLCraftNodeMechanicClothingT1
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 1.6
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 3
+  results:
+  - proto: ClothingUniformJumpsuitThermalLightWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeLightInsulatedCoat
+  name: persistent-craft-wl-recipe-light-insulated-coat-name
+  description: persistent-craft-wl-recipe-light-insulated-coat-description
+  displayProto: ClothingOuterWinterCoatLightWL
+  branch: WLMechanic
+  tier: 1
+  requiredNode: WLCraftNodeMechanicClothingT1
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 2.4
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 5
+  - stackType: WLWoodPlankStack
+    amount: 1
+  results:
+  - proto: ClothingOuterWinterCoatLightWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeLightWinterHat
+  name: persistent-craft-wl-recipe-light-winter-hat-name
+  description: persistent-craft-wl-recipe-light-winter-hat-description
+  displayProto: ClothingHeadHatWinterLightWL
+  branch: WLMechanic
+  tier: 1
+  requiredNode: WLCraftNodeMechanicClothingT1
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 1.2
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 2
+  results:
+  - proto: ClothingHeadHatWinterLightWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeLightWinterGloves
+  name: persistent-craft-wl-recipe-light-winter-gloves-name
+  description: persistent-craft-wl-recipe-light-winter-gloves-description
+  displayProto: ClothingHandsGlovesWinterLightWL
+  branch: WLMechanic
+  tier: 1
+  requiredNode: WLCraftNodeMechanicClothingT1
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 1.2
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 2
+  results:
+  - proto: ClothingHandsGlovesWinterLightWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeLightWinterBoots
+  name: persistent-craft-wl-recipe-light-winter-boots-name
+  description: persistent-craft-wl-recipe-light-winter-boots-description
+  displayProto: ClothingShoesBootsWinterLightWL
+  branch: WLMechanic
+  tier: 1
+  requiredNode: WLCraftNodeMechanicClothingT1
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 1.4
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 2
+  - stackType: WLMetalPartsStack
+    amount: 1
+  results:
+  - proto: ClothingShoesBootsWinterLightWL
+    amount: 1
+
+# --- Tier 2: Warm ------------------------------------------------------------
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWarmThermalJumper
+  name: persistent-craft-wl-recipe-warm-thermal-jumper-name
+  description: persistent-craft-wl-recipe-warm-thermal-jumper-description
+  displayProto: ClothingUniformJumpsuitThermalWarmWL
+  branch: WLMechanic
+  tier: 2
+  requiredNode: WLCraftNodeMechanicClothingT2
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 2.0
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 5
+  - stackType: WLMetalPartsStack
+    amount: 1
+  results:
+  - proto: ClothingUniformJumpsuitThermalWarmWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWarmInsulatedCoat
+  name: persistent-craft-wl-recipe-warm-insulated-coat-name
+  description: persistent-craft-wl-recipe-warm-insulated-coat-description
+  displayProto: ClothingOuterWinterCoatWarmWL
+  branch: WLMechanic
+  tier: 2
+  requiredNode: WLCraftNodeMechanicClothingT2
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 3.0
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 7
+  - stackType: WLMetalPartsStack
+    amount: 1
+  results:
+  - proto: ClothingOuterWinterCoatWarmWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWarmWinterHat
+  name: persistent-craft-wl-recipe-warm-winter-hat-name
+  description: persistent-craft-wl-recipe-warm-winter-hat-description
+  displayProto: ClothingHeadHatWinterWarmWL
+  branch: WLMechanic
+  tier: 2
+  requiredNode: WLCraftNodeMechanicClothingT2
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 1.6
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 3
+  - stackType: WLMetalPartsStack
+    amount: 1
+  results:
+  - proto: ClothingHeadHatWinterWarmWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWarmWinterGloves
+  name: persistent-craft-wl-recipe-warm-winter-gloves-name
+  description: persistent-craft-wl-recipe-warm-winter-gloves-description
+  displayProto: ClothingHandsGlovesWinterWarmWL
+  branch: WLMechanic
+  tier: 2
+  requiredNode: WLCraftNodeMechanicClothingT2
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 1.6
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 3
+  - stackType: WLMetalPartsStack
+    amount: 1
+  results:
+  - proto: ClothingHandsGlovesWinterWarmWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWarmWinterBoots
+  name: persistent-craft-wl-recipe-warm-winter-boots-name
+  description: persistent-craft-wl-recipe-warm-winter-boots-description
+  displayProto: ClothingShoesBootsWinterWarmWL
+  branch: WLMechanic
+  tier: 2
+  requiredNode: WLCraftNodeMechanicClothingT2
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 1.8
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 4
+  - stackType: WLMetalPartsStack
+    amount: 2
+  results:
+  - proto: ClothingShoesBootsWinterWarmWL
+    amount: 1
+
+# --- Tier 3: Winter ----------------------------------------------------------
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWinterThermalJumper
+  name: persistent-craft-wl-recipe-winter-thermal-jumper-name
+  description: persistent-craft-wl-recipe-winter-thermal-jumper-description
+  displayProto: ClothingUniformJumpsuitWinterWL
+  branch: WLMechanic
+  tier: 3
+  requiredNode: WLCraftNodeMechanicClothingT3
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 2.4
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 7
+  - stackType: WLMetalPartsStack
+    amount: 2
+  results:
+  - proto: ClothingUniformJumpsuitWinterWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWinterInsulatedCoat
+  name: persistent-craft-wl-recipe-winter-insulated-coat-name
+  description: persistent-craft-wl-recipe-winter-insulated-coat-description
+  displayProto: ClothingOuterWinterCoatWL
+  branch: WLMechanic
+  tier: 3
+  requiredNode: WLCraftNodeMechanicClothingT3
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 3.8
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 9
+  - stackType: WLMetalPartsStack
+    amount: 3
+  results:
+  - proto: ClothingOuterWinterCoatWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWinterHat
+  name: persistent-craft-wl-recipe-winter-hat-name
+  description: persistent-craft-wl-recipe-winter-hat-description
+  displayProto: ClothingHeadHelmetWinterWL
+  branch: WLMechanic
+  tier: 3
+  requiredNode: WLCraftNodeMechanicClothingT3
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 2.0
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 4
+  - stackType: WLMetalPartsStack
+    amount: 2
+  results:
+  - proto: ClothingHeadHelmetWinterWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWinterGloves
+  name: persistent-craft-wl-recipe-winter-gloves-name
+  description: persistent-craft-wl-recipe-winter-gloves-description
+  displayProto: ClothingHandsGlovesWinterWL
+  branch: WLMechanic
+  tier: 3
+  requiredNode: WLCraftNodeMechanicClothingT3
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 2.0
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 4
+  - stackType: WLMetalPartsStack
+    amount: 2
+  results:
+  - proto: ClothingHandsGlovesWinterWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWinterBoots
+  name: persistent-craft-wl-recipe-winter-boots-name
+  description: persistent-craft-wl-recipe-winter-boots-description
+  displayProto: ClothingShoesBootsWinterWL
+  branch: WLMechanic
+  tier: 3
+  requiredNode: WLCraftNodeMechanicClothingT3
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 2.2
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 5
+  - stackType: WLMetalPartsStack
+    amount: 3
+  results:
+  - proto: ClothingShoesBootsWinterWL
+    amount: 1
+
+# --- Tier 4: Arctic ----------------------------------------------------------
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeArcticThermalJumper
+  name: persistent-craft-wl-recipe-arctic-thermal-jumper-name
+  description: persistent-craft-wl-recipe-arctic-thermal-jumper-description
+  displayProto: ClothingUniformJumpsuitThermalArcticWL
+  branch: WLMechanic
+  tier: 4
+  requiredNode: WLCraftNodeMechanicClothingT4
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 3.0
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 10
+  - stackType: WLMetalPartsStack
+    amount: 4
+  results:
+  - proto: ClothingUniformJumpsuitThermalArcticWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeArcticInsulatedCoat
+  name: persistent-craft-wl-recipe-arctic-insulated-coat-name
+  description: persistent-craft-wl-recipe-arctic-insulated-coat-description
+  displayProto: ClothingOuterWinterCoatArcticWL
+  branch: WLMechanic
+  tier: 4
+  requiredNode: WLCraftNodeMechanicClothingT4
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 4.6
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 12
+  - stackType: WLMetalPartsStack
+    amount: 5
+  results:
+  - proto: ClothingOuterWinterCoatArcticWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeArcticWinterHat
+  name: persistent-craft-wl-recipe-arctic-winter-hat-name
+  description: persistent-craft-wl-recipe-arctic-winter-hat-description
+  displayProto: ClothingHeadHatWinterArcticWL
+  branch: WLMechanic
+  tier: 4
+  requiredNode: WLCraftNodeMechanicClothingT4
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 2.4
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 6
+  - stackType: WLMetalPartsStack
+    amount: 3
+  results:
+  - proto: ClothingHeadHatWinterArcticWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeArcticWinterGloves
+  name: persistent-craft-wl-recipe-arctic-winter-gloves-name
+  description: persistent-craft-wl-recipe-arctic-winter-gloves-description
+  displayProto: ClothingHandsGlovesWinterArcticWL
+  branch: WLMechanic
+  tier: 4
+  requiredNode: WLCraftNodeMechanicClothingT4
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 2.4
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 6
+  - stackType: WLMetalPartsStack
+    amount: 3
+  results:
+  - proto: ClothingHandsGlovesWinterArcticWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeArcticWinterBoots
+  name: persistent-craft-wl-recipe-arctic-winter-boots-name
+  description: persistent-craft-wl-recipe-arctic-winter-boots-description
+  displayProto: ClothingShoesBootsWinterArcticWL
+  branch: WLMechanic
+  tier: 4
+  requiredNode: WLCraftNodeMechanicClothingT4
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 2.8
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 7
+  - stackType: WLMetalPartsStack
+    amount: 4
+  results:
+  - proto: ClothingShoesBootsWinterArcticWL
+    amount: 1
+
+# --- Tier 5: Extreme ---------------------------------------------------------
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeExtremeThermalJumper
+  name: persistent-craft-wl-recipe-extreme-thermal-jumper-name
+  description: persistent-craft-wl-recipe-extreme-thermal-jumper-description
+  displayProto: ClothingUniformJumpsuitThermalExtremeWL
+  branch: WLMechanic
+  tier: 5
+  requiredNode: WLCraftNodeMechanicClothingT5
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 3.8
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 14
+  - stackType: WLMetalPartsStack
+    amount: 6
+  results:
+  - proto: ClothingUniformJumpsuitThermalExtremeWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeExtremeInsulatedCoat
+  name: persistent-craft-wl-recipe-extreme-insulated-coat-name
+  description: persistent-craft-wl-recipe-extreme-insulated-coat-description
+  displayProto: ClothingOuterWinterCoatExtremeWL
+  branch: WLMechanic
+  tier: 5
+  requiredNode: WLCraftNodeMechanicClothingT5
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 5.5
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 16
+  - stackType: WLMetalPartsStack
+    amount: 7
+  results:
+  - proto: ClothingOuterWinterCoatExtremeWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeExtremeWinterHat
+  name: persistent-craft-wl-recipe-extreme-winter-hat-name
+  description: persistent-craft-wl-recipe-extreme-winter-hat-description
+  displayProto: ClothingHeadHatWinterExtremeWL
+  branch: WLMechanic
+  tier: 5
+  requiredNode: WLCraftNodeMechanicClothingT5
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 3.0
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 8
+  - stackType: WLMetalPartsStack
+    amount: 5
+  results:
+  - proto: ClothingHeadHatWinterExtremeWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeExtremeWinterGloves
+  name: persistent-craft-wl-recipe-extreme-winter-gloves-name
+  description: persistent-craft-wl-recipe-extreme-winter-gloves-description
+  displayProto: ClothingHandsGlovesWinterExtremeWL
+  branch: WLMechanic
+  tier: 5
+  requiredNode: WLCraftNodeMechanicClothingT5
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 3.0
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 8
+  - stackType: WLMetalPartsStack
+    amount: 5
+  results:
+  - proto: ClothingHandsGlovesWinterExtremeWL
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeExtremeWinterBoots
+  name: persistent-craft-wl-recipe-extreme-winter-boots-name
+  description: persistent-craft-wl-recipe-extreme-winter-boots-description
+  displayProto: ClothingShoesBootsWinterExtremeWL
+  branch: WLMechanic
+  tier: 5
+  requiredNode: WLCraftNodeMechanicClothingT5
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalClothing
+  craftTime: 3.4
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 10
+  - stackType: WLMetalPartsStack
+    amount: 6
+  results:
+  - proto: ClothingShoesBootsWinterExtremeWL
+    amount: 1

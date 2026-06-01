@@ -1,0 +1,29 @@
+# /// WL Change
+# FrozenWorld room-shelter boundary test entities (Patch 09.2).
+
+- type: entity
+  id: WLFrozenShelterWallDebug
+  parent: WallSolid
+  name: frozen shelter wall
+  suffix: WL, Debug
+  description: Test wall that acts as a room boundary for FrozenWorld shelter flood-fill.
+  components:
+  - type: FrozenShelterBoundary
+
+- type: entity
+  id: WLFrozenShelterDoorDebug
+  parent: Airlock
+  name: frozen shelter door
+  suffix: WL, Debug
+  description: Test door that acts as a room boundary for FrozenWorld shelter flood-fill.
+  components:
+  - type: FrozenShelterBoundary
+
+- type: entity
+  id: WLFrozenShelterBoundaryMarkerDebug
+  parent: MarkerBase
+  name: frozen shelter boundary marker
+  suffix: WL, Debug
+  description: Manual room-boundary marker for FrozenWorld shelter flood-fill tests.
+  components:
+  - type: FrozenShelterBoundary

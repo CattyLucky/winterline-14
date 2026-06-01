@@ -1,3 +1,4 @@
+using Content.Shared.Prototypes;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization.Manager.Attributes;
 
@@ -54,8 +55,49 @@ public sealed partial class FrozenWorldZoneEntry
     [DataField]
     public int SpawnAttempts = 100;
 
+    /// <summary>
+    /// Attempts for weighted POI placement after minimum POI counts are placed.
+    /// POIs are larger authored map/grid templates, unlike simple entity spawns.
+    /// </summary>
+    [DataField]
+    public int PoiAttempts = 8;
+
     [DataField]
     public List<FrozenWorldZoneSpawnEntry> Spawns = new();
+
+    [DataField]
+    public List<FrozenWorldZonePoiEntry> Pois = new();
+}
+
+[DataDefinition]
+public sealed partial class FrozenWorldZonePoiEntry
+{
+    /// <summary>
+    /// POI template to select for this zone. The template is later stamped into the world grid.
+    /// </summary>
+    [DataField(required: true)]
+    public ProtoId<FrozenWorldPoiPrototype> Poi;
+
+    [DataField]
+    public float Weight = 1f;
+
+    /// <summary>
+    /// Guaranteed minimum count for this POI entry.
+    /// </summary>
+    [DataField]
+    public int MinCount;
+
+    /// <summary>
+    /// Hard cap for this POI entry in this zone.
+    /// </summary>
+    [DataField]
+    public int MaxCount = 1;
+
+    /// <summary>
+    /// Minimum distance from any already placed zone object or POI.
+    /// </summary>
+    [DataField]
+    public float MinSeparation = 32f;
 }
 
 [DataDefinition]

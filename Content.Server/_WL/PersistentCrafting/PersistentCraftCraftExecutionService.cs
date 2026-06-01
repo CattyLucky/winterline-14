@@ -1,3 +1,4 @@
+using Content.Shared._WL.Roles;
 using Content.Shared._WL.PersistentCrafting;
 using Content.Shared.Hands.EntitySystems;
 using Content.Shared.Stacks;
@@ -30,6 +31,9 @@ public sealed class PersistentCraftCraftExecutionService
     public bool MeetsRecipeRequirement(EntityUid user, PersistentCraftRecipePrototype recipe)
     {
         if (!_entityManager.TryGetComponent(user, out PersistentCraftProfileComponent? profile))
+            return false;
+
+        if (!_profileService.IsBranchAccessible(profile, recipe.Branch))
             return false;
 
         return _profileService.HasNodeUnlockedOrAutoAvailable(profile, recipe.RequiredNode);
@@ -74,36 +78,23 @@ public sealed class PersistentCraftCraftExecutionService
         for (var resultIndex = 0; resultIndex < recipe.Results.Count; resultIndex++)
         {
             var result = recipe.Results[resultIndex];
+            var amount = GetEffectiveResultAmount(user, recipe, result);
             var spawned = _entityManager.SpawnEntity(result.Proto, userCoordinates);
 
-            if (_entityManager.TryGetComponent(spawned, out StackComponent? stack) && result.Amount > 1)
-                _stackSystem.SetCount(spawned, result.Amount, stack);
+            if (_entityManager.TryGetComponent(spawned, out StackComponent? stack) && amount > 1)
+                _stackSystem.SetCount(spawned, amount, stack);
 
             _handsSystem.PickupOrDrop(user, spawned, checkActionBlocker: false, animate: false, dropNear: true);
 
             if (stack == null)
             {
-                for (var i = 1; i < result.Amount; i++)
+                for (var i = 1; i < amount; i++)
                 {
                     var extra = _entityManager.SpawnEntity(result.Proto, userCoordinates);
                     _handsSystem.PickupOrDrop(user, extra, checkActionBlocker: false, animate: false, dropNear: true);
                 }
             }
         }
-    }
-
-    public void GrantCraftPoints(EntityUid user, PersistentCraftRecipePrototype recipe)
-    {
-        if (!_entityManager.TryGetComponent(user, out PersistentCraftProfileComponent? profile))
-            return;
-
-        var branchProfile = _profileService.GetOrCreateBranchProfile(profile, recipe.Branch);
-        var currentTotal = branchProfile.TotalEarnedPoints;
-        var pointsReward = Math.Max(0, PersistentCraftingHelper.GetPointReward(recipe));
-        var totalEarned = (long) currentTotal + pointsReward;
-        branchProfile.TotalEarnedPoints = (int) Math.Min(int.MaxValue, totalEarned);
-
-        _profileService.EnsureAutoTierNodesUnlocked(profile);
     }
 
     public float GetEffectiveCraftTime(PersistentCraftRecipePrototype recipe)
@@ -116,5 +107,21 @@ public sealed class PersistentCraftCraftExecutionService
         PersistentCraftIngredient ingredient)
     {
         return PersistentCraftRecipeRules.GetEffectiveIngredientAmount(recipe, ingredient);
+    }
+
+    private int GetEffectiveResultAmount(
+        EntityUid user,
+        PersistentCraftRecipePrototype recipe,
+        PersistentCraftResult result)
+    {
+        if (!recipe.AllowResourceProcessingBonus ||
+            result.Amount <= 0 ||
+            !_entityManager.TryGetComponent(user, out WLRoleSkillsComponent? skills) ||
+            MathHelper.CloseToPercent(skills.ProcessingYieldMultiplier, 1f))
+        {
+            return result.Amount;
+        }
+
+        return Math.Max(1, (int) MathF.Ceiling(result.Amount * skills.ProcessingYieldMultiplier));
     }
 }

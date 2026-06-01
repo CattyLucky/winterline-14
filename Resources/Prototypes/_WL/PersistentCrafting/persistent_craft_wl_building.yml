@@ -1,0 +1,326 @@
+﻿# /// WL Change
+# FrozenWorld settlement craft.
+#
+# Tile recipes create handheld tile stacks.
+# Structure recipes create personal persistent-craft blueprints, then the player
+# builds those plans with materials. This does not touch vanilla construction.
+#
+# Material roles:
+# - WLFrozenBranchStack: crude wood for first shelter construction.
+# - WLLooseScrapStack: metal fittings, frames, and machinery.
+# - WLRoughStoneStack: masonry, heavy floors, and outdoor paving.
+# - WLTornClothStack: clothing, seals, and insulation.
+
+# --- Subcategories -----------------------------------------------------------
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryShelterFloors
+  category: WLCraftCategoryGathererProcessor
+  name: persistent-craft-wl-subcategory-shelter-floors
+  order: 20
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryShelterStructures
+  category: WLCraftCategorySettlementHead
+  name: persistent-craft-wl-subcategory-shelter-structures
+  order: 30
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryShelterGenerators
+  category: WLCraftCategorySettlementHead
+  name: persistent-craft-wl-subcategory-shelter-generators
+  order: 40
+
+# --- Floor And Road Tiles ----------------------------------------------------
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeSnowFoundation
+  name: persistent-craft-wl-recipe-snow-foundation-name
+  description: persistent-craft-wl-recipe-snow-foundation-description
+  displayProto: WLSnowFoundationTileItem
+  branch: WLGathererProcessor
+  tier: 1
+  requiredNode: WLCraftNodeGathererTilesT1
+  category: WLCraftCategoryGathererProcessor
+  subCategory: WLCraftSubCategoryShelterFloors
+  craftTime: 1.2
+  ingredients:
+  - stackType: WLWoodPlankStack
+    amount: 2
+  - stackType: WLMetalPartsStack
+    amount: 1
+  results:
+  - proto: WLSnowFoundationTileItem
+    amount: 8
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipePrimitiveWoodFloor
+  name: persistent-craft-wl-recipe-primitive-wood-floor-name
+  description: persistent-craft-wl-recipe-primitive-wood-floor-description
+  displayProto: WLPrimitiveWoodFloorTileItem
+  branch: WLGathererProcessor
+  tier: 1
+  requiredNode: WLCraftNodeGathererTilesT1
+  category: WLCraftCategoryGathererProcessor
+  subCategory: WLCraftSubCategoryShelterFloors
+  craftTime: 1.4
+  ingredients:
+  - stackType: WLWoodPlankStack
+    amount: 3
+  results:
+  - proto: WLPrimitiveWoodFloorTileItem
+    amount: 8
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWoodFloor
+  name: persistent-craft-wl-recipe-wood-floor-name
+  description: persistent-craft-wl-recipe-wood-floor-description
+  displayProto: WLWoodFloorTileItem
+  branch: WLGathererProcessor
+  tier: 2
+  requiredNode: WLCraftNodeGathererTilesT2
+  category: WLCraftCategoryGathererProcessor
+  subCategory: WLCraftSubCategoryShelterFloors
+  craftTime: 1.8
+  ingredients:
+  - stackType: WLWoodPlankStack
+    amount: 5
+  - stackType: WLPreparedClothStack
+    amount: 1
+  results:
+  - proto: WLWoodFloorTileItem
+    amount: 8
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeStoneFloor
+  name: persistent-craft-wl-recipe-stone-floor-name
+  description: persistent-craft-wl-recipe-stone-floor-description
+  displayProto: WLStoneFloorTileItem
+  branch: WLGathererProcessor
+  tier: 2
+  requiredNode: WLCraftNodeGathererTilesT2
+  category: WLCraftCategoryGathererProcessor
+  subCategory: WLCraftSubCategoryShelterFloors
+  craftTime: 2.0
+  ingredients:
+  - stackType: WLRoughStoneStack
+    amount: 4
+  results:
+  - proto: WLStoneFloorTileItem
+    amount: 8
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeInsulatedFloor
+  name: persistent-craft-wl-recipe-insulated-floor-name
+  description: persistent-craft-wl-recipe-insulated-floor-description
+  displayProto: WLInsulatedFloorTileItem
+  branch: WLGathererProcessor
+  tier: 3
+  requiredNode: WLCraftNodeGathererTilesT3
+  category: WLCraftCategoryGathererProcessor
+  subCategory: WLCraftSubCategoryShelterFloors
+  craftTime: 2.4
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 3
+  - stackType: WLPreparedClothStack
+    amount: 3
+  results:
+  - proto: WLInsulatedFloorTileItem
+    amount: 4
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeRoadFloor
+  name: persistent-craft-wl-recipe-road-floor-name
+  description: persistent-craft-wl-recipe-road-floor-description
+  displayProto: WLRoadFloorTileItem
+  branch: WLGathererProcessor
+  tier: 2
+  requiredNode: WLCraftNodeGathererTilesT2
+  category: WLCraftCategoryGathererProcessor
+  subCategory: WLCraftSubCategoryShelterFloors
+  craftTime: 1.6
+  ingredients:
+  - stackType: WLRoughStoneStack
+    amount: 3
+  results:
+  - proto: WLRoadFloorTileItem
+    amount: 8
+
+# --- Outdoor Heat ------------------------------------------------------------
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeCampfire
+  name: persistent-craft-wl-recipe-campfire-name
+  description: persistent-craft-wl-recipe-campfire-description
+  displayProto: WLCampfireHeatSource
+  branch: WLSettlementHead
+  tier: 1
+  requiredNode: WLCraftNodeSettlementHeadStarter
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterGenerators
+  craftTime: 1.6
+  ingredients:
+  - stackType: WLFrozenBranchStack
+    amount: 4
+  results: []
+  placement:
+    proto: WLCampfireHeatSource
+    blueprintProto: WLCampfireHeatSourceBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: OutdoorHeatSource
+    forbidRoom: true
+
+# --- Walls And Doors ---------------------------------------------------------
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipePrimitiveWoodWall
+  name: persistent-craft-wl-recipe-primitive-wood-wall-name
+  description: persistent-craft-wl-recipe-primitive-wood-wall-description
+  displayProto: WLPrimitiveWoodWall
+  branch: WLSettlementHead
+  tier: 1
+  requiredNode: WLCraftNodeSettlementHeadShelterT1
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterStructures
+  craftTime: 1.8
+  ingredients:
+  - stackType: WLWoodPlankStack
+    amount: 3
+  results: []
+  placement:
+    proto: WLPrimitiveWoodWall
+    blueprintProto: WLPrimitiveWoodWallBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Wall
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipePrimitiveWoodDoor
+  name: persistent-craft-wl-recipe-primitive-wood-door-name
+  description: persistent-craft-wl-recipe-primitive-wood-door-description
+  displayProto: WLPrimitiveWoodDoor
+  branch: WLSettlementHead
+  tier: 1
+  requiredNode: WLCraftNodeSettlementHeadShelterT1
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterStructures
+  craftTime: 2.0
+  ingredients:
+  - stackType: WLWoodPlankStack
+    amount: 4
+  - stackType: WLPreparedClothStack
+    amount: 1
+  results: []
+  placement:
+    proto: WLPrimitiveWoodDoor
+    blueprintProto: WLPrimitiveWoodDoorBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Door
+    requireAdjacentBoundary: true
+
+# --- Indoor Stations And Heat ------------------------------------------------
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeResearchTable
+  name: persistent-craft-wl-recipe-research-table-name
+  description: persistent-craft-wl-recipe-research-table-description
+  displayProto: WLResearchTable
+  branch: WLSettlementHead
+  tier: 1
+  requiredNode: WLCraftNodeSettlementHeadStarter
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterStructures
+  craftTime: 2.2
+  ingredients:
+  - stackType: WLFrozenBranchStack
+    amount: 5
+  - stackType: WLLooseScrapStack
+    amount: 3
+  - stackType: WLTornClothStack
+    amount: 2
+  results: []
+  placement:
+    proto: WLResearchTable
+    blueprintProto: WLResearchTableBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Furniture
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipePrimitiveWorkbench
+  name: persistent-craft-wl-recipe-primitive-workbench-name
+  description: persistent-craft-wl-recipe-primitive-workbench-description
+  displayProto: WLPrimitiveWorkbench
+  branch: WLSettlementHead
+  tier: 2
+  requiredNode: WLCraftNodeSettlementHeadWorkshopT2
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterStructures
+  craftTime: 2.4
+  ingredients:
+  - stackType: WLWoodPlankStack
+    amount: 4
+  - stackType: WLMetalPartsStack
+    amount: 1
+  results: []
+  placement:
+    proto: WLPrimitiveWorkbench
+    blueprintProto: WLPrimitiveWorkbenchBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Furniture
+    requireRoom: true
+    minFloorTier: Wood
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeFireplace
+  name: persistent-craft-wl-recipe-fireplace-name
+  description: persistent-craft-wl-recipe-fireplace-description
+  displayProto: WLFireplaceHeatSource
+  branch: WLSettlementHead
+  tier: 2
+  requiredNode: WLCraftNodeSettlementHeadHeatT2
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterGenerators
+  craftTime: 3.2
+  ingredients:
+  - stackType: WLRoughStoneStack
+    amount: 4
+  - stackType: WLLooseScrapStack
+    amount: 2
+  results: []
+  placement:
+    proto: WLFireplaceHeatSource
+    blueprintProto: WLFireplaceHeatSourceBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Furniture
+    requireRoom: true
+    minFloorTier: Wood
+
+# --- Heavy Heat Machinery ----------------------------------------------------
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeFiretubeGenerator
+  name: persistent-craft-wl-recipe-firetube-generator-name
+  description: persistent-craft-wl-recipe-firetube-generator-description
+  displayProto: WLFiretubeGenerator
+  branch: WLSettlementHead
+  tier: 3
+  requiredNode: WLCraftNodeSettlementHeadGeneratorT3
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterGenerators
+  craftTime: 5.5
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 10
+  - stackType: WLPreparedClothStack
+    amount: 3
+  - stackType: WLRoughStoneStack
+    amount: 4
+  - stackType: WLTornClothStack
+    amount: 2
+  results: []
+  placement:
+    proto: WLFiretubeGenerator
+    blueprintProto: WLFiretubeGeneratorBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Furniture
+    minFloorTier: Stone

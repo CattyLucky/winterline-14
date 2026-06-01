@@ -359,7 +359,7 @@ public sealed partial class PersistentCraftStationWindow
         var loaded = _state?.Loaded == true;
         var requirementMet = _state != null && HasRequirement(_state, recipe);
         var hasMaterials = GetHasLocalMaterials(recipe);
-        var canCraft = loaded && requirementMet && hasMaterials;
+        var canCraft = loaded && requirementMet && (hasMaterials || recipe.Placement != null);
         var accent = GetAccent(recipe.Branch);
 
         var panel = new PanelContainer
@@ -421,7 +421,9 @@ public sealed partial class PersistentCraftStationWindow
         header.SetData(
             ResolveRecipeName(recipe),
             Color.White,
-            Loc.GetString("persistent-craft-recipe-action"),
+            Loc.GetString(recipe.Placement != null
+                ? "persistent-craft-recipe-action-place"
+                : "persistent-craft-recipe-action"),
             !canCraft);
         header.ActionButton.OnPressed += _ => OnCraftPressed?.Invoke(recipe.ID);
 
@@ -475,12 +477,6 @@ public sealed partial class PersistentCraftStationWindow
             PersistentCraftUiTheme.SurfacePanelAlt,
             PersistentCraftUiTheme.TextMuted,
             PersistentCraftUiTheme.BorderSoft));
-        header.MetaContainer.AddChild(new Control { MinSize = new Vector2(1, 4) });
-        header.MetaContainer.AddChild(CreateMetaBadge(
-            $"{Loc.GetString("persistent-craft-recipe-points")}: +{PersistentCraftingHelper.GetPointReward(recipe)}",
-            PersistentCraftUiTheme.SurfacePanelAlt,
-            accent,
-            accent.WithAlpha(0.35f)));
 
         return header;
     }

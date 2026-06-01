@@ -1,8 +1,10 @@
 using System.Numerics;
 using Content.Client.Actions.UI;
+using Content.Client.Alerts;
 using Content.Client.Cooldown;
 using Content.Shared.Alert;
 using Robust.Client.GameObjects;
+using Robust.Client.Player;
 using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controls;
 using Robust.Shared.Timing;
@@ -13,6 +15,7 @@ namespace Content.Client.UserInterface.Systems.Alerts.Controls
     public sealed class AlertControl : BaseButton
     {
         [Dependency] private readonly IEntityManager _entityManager = default!;
+        [Dependency] private readonly IPlayerManager _player = default!;
 
         private readonly SpriteSystem _sprite;
 
@@ -80,9 +83,21 @@ namespace Content.Client.UserInterface.Systems.Alerts.Controls
 
         private Control SupplyTooltip(Control? sender)
         {
-            var msg = FormattedMessage.FromMarkupOrThrow(Loc.GetString(Alert.Name));
-            var desc = FormattedMessage.FromMarkupOrThrow(Loc.GetString(Alert.Description));
-            return new ActionAlertTooltip(msg, desc) { Cooldown = Cooldown };
+            var name = FormattedMessage.FromMarkupOrThrow(Loc.GetString(Alert.Name));
+            var description = FormattedMessage.FromMarkupOrThrow(Loc.GetString(Alert.Description));
+
+            var tooltipEvent = new AlertTooltipEvent(Alert, _severity, name, description);
+
+            if (_player.LocalEntity is { } player)
+                _entityManager.EventBus.RaiseLocalEvent(player, ref tooltipEvent);
+
+            if (!_entityManager.Deleted(_spriteViewEntity))
+                _entityManager.EventBus.RaiseLocalEvent(_spriteViewEntity, ref tooltipEvent);
+
+            name = tooltipEvent.Name;
+            description = tooltipEvent.Description;
+
+            return new ActionAlertTooltip(name, description) { Cooldown = Cooldown };
         }
 
         /// <summary>

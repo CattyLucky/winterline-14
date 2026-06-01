@@ -135,6 +135,13 @@ public sealed partial class FrozenColdExposureComponent : Component
     [ViewVariables]
     public float LastWeakestBodyPartSeverity;
 
+    /// <summary>
+    /// True only when one body part is meaningfully worse than the rest.
+    /// Prevents the UI from showing a fake "weak spot: torso" when the whole body freezes evenly.
+    /// </summary>
+    [ViewVariables]
+    public bool LastHasClearWeakestBodyPart;
+
     [ViewVariables]
     public float LastExposureGainMultiplier = 1f;
 

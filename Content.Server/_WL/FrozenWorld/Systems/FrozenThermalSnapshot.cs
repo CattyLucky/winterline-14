@@ -22,11 +22,24 @@ public readonly record struct FrozenThermalSnapshot(
     float FootContactPenaltyCelsius,
     FrozenBodyPart WeakestBodyPart,
     float WeakestBodyPartSeverity,
+    bool HasClearWeakestBodyPart,
     FrozenBodyPartValues PartRatedTemperatureCelsius,
     FrozenBodyPartValues PartColdSeverity,
     float ExposureGainMultiplier,
     float RecoveryMultiplier,
-    float ColdDamageMultiplier)
+    float ColdDamageMultiplier,
+    float WeatherTemperatureOffset,
+    bool WeatherAffectsPosition,
+    string? ActiveWeatherName,
+    float WeatherIntensity,
+    float WeatherExposureFactor,
+    string? ShelterName,
+    FrozenShelterSource ShelterSource,
+    FrozenShelterRoomThermalInfo Room,
+    float BaseAmbientTemperature,
+    float DayNightTemperatureOffset,
+    float DayNightPhase,
+    float ZoneTemperatureOffset)
 {
     public float LocalHeatBonus => StaticHeatBonus + DynamicHeatBonus;
 }

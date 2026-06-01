@@ -2,7 +2,7 @@
   id: WLThermomonitor
   parent: BaseItem
   name: thermomonitor
-  description: Handheld thermal monitor for FrozenWorld survival diagnostics.
+  description: Handheld thermal monitor for FrozenWorld survival conditions.
   components:
   - type: Sprite
     sprite: Objects/Specific/Atmos/gasanalyzer.rsi
@@ -21,3 +21,19 @@
         type: FrozenThermometerBoundUserInterface
   - type: StaticPrice
     price: 120
+
+- type: entity
+  id: WLThermomonitorDebug
+  parent: WLThermomonitor
+  name: thermomonitor debug
+  description: Handheld debug thermal monitor with full climate breakdown.
+  components:
+  - type: ActivatableUI
+    key: enum.FrozenWorldUiKey.ThermometerDebug
+    inHandsOnly: true
+    requireActiveHand: true
+    singleUser: true
+  - type: UserInterface
+    interfaces:
+      enum.FrozenWorldUiKey.ThermometerDebug:
+        type: FrozenThermometerDebugBoundUserInterface

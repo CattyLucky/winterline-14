@@ -11,4 +11,9 @@ public enum FrozenWorldUiKey : byte
 {
     HeatSourceFuel = 0,
     Thermometer = 1,
+
+    /// <summary>
+    /// Separate diagnostic UI. The normal thermometer stays player-facing.
+    /// </summary>
+    ThermometerDebug = 2,
 }

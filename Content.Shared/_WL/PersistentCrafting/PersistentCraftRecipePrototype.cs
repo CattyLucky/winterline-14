@@ -1,3 +1,4 @@
+using Content.Shared._WL.FrozenWorld;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization;
 
@@ -37,14 +38,17 @@ public sealed partial class PersistentCraftRecipePrototype : IPrototype
     [DataField("craftTime")]
     public float CraftTime = 2f;
 
-    [DataField("pointReward")]
-    public int PointReward;
+    [DataField("allowResourceProcessingBonus")]
+    public bool AllowResourceProcessingBonus;
 
     [DataField("ingredients", required: true)]
     public List<PersistentCraftIngredient> Ingredients = new();
 
     [DataField("results", required: true)]
     public List<PersistentCraftResult> Results = new();
+
+    [DataField("placement")]
+    public PersistentCraftPlacement? Placement;
 }
 
 [DataDefinition, Serializable, NetSerializable]
@@ -121,4 +125,38 @@ public sealed partial class PersistentCraftResult
 
     [DataField("amount")]
     public int Amount = 1;
+}
+
+[DataDefinition, Serializable, NetSerializable]
+public sealed partial class PersistentCraftPlacement
+{
+    [DataField("proto", required: true)]
+    public string Proto = string.Empty;
+
+    [DataField("blueprintProto")]
+    public string BlueprintProto = "WLPersistentCraftBlueprint";
+
+    [DataField("placementMode")]
+    public string PlacementMode = "SnapgridCenter";
+
+    [DataField("floorRequirement")]
+    public FrozenBuildableFloorRequirement FloorRequirement = FrozenBuildableFloorRequirement.Furniture;
+
+    [DataField("canRotate")]
+    public bool CanRotate = true;
+
+    [DataField("canBuildInImpassable")]
+    public bool CanBuildInImpassable;
+
+    [DataField("requireAdjacentBoundary")]
+    public bool RequireAdjacentBoundary;
+
+    [DataField("requireRoom")]
+    public bool RequireRoom;
+
+    [DataField("forbidRoom")]
+    public bool ForbidRoom;
+
+    [DataField("minFloorTier")]
+    public FrozenRoomFloorTier MinFloorTier = FrozenRoomFloorTier.None;
 }

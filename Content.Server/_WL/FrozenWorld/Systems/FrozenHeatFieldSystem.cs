@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using Content.Server._WL.FrozenWorld.Components;
+using Robust.Shared.Map.Components;
 using Robust.Shared.Maths;
 using Robust.Shared.Timing;
 
@@ -19,6 +20,9 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 public sealed partial class FrozenHeatFieldSystem : EntitySystem
 {
     [Dependency] private readonly IGameTiming _timing = default!;
+    [Dependency] private readonly SharedMapSystem _map = default!;
+    [Dependency] private readonly FrozenShelterRoomSystem _rooms = default!;
+    [Dependency] private readonly FrozenRoomHeatSystem _roomHeat = default!;
 
     private static readonly TimeSpan StaticHeatFieldReconcileInterval = TimeSpan.FromSeconds(1);
 
@@ -39,7 +43,7 @@ public sealed partial class FrozenHeatFieldSystem : EntitySystem
     /// Returns static heat contribution at a world position.
     /// This is a temperature offset in Kelvin/Celsius degrees, not final effective temperature.
     /// </summary>
-    public float GetStaticHeatBonusAt(EntityUid mapUid, Vector2 worldPos)
+    public float GetStaticHeatBonusAt(EntityUid mapUid, Vector2 worldPos, FrozenShelterRoomKey? queryRoom = null)
     {
         EnsureStaticHeatField();
 
@@ -48,7 +52,7 @@ public sealed partial class FrozenHeatFieldSystem : EntitySystem
 
         var cell = WorldToHeatCell(worldPos);
         return cells.TryGetValue(cell, out var data)
-            ? FrozenThermalMath.GetStackedHeatBonus(data.RawHeatSum, data.MaxSingleHeat)
+            ? data.GetHeatBonus(queryRoom, _staticSources)
             : 0f;
     }
 
@@ -61,13 +65,21 @@ public sealed partial class FrozenHeatFieldSystem : EntitySystem
     private void OnHeatSourceStartup(Entity<FrozenHeatSourceComponent> ent, ref ComponentStartup args)
     {
         if (!ent.Comp.Dynamic)
+        {
             InvalidateStaticHeatField();
+            if (ent.Comp.RoomHeating)
+                _roomHeat.InvalidateRoomHeat();
+        }
     }
 
     private void OnHeatSourceShutdown(Entity<FrozenHeatSourceComponent> ent, ref ComponentShutdown args)
     {
         if (!ent.Comp.Dynamic)
+        {
             InvalidateStaticHeatField();
+            if (ent.Comp.RoomHeating)
+                _roomHeat.InvalidateRoomHeat();
+        }
     }
 
     private void EnsureStaticHeatField()
@@ -144,7 +156,7 @@ public sealed partial class FrozenHeatFieldSystem : EntitySystem
         }
     }
 
-    private static bool TryBuildSnapshot(FrozenHeatSourceComponent source, TransformComponent xform, out FrozenStaticHeatSourceSnapshot snapshot)
+    private bool TryBuildSnapshot(FrozenHeatSourceComponent source, TransformComponent xform, out FrozenStaticHeatSourceSnapshot snapshot)
     {
         snapshot = default;
 
@@ -157,6 +169,13 @@ public sealed partial class FrozenHeatFieldSystem : EntitySystem
         if (xform.MapUid is not { } mapUid)
             return false;
 
+        var sourceRoom = TryGetSourceRoom(xform, out var roomKey)
+            ? roomKey
+            : (FrozenShelterRoomKey?) null;
+
+        if (source.RoomHeating && sourceRoom != null)
+            return false;
+
         var outerRadius = MathF.Max(0.01f, source.OuterRadius);
         var innerRadius = Math.Clamp(source.InnerRadius, 0f, outerRadius);
 
@@ -166,9 +185,26 @@ public sealed partial class FrozenHeatFieldSystem : EntitySystem
             innerRadius,
             outerRadius,
             source.EffectiveHeatBonus,
-            source.EffectiveTransferEfficiency);
+            source.EffectiveTransferEfficiency,
+            sourceRoom);
 
         return true;
+    }
+
+    private bool TryGetSourceRoom(TransformComponent xform, out FrozenShelterRoomKey roomKey)
+    {
+        roomKey = default;
+
+        if (xform.GridUid is not { } gridUid)
+            return false;
+
+        if (!TryComp<MapGridComponent>(gridUid, out var mapGrid))
+            return false;
+
+        var tile = _map.TileIndicesFor(gridUid, mapGrid, xform.Coordinates);
+        return _rooms.TryGetRoomKeyAt(gridUid, tile, out roomKey, out var room)
+               && room.IsClosed
+               && room.HasFloor;
     }
 
     private void AddSourceContribution(EntityUid uid, FrozenStaticHeatSourceSnapshot snapshot)
@@ -276,7 +312,8 @@ public sealed partial class FrozenHeatFieldSystem : EntitySystem
                && MathHelper.CloseTo(a.InnerRadius, b.InnerRadius)
                && MathHelper.CloseTo(a.OuterRadius, b.OuterRadius)
                && MathHelper.CloseTo(a.HeatBonus, b.HeatBonus)
-               && MathHelper.CloseTo(a.TransferEfficiency, b.TransferEfficiency);
+               && MathHelper.CloseTo(a.TransferEfficiency, b.TransferEfficiency)
+               && RoomKeysMatch(a.RoomKey, b.RoomKey);
     }
 
 
@@ -287,9 +324,10 @@ public sealed partial class FrozenHeatFieldSystem : EntitySystem
         private float _singleContribution;
         private Dictionary<EntityUid, float>? _contributions;
 
-        public float RawHeatSum { get; private set; }
-        public float MaxSingleHeat { get; private set; }
         public bool IsEmpty => RawHeatSum <= 0.001f;
+
+        private float RawHeatSum { get; set; }
+        private float MaxSingleHeat { get; set; }
 
         public void SetContribution(EntityUid uid, float contribution)
         {
@@ -385,6 +423,40 @@ public sealed partial class FrozenHeatFieldSystem : EntitySystem
                 MaxSingleHeat = MathF.Max(MaxSingleHeat, contribution);
             }
         }
+
+        public float GetHeatBonus(
+            FrozenShelterRoomKey? queryRoom,
+            Dictionary<EntityUid, FrozenStaticHeatSourceSnapshot> sources)
+        {
+            var rawHeatSum = 0f;
+            var maxSingleHeat = 0f;
+
+            if (_contributions != null)
+            {
+                foreach (var (sourceUid, contribution) in _contributions)
+                {
+                    if (!sources.TryGetValue(sourceUid, out var source) ||
+                        !RoomKeysMatch(queryRoom, source.RoomKey))
+                    {
+                        continue;
+                    }
+
+                    rawHeatSum += contribution;
+                    maxSingleHeat = MathF.Max(maxSingleHeat, contribution);
+                }
+
+                return FrozenThermalMath.GetStackedHeatBonus(rawHeatSum, maxSingleHeat);
+            }
+
+            if (!_hasSingleContribution ||
+                !sources.TryGetValue(_singleContributionUid, out var singleSource) ||
+                !RoomKeysMatch(queryRoom, singleSource.RoomKey))
+            {
+                return 0f;
+            }
+
+            return FrozenThermalMath.GetStackedHeatBonus(_singleContribution, _singleContribution);
+        }
     }
 
     private readonly record struct FrozenStaticHeatSourceSnapshot(
@@ -393,5 +465,14 @@ public sealed partial class FrozenHeatFieldSystem : EntitySystem
         float InnerRadius,
         float OuterRadius,
         float HeatBonus,
-        float TransferEfficiency);
+        float TransferEfficiency,
+        FrozenShelterRoomKey? RoomKey);
+
+    private static bool RoomKeysMatch(FrozenShelterRoomKey? queryRoom, FrozenShelterRoomKey? sourceRoom)
+    {
+        if (!queryRoom.HasValue)
+            return !sourceRoom.HasValue;
+
+        return sourceRoom.HasValue && queryRoom.Value.Equals(sourceRoom.Value);
+    }
 }

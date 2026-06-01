@@ -7,6 +7,8 @@ using Content.Shared.Damage.Systems;
 using Content.Shared.FixedPoint;
 using Robust.Shared.Prototypes;
 using Content.Shared._WL.FrozenWorld;
+using Content.Shared._WL.FrozenWorld.Components;
+using Content.Shared._WL.Roles;
 
 namespace Content.Server._WL.FrozenWorld.Systems;
 
@@ -44,6 +46,7 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
             if (!_thermal.TryGetSnapshot(uid, exposure, out var snapshot))
             {
                 exposure.LastStage = FrozenColdStage.None;
+                UpdateColdAlertComponent(uid, exposure, false);
                 ClearColdAlert(uid, exposure);
                 continue;
             }
@@ -64,6 +67,7 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
         exposure.LastFootContactPenaltyCelsius = snapshot.FootContactPenaltyCelsius;
         exposure.LastWeakestBodyPart = snapshot.WeakestBodyPart;
         exposure.LastWeakestBodyPartSeverity = snapshot.WeakestBodyPartSeverity;
+        exposure.LastHasClearWeakestBodyPart = snapshot.HasClearWeakestBodyPart;
         exposure.LastExposureGainMultiplier = snapshot.ExposureGainMultiplier;
         exposure.LastRecoveryMultiplier = snapshot.RecoveryMultiplier;
         exposure.LastColdDamageMultiplier = snapshot.ColdDamageMultiplier;
@@ -74,18 +78,23 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
     {
         if (snapshot.TotalColdSeverity <= 0f)
         {
-            var recoveryRate = exposure.RecoveryRate * snapshot.RecoveryMultiplier;
+            var recoveryRate = exposure.RecoveryRate
+                               * snapshot.RecoveryMultiplier
+                               * GetColdRecoveryMultiplier(uid);
             exposure.Exposure = MathF.Max(0f, exposure.Exposure - recoveryRate * frameTime);
             exposure.DamageAccumulator = 0f;
             exposure.LastColdSeverity = 0f;
             exposure.LastDamageAmount = 0f;
             exposure.LastStage = GetColdStage(exposure);
+            UpdateColdAlertComponent(uid, exposure, true);
             UpdateColdAlert(uid, exposure);
             return;
         }
 
         var oldStage = exposure.LastStage;
-        var gainRate = exposure.ExposureGainRate * snapshot.ExposureGainMultiplier;
+        var gainRate = exposure.ExposureGainRate
+                       * snapshot.ExposureGainMultiplier
+                       * GetColdExposureGainMultiplier(uid);
         var maxExposure = MathF.Max(0f, exposure.MaxExposure);
         exposure.Exposure = Math.Clamp(
             exposure.Exposure + gainRate * snapshot.TotalColdSeverity * frameTime,
@@ -112,6 +121,7 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
             exposure.DamageAccumulator = 0f;
         }
 
+        UpdateColdAlertComponent(uid, exposure, true);
         UpdateColdAlert(uid, exposure);
     }
 
@@ -124,7 +134,9 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
         if (snapshot.TotalColdSeverity <= 0f)
             return;
 
-        var amount = baseAmount * snapshot.ColdDamageMultiplier;
+        var amount = baseAmount
+                     * snapshot.ColdDamageMultiplier
+                     * GetColdDamageMultiplier(uid);
         exposure.LastDamageAmount = amount;
 
         if (amount <= 0f)
@@ -132,6 +144,22 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
 
         var damage = new DamageSpecifier(damageType, FixedPoint2.New(amount));
         _damage.TryChangeDamage(uid, damage, ignoreResistances: false, interruptsDoAfters: true, origin: uid);
+    }
+
+    private void UpdateColdAlertComponent(EntityUid uid, FrozenColdExposureComponent exposure, bool available)
+    {
+        var alert = EnsureComp<FrozenColdAlertComponent>(uid);
+        alert.Available = available;
+        alert.Exposure = exposure.Exposure;
+        alert.MaxExposure = exposure.MaxExposure;
+        alert.Stage = exposure.LastStage;
+        alert.TotalColdSeverity = exposure.LastColdSeverity;
+        alert.WeakestBodyPart = exposure.LastWeakestBodyPart;
+        alert.WeakestBodyPartSeverity = exposure.LastWeakestBodyPartSeverity;
+        alert.HasClearWeakestBodyPart = available
+                                        && exposure.LastColdSeverity > 0f
+                                        && exposure.LastHasClearWeakestBodyPart;
+        Dirty(uid, alert);
     }
 
     private void UpdateColdAlert(EntityUid uid, FrozenColdExposureComponent exposure)
@@ -204,5 +232,26 @@ public sealed partial class FrozenColdExposureSystem : EntitySystem
             FrozenColdStage.Critical => (exposure.CriticalDamage, exposure.CriticalDamageInterval),
             _ => (0f, 0f),
         };
+    }
+
+    private float GetColdExposureGainMultiplier(EntityUid uid)
+    {
+        return TryComp(uid, out WLRoleSkillsComponent? skills)
+            ? MathF.Max(0f, skills.ColdExposureGainMultiplier)
+            : 1f;
+    }
+
+    private float GetColdRecoveryMultiplier(EntityUid uid)
+    {
+        return TryComp(uid, out WLRoleSkillsComponent? skills)
+            ? MathF.Max(0f, skills.ColdRecoveryMultiplier)
+            : 1f;
+    }
+
+    private float GetColdDamageMultiplier(EntityUid uid)
+    {
+        return TryComp(uid, out WLRoleSkillsComponent? skills)
+            ? MathF.Max(0f, skills.ColdDamageMultiplier)
+            : 1f;
     }
 }

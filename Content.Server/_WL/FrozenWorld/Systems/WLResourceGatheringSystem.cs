@@ -1,5 +1,6 @@
 using Content.Shared._WL.FrozenWorld.Components;
 using Content.Shared._WL.FrozenWorld.Events;
+using Content.Shared._WL.Roles;
 using Content.Shared.DoAfter;
 using Content.Shared.Interaction;
 using Content.Shared.Popups;
@@ -9,7 +10,7 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 
 /// <summary>
 /// Handles player gathering from WLResourcePointComponent entities.
-/// Flow: InteractHand → DoAfter → spawn loot → decrement charges → deplete/delete.
+/// Flow: InteractHand -> DoAfter -> spawn loot -> decrement charges -> deplete/delete.
 /// </summary>
 public sealed partial class WLResourceGatheringSystem : EntitySystem
 {
@@ -43,10 +44,11 @@ public sealed partial class WLResourceGatheringSystem : EntitySystem
 
         args.Handled = true;
 
+        var gatherTime = MathF.Max(0.25f, ent.Comp.GatherTime * GetGatherTimeMultiplier(args.User));
         var doAfterArgs = new DoAfterArgs(
             EntityManager,
             args.User,
-            ent.Comp.GatherTime,
+            gatherTime,
             new WLResourceGatherDoAfterEvent(),
             ent.Owner,
             target: ent.Owner)
@@ -90,6 +92,7 @@ public sealed partial class WLResourceGatheringSystem : EntitySystem
         foreach (var entry in ent.Comp.Loot)
         {
             var count = _random.Next(entry.MinCount, entry.MaxCount + 1);
+            count = ApplyGatherYieldMultiplier(count, args.User);
             for (var i = 0; i < count; i++)
             {
                 Spawn(entry.Prototype, coords);
@@ -109,5 +112,25 @@ public sealed partial class WLResourceGatheringSystem : EntitySystem
             Spawn(proto, Transform(ent.Owner).Coordinates);
 
         QueueDel(ent.Owner);
+    }
+
+    private float GetGatherTimeMultiplier(EntityUid user)
+    {
+        return TryComp(user, out WLRoleSkillsComponent? skills)
+            ? MathF.Max(0.1f, skills.GatherTimeMultiplier)
+            : 1f;
+    }
+
+    private int ApplyGatherYieldMultiplier(int count, EntityUid? user)
+    {
+        if (count <= 0 ||
+            user == null ||
+            !TryComp(user.Value, out WLRoleSkillsComponent? skills) ||
+            MathHelper.CloseToPercent(skills.GatherYieldMultiplier, 1f))
+        {
+            return count;
+        }
+
+        return Math.Max(1, (int) MathF.Ceiling(count * skills.GatherYieldMultiplier));
     }
 }

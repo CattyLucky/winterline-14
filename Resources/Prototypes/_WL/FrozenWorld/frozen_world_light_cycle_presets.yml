@@ -1,0 +1,11 @@
+- type: frozenWorldLightCyclePreset
+  id: WLFrostRimDefaultLightCycle
+  configureLightCycle: true
+  lightCycleEnabled: true
+  lightCycleDuration: 60s
+  lightCycleOffset: 0s
+  randomizeLightCycleOffset: false
+  dayNightTemperatureEnabled: true
+  dayTemperatureOffset: 1
+  nightTemperatureOffset: -20
+  temperaturePeakPhase: 0.58

@@ -1,0 +1,4 @@
+- type: shader
+  id: FrozenWeatherVignette
+  kind: source
+  path: "/Textures/Shaders/frozen_weather_vignette.swsl"

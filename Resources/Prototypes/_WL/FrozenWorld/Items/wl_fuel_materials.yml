@@ -1,18 +1,33 @@
 # /// WL Change
-# WL-specific combustible material/ore items for FrozenWorld.
-# Keep fuel tuning local to WL instead of editing vanilla material prototypes.
+# FrozenWorld fuel materials by quality tier.
+#
+# Fuel is consumed by FrozenHeatSourceFuel one stack unit at a time. Higher
+# priority burns first, so better fuel naturally takes over when mixed.
+
+# --- Tier 2: Prepared Wood ---------------------------------------------------
 
 - type: entity
   id: WLMaterialWoodFuel
   parent: MaterialWoodPlank
   name: frozen firewood
-  description: Dried timber prepared for frozen-world heating.
+  description: Split timber prepared for shelter heating. Better than raw branches and easy to store.
   suffix: Full
   components:
+  - type: Sprite
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: firewood_3
+    layers:
+    - state: firewood_3
+      map: ["base"]
   - type: Stack
     stackType: WLWoodFuelStack
+    baseLayer: base
+    layerStates:
+    - firewood
+    - firewood_2
+    - firewood_3
   - type: FrozenFuel
-    fuelSeconds: 55
+    fuelSeconds: 70
     priority: 20
     heatBonusMultiplier: 1.0
     transferEfficiencyMultiplier: 1.0
@@ -35,17 +50,72 @@
     count: 1
 
 - type: entity
+  id: WLLog
+  parent: Log
+  name: frozen log
+  description: A heavy frozen trunk. Saw or split it into boards before serious construction.
+  components:
+  - type: Sprite
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: log
+  - type: Log
+    spawnedPrototype: WLWoodPlank1
+    spawnCount: 4
+
+# --- Tier 3: Charcoal --------------------------------------------------------
+
+- type: entity
+  id: WLCharcoalFuel
+  parent: Coal
+  name: frost-dry charcoal
+  description: Dry charcoal pulled from old burn pits. It catches better than coal and burns longer than wood.
+  suffix: Full
+  components:
+  - type: Sprite
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: coal
+  - type: Stack
+    stackType: WLCharcoalFuelStack
+  - type: FrozenFuel
+    fuelSeconds: 100
+    priority: 30
+    heatBonusMultiplier: 1.1
+    transferEfficiencyMultiplier: 1.05
+    burnRateMultiplier: 0.95
+
+- type: entity
+  id: WLCharcoalFuel10
+  parent: WLCharcoalFuel
+  suffix: 10
+  components:
+  - type: Stack
+    count: 10
+
+- type: entity
+  id: WLCharcoalFuel1
+  parent: WLCharcoalFuel
+  suffix: Single
+  components:
+  - type: Stack
+    count: 1
+
+# --- Tier 4: Coal ------------------------------------------------------------
+
+- type: entity
   id: WLCoalFuel
   parent: Coal
   name: frozen coal chunk
-  description: Dense coal chunk used as long-burning fuel in extreme cold.
+  description: Dense coal used as long-burning fuel in extreme cold.
   suffix: Full
   components:
+  - type: Sprite
+    sprite: Objects/Materials/ore.rsi
+    state: coal
   - type: Stack
     stackType: WLCoalFuelStack
   - type: FrozenFuel
-    fuelSeconds: 90
-    priority: 30
+    fuelSeconds: 140
+    priority: 40
     heatBonusMultiplier: 1.2
     transferEfficiencyMultiplier: 1.1
     burnRateMultiplier: 0.9
@@ -66,12 +136,39 @@
   - type: Stack
     count: 1
 
+# --- Tier 5: Dense Coal ------------------------------------------------------
+
 - type: entity
-  id: WLLog
-  parent: Log
-  name: frozen log
-  description: A dense frozen trunk. Split it to get usable Winterline firewood.
+  id: WLDenseCoalFuel
+  parent: WLCoalFuel
+  name: dense frozen coal
+  description: A hard, glassy coal lump from deep seams. It burns hot and lasts a long time.
+  suffix: Full
   components:
-  - type: Log
-    spawnedPrototype: WLMaterialWoodFuel1
-    spawnCount: 2
+  - type: Sprite
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: coal
+  - type: Stack
+    stackType: WLDenseCoalFuelStack
+  - type: FrozenFuel
+    fuelSeconds: 210
+    priority: 50
+    heatBonusMultiplier: 1.35
+    transferEfficiencyMultiplier: 1.2
+    burnRateMultiplier: 0.85
+
+- type: entity
+  id: WLDenseCoalFuel10
+  parent: WLDenseCoalFuel
+  suffix: 10
+  components:
+  - type: Stack
+    count: 10
+
+- type: entity
+  id: WLDenseCoalFuel1
+  parent: WLDenseCoalFuel
+  suffix: Single
+  components:
+  - type: Stack
+    count: 1

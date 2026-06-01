@@ -1,4 +1,5 @@
 using System.Numerics;
+using Content.Shared._WL.FrozenWorld.Components;
 using Content.Shared.Light.Components;
 using Content.Shared.StatusEffectNew.Components;
 using Content.Shared.Weather;
@@ -13,6 +14,12 @@ using Robust.Shared.Player;
 
 namespace Content.Client.Weather;
 
+/// <summary>
+/// Vanilla weather client system.
+///
+/// WL/FrozenWorld custom weather does not depend on this anymore. The small fixes below are kept so legacy
+/// vanilla weather does not abort the whole update loop during transitions.
+/// </summary>
 public sealed class WeatherSystem : SharedWeatherSystem
 {
     [Dependency] private readonly IPlayerManager _playerManager = default!;
@@ -44,7 +51,6 @@ public sealed class WeatherSystem : SharedWeatherSystem
             return;
 
         var player = _playerManager.LocalEntity;
-
         if (player == null)
             return;
 
@@ -56,81 +62,84 @@ public sealed class WeatherSystem : SharedWeatherSystem
             if (weather.Sound == null || status.AppliedTo != playerXform.MapUid)
             {
                 weather.Stream = _audio.Stop(weather.Stream);
-                return;
+                continue;
             }
 
             weather.Stream ??= _audio.PlayGlobal(weather.Sound, Filter.Local(), true)?.Entity;
 
             if (!_audioQuery.TryComp(weather.Stream, out var audio))
-                return;
+                continue;
 
-            var occlusion = 0f;
+            var ignoreVanillaOcclusion = TryComp<FrozenWeatherVisualComponent>(uid, out var frozenVisual)
+                                         && frozenVisual.IgnoreVanillaWeatherOcclusion;
 
-            // Work out tiles nearby to determine volume.
-            if (_gridQuery.TryComp(playerXform.GridUid, out var grid))
-            {
-                _roofQuery.TryComp(playerXform.GridUid, out var roofComp);
-                var gridId = playerXform.GridUid.Value;
-                // FloodFill to the nearest tile and use that for audio.
-                var seed = _mapSystem.GetTileRef(gridId, grid, playerXform.Coordinates);
-                var frontier = new Queue<TileRef>();
-                frontier.Enqueue(seed);
-                // If we don't have a nearest node don't play any sound.
-                EntityCoordinates? nearestNode = null;
-                var visited = new HashSet<Vector2i>();
-
-                while (frontier.TryDequeue(out var node))
-                {
-                    if (!visited.Add(node.GridIndices))
-                        continue;
-
-                    if (!CanWeatherAffect((playerXform.GridUid.Value, grid, roofComp), node))
-                    {
-                        // Add neighbors
-                        // TODO: Ideally we pick some deterministically random direction and use that
-                        // We can't just do that naively here because it will flicker between nearby tiles.
-                        for (var x = -1; x <= 1; x++)
-                        {
-                            for (var y = -1; y <= 1; y++)
-                            {
-                                if (Math.Abs(x) == 1 && Math.Abs(y) == 1 ||
-                                    x == 0 && y == 0 ||
-                                    (new Vector2(x, y) + node.GridIndices - seed.GridIndices).Length() > 3)
-                                {
-                                    continue;
-                                }
-
-                                frontier.Enqueue(_mapSystem.GetTileRef(gridId, grid, new Vector2i(x, y) + node.GridIndices));
-                            }
-                        }
-
-                        continue;
-                    }
-
-                    nearestNode = new EntityCoordinates(playerXform.GridUid.Value,
-                        node.GridIndices + grid.TileSizeHalfVector);
-                    break;
-                }
-
-                // Get occlusion to the targeted node if it exists, otherwise set a default occlusion.
-                if (nearestNode != null)
-                {
-                    var entPos = _transform.GetMapCoordinates(playerXform);
-                    var nodePosition = _transform.ToMapCoordinates(nearestNode.Value).Position;
-                    var delta = nodePosition - entPos.Position;
-                    var distance = delta.Length();
-                    occlusion = _audio.GetOcclusion(entPos, delta, distance);
-                }
-                else
-                {
-                    occlusion = 3f;
-                }
-            }
+            var occlusion = ignoreVanillaOcclusion ? 0f : GetVanillaWeatherAudioOcclusion(playerXform);
 
             var alpha = GetWeatherPercent((uid, status));
             alpha *= SharedAudioSystem.VolumeToGain(weather.Sound.Params.Volume);
             _audio.SetGain(weather.Stream, alpha, audio);
             audio.Occlusion = occlusion;
         }
+    }
+
+    private float GetVanillaWeatherAudioOcclusion(TransformComponent playerXform)
+    {
+        var occlusion = 0f;
+
+        if (!_gridQuery.TryComp(playerXform.GridUid, out var grid))
+            return occlusion;
+
+        _roofQuery.TryComp(playerXform.GridUid, out var roofComp);
+        var gridId = playerXform.GridUid!.Value;
+        var seed = _mapSystem.GetTileRef(gridId, grid, playerXform.Coordinates);
+        var frontier = new Queue<TileRef>();
+        frontier.Enqueue(seed);
+
+        EntityCoordinates? nearestNode = null;
+        var visited = new HashSet<Vector2i>();
+
+        while (frontier.TryDequeue(out var node))
+        {
+            if (!visited.Add(node.GridIndices))
+                continue;
+
+            if (!CanWeatherAffect((gridId, grid, roofComp), node))
+            {
+                for (var x = -1; x <= 1; x++)
+                {
+                    for (var y = -1; y <= 1; y++)
+                    {
+                        if (Math.Abs(x) == 1 && Math.Abs(y) == 1
+                            || x == 0 && y == 0
+                            || (new Vector2(x, y) + node.GridIndices - seed.GridIndices).Length() > 3)
+                        {
+                            continue;
+                        }
+
+                        frontier.Enqueue(_mapSystem.GetTileRef(gridId, grid, new Vector2i(x, y) + node.GridIndices));
+                    }
+                }
+
+                continue;
+            }
+
+            nearestNode = new EntityCoordinates(gridId, node.GridIndices + grid.TileSizeHalfVector);
+            break;
+        }
+
+        if (nearestNode != null)
+        {
+            var entPos = _transform.GetMapCoordinates(playerXform);
+            var nodePosition = _transform.ToMapCoordinates(nearestNode.Value).Position;
+            var delta = nodePosition - entPos.Position;
+            var distance = delta.Length();
+            occlusion = _audio.GetOcclusion(entPos, delta, distance);
+        }
+        else
+        {
+            occlusion = 3f;
+        }
+
+        return occlusion;
     }
 }

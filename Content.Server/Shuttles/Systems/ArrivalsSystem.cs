@@ -529,14 +529,23 @@ public sealed class ArrivalsSystem : EntitySystem
     private void OnRoundStarting(RoundStartingEvent ev)
     {
         // Setup arrivals station
-        if (!Enabled)
+        if (!Enabled || !HasArrivalsStation())
             return;
 
         SetupArrivalsStation();
     }
 
+    private bool HasArrivalsStation()
+    {
+        var query = AllEntityQuery<StationArrivalsComponent>();
+        return query.MoveNext(out _, out _);
+    }
+
     private void SetupArrivalsStation()
     {
+        if (!HasArrivalsStation() || TryGetArrivals(out _))
+            return;
+
         var path = new ResPath(_cfgManager.GetCVar(CCVars.ArrivalsMap));
         _mapSystem.CreateMap(out var mapId, runMapInit: false);
         var mapUid = _mapSystem.GetMap(mapId);
@@ -579,6 +588,9 @@ public sealed class ArrivalsSystem : EntitySystem
 
         if (Enabled)
         {
+            if (!HasArrivalsStation())
+                return;
+
             SetupArrivalsStation();
             var query = AllEntityQuery<StationArrivalsComponent>();
 
@@ -609,6 +621,9 @@ public sealed class ArrivalsSystem : EntitySystem
     {
         if (!Enabled)
             return;
+
+        if (!TryGetArrivals(out _))
+            SetupArrivalsStation();
 
         // If it's a latespawn station then this will fail but that's okey
         SetupShuttle(uid, component);

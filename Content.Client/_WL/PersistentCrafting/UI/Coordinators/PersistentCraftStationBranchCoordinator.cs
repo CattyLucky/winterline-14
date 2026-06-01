@@ -1,3 +1,4 @@
+using System.Linq;
 using Content.Shared._WL.PersistentCrafting;
 using Robust.Client.UserInterface.Controls;
 
@@ -7,6 +8,7 @@ public sealed class PersistentCraftStationBranchCoordinator
 {
     private readonly IDictionary<string, BoxContainer> _branchContainers;
     private readonly Dictionary<string, PersistentCraftBranchState> _branchStateById = new();
+    private List<string> _visibleBranchIds = new();
     private PersistentCraftBranchRegistry _branchRegistry;
 
     public PersistentCraftStationBranchCoordinator(
@@ -20,6 +22,15 @@ public sealed class PersistentCraftStationBranchCoordinator
     public void SetBranchRegistry(PersistentCraftBranchRegistry branchRegistry)
     {
         _branchRegistry = branchRegistry;
+        if (_visibleBranchIds.Count == 0)
+            SetVisibleBranches(_branchRegistry.OrderedBranchIds);
+    }
+
+    public void SetVisibleBranches(IReadOnlyList<string> branchIds)
+    {
+        _visibleBranchIds = branchIds.Count > 0
+            ? branchIds.ToList()
+            : _branchRegistry.OrderedBranchIds.ToList();
     }
 
     public void RebuildBranchStateIndex(PersistentCraftState state)
@@ -45,8 +56,11 @@ public sealed class PersistentCraftStationBranchCoordinator
 
     public string GetCurrentBranch(TabContainer branches)
     {
-        return _branchRegistry.TryGetBranchByIndex(branches.CurrentTab, out var branch)
-            ? branch
+        if ((uint) branches.CurrentTab < (uint) _visibleBranchIds.Count)
+            return _visibleBranchIds[branches.CurrentTab];
+
+        return _visibleBranchIds.Count > 0
+            ? _visibleBranchIds[0]
             : (_branchRegistry.FirstBranchId is { Length: > 0 } first ? first : GetAnyBranchId());
     }
 
@@ -71,9 +85,10 @@ public sealed class PersistentCraftStationBranchCoordinator
         var bestRecipeCount = -1;
         var bestPointCount = -1;
 
-        for (var i = 0; i < _branchRegistry.OrderedBranchIds.Count; i++)
+        var selectedIndex = -1;
+        for (var i = 0; i < _visibleBranchIds.Count; i++)
         {
-            var branch = _branchRegistry.OrderedBranchIds[i];
+            var branch = _visibleBranchIds[i];
             var availableRecipeCount = getAvailableRecipeCount(branch);
             var points = GetBranchState(branch).AvailablePoints;
             if (availableRecipeCount <= 0 && points <= 0)
@@ -85,14 +100,12 @@ public sealed class PersistentCraftStationBranchCoordinator
                 preferredBranch = branch;
                 bestRecipeCount = availableRecipeCount;
                 bestPointCount = points;
+                selectedIndex = i;
             }
         }
 
-        if (!string.IsNullOrWhiteSpace(preferredBranch) &&
-            _branchRegistry.TryGetBranchIndex(preferredBranch, out var branchIndex))
-        {
-            branches.CurrentTab = branchIndex;
-        }
+        if (!string.IsNullOrWhiteSpace(preferredBranch) && selectedIndex >= 0)
+            branches.CurrentTab = selectedIndex;
     }
 
     private string GetAnyBranchId()

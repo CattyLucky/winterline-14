@@ -9,6 +9,9 @@ public static class PersistentCraftingHelper
         if (!string.IsNullOrWhiteSpace(recipe.DisplayProto))
             return recipe.DisplayProto;
 
+        if (recipe.Placement != null && !string.IsNullOrWhiteSpace(recipe.Placement.Proto))
+            return recipe.Placement.Proto;
+
         return recipe.Results.Count > 0
             ? recipe.Results[0].Proto
             : null;
@@ -17,11 +20,6 @@ public static class PersistentCraftingHelper
     public static bool IsAutoUnlockedNode(PersistentCraftNodePrototype node)
     {
         return node.Cost <= 0;
-    }
-
-    public static int GetPointReward(PersistentCraftRecipePrototype recipe)
-    {
-        return Math.Max(0, recipe.PointReward);
     }
 
     public static string GetTierDisplayLabel(int tier)

@@ -1,0 +1,142 @@
+- type: frozenWeatherVisual
+  id: WLWeatherVisualClear
+  profile: Clear
+  fadeInSeconds: 2
+  fadeOutSeconds: 2
+
+- type: frozenWeatherVisual
+  id: WLWeatherVisualLightSnow
+  profile: LightSnow
+  sprite:
+    sprite: /Textures/Effects/weather.rsi
+    state: snowfall_light
+  ambientSound:
+    path: /Audio/Effects/Weather/snowstorm_weak.ogg
+    params:
+      volume: -14
+  fadeInSeconds: 2
+  fadeOutSeconds: 2
+
+- type: frozenWeatherVisual
+  id: WLWeatherVisualSnow
+  profile: Snow
+  sprite:
+    sprite: /Textures/Effects/weather.rsi
+    state: snowfall_med
+  ambientSound:
+    path: /Audio/Effects/Weather/snowstorm_weak.ogg
+    params:
+      volume: -12
+  fadeInSeconds: 2
+  fadeOutSeconds: 2
+
+- type: frozenWeatherVisual
+  id: WLWeatherVisualBlizzard
+  profile: Blizzard
+  sprite:
+    sprite: /Textures/Effects/weather.rsi
+    state: snowfall_heavy
+  ambientSound:
+    path: /Audio/Effects/Weather/snowstorm.ogg
+    params:
+      volume: -9
+  fadeInSeconds: 2
+  fadeOutSeconds: 2
+
+- type: frozenWeatherVisual
+  id: WLWeatherVisualHeavySnow
+  profile: HeavySnow
+  sprite:
+    sprite: /Textures/Effects/weather.rsi
+    state: snowfall_heavy
+  ambientSound:
+    path: /Audio/Effects/Weather/snowstorm_weak.ogg
+    params:
+      volume: -10
+  fadeInSeconds: 2
+  fadeOutSeconds: 2
+
+- type: frozenWeatherVisual
+  id: WLWeatherVisualWhiteout
+  profile: Whiteout
+  sprite:
+    sprite: /Textures/Effects/weather.rsi
+    state: snowfall_heavy
+  ambientSound:
+    path: /Audio/Effects/Weather/snowstorm.ogg
+    params:
+      volume: -7
+  fadeInSeconds: 2
+  fadeOutSeconds: 2
+
+- type: frozenWeather
+  id: WLClear
+  displayName: Clear
+  temperatureOffset: 0
+  exposureGainMultiplier: 1
+  recoveryMultiplier: 1
+  coldDamageMultiplier: 1
+  shelterPenetration: 0
+  visual: WLWeatherVisualClear
+
+- type: frozenWeather
+  id: WLLightSnow
+  displayName: Light snow
+  temperatureOffset: -44
+  exposureGainMultiplier: 1.10
+  recoveryMultiplier: 0.95
+  coldDamageMultiplier: 1
+  shelterPenetration: 0.03
+  visual: WLWeatherVisualLightSnow
+
+- type: frozenWeather
+  id: WLSnow
+  displayName: Snow
+  temperatureOffset: -55
+  exposureGainMultiplier: 1.25
+  recoveryMultiplier: 0.85
+  coldDamageMultiplier: 1.05
+  shelterPenetration: 0.06
+  visual: WLWeatherVisualSnow
+
+- type: frozenWeather
+  id: WLHeavySnow
+  displayName: Heavy snow
+  temperatureOffset: -66
+  exposureGainMultiplier: 1.45
+  recoveryMultiplier: 0.70
+  coldDamageMultiplier: 1.15
+  shelterPenetration: 0.10
+  visual: WLWeatherVisualHeavySnow
+
+- type: frozenWeather
+  id: WLBlizzard
+  displayName: Blizzard
+  temperatureOffset: -66
+  exposureGainMultiplier: 1.75
+  recoveryMultiplier: 0.55
+  coldDamageMultiplier: 1.35
+  shelterPenetration: 0.15
+  visual: WLWeatherVisualBlizzard
+
+- type: frozenWeather
+  id: WLWhiteout
+  displayName: Whiteout
+  temperatureOffset: -77
+  exposureGainMultiplier: 2.05
+  recoveryMultiplier: 0.40
+  coldDamageMultiplier: 1.60
+  shelterPenetration: 0.22
+  visual: WLWeatherVisualWhiteout
+
+- type: wlWeatherCyclePreset
+  id: WLFrostRimDefaultWeatherCycle
+  stepDelay: 10s
+  cycle:
+  - WLClear
+  - WLLightSnow
+  - WLSnow
+  - WLHeavySnow
+  - WLBlizzard
+  startIndex: 0
+  applyOnMapInit: true
