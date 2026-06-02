@@ -37,6 +37,9 @@ public sealed partial class WLFrostEvacuationRuleComponent : Component
     public float LandingSideSpread = 55f;
 
     [DataField]
+    public float LandingClearPadding = 1f;
+
+    [DataField]
     public EntProtoId EvacuationBeaconPrototype = "WLFrostlandEvacBeacon";
 
     [DataField]
@@ -86,6 +89,7 @@ public sealed partial class WLFrostEvacuationRuleComponent : Component
     public bool DepartureStarted;
     public bool RoundEnded;
     public TimeSpan? RoundEndAt;
+    public TimeSpan? EvacuationEndAt;
 
     public EntityUid? EvacuationBeacon;
     public EntityUid? EvacuationGrid;

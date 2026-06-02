@@ -21,6 +21,21 @@
   - WeaponPistolMk58
 
 - type: htnCompound
+  id: WLRaiderMarchCompound
+  branches:
+  - tasks:
+    - !type:HTNPrimitiveTask
+      preconditions:
+      - !type:CoordinatesNotInRangePrecondition
+        targetKey: FollowTarget
+        rangeKey: FollowRange
+      operator: !type:MoveToOperator
+        pathfindInPlanning: false
+        targetKey: FollowTarget
+        rangeKey: FollowCloseRange
+        removeKeyOnFinish: false
+
+- type: htnCompound
   id: WLRaiderCompound
   branches:
   - tasks:
@@ -31,7 +46,7 @@
       task: MeleeCombatCompound
   - tasks:
     - !type:HTNCompoundTask
-      task: FollowCompound
+      task: WLRaiderMarchCompound
   - tasks:
     - !type:HTNCompoundTask
       task: IdleCompound

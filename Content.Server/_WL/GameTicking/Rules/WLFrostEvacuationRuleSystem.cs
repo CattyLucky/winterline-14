@@ -7,14 +7,18 @@ using Content.Server._WL.GameTicking.Rules.Components;
 using Content.Server._WL.Weather.Systems;
 using Content.Server.Atmos.EntitySystems;
 using Content.Server.Chat.Managers;
+using Content.Server.Decals;
 using Content.Server.GameTicking;
 using Content.Server.GameTicking.Rules;
+using Content.Server.Parallax;
 using Content.Server.Shuttles.Components;
 using Content.Server.Shuttles.Systems;
+using Content.Shared.Decals;
 using Content.Shared.GameTicking;
 using Content.Shared.GameTicking.Components;
 using Content.Shared.Mind;
 using Content.Shared.Mobs;
+using Content.Shared.Mobs.Components;
 using Content.Shared.Mobs.Systems;
 using Content.Shared.Shuttles.Components;
 using Content.Shared.Roles;
@@ -22,6 +26,7 @@ using Content.Shared.Roles.Jobs;
 using Robust.Server.GameObjects;
 using Robust.Shared.EntitySerialization.Systems;
 using Robust.Shared.Map;
+using Robust.Shared.Map.Components;
 using Robust.Shared.Maths;
 using Robust.Shared.Network;
 using Robust.Shared.Prototypes;
@@ -36,6 +41,8 @@ public sealed partial class WLFrostEvacuationRuleSystem : GameRuleSystem<WLFrost
     [Dependency] private MobStateSystem _mobState = default!;
     [Dependency] private SharedJobSystem _jobs = default!;
     [Dependency] private AtmosphereSystem _atmosphere = default!;
+    [Dependency] private BiomeSystem _biome = default!;
+    [Dependency] private DecalSystem _decals = default!;
     [Dependency] private WLWeatherCycleSystem _weather = default!;
     [Dependency] private MapLoaderSystem _mapLoader = default!;
     [Dependency] private MapSystem _mapSystem = default!;
@@ -71,6 +78,7 @@ public sealed partial class WLFrostEvacuationRuleSystem : GameRuleSystem<WLFrost
         component.DepartureStarted = false;
         component.RoundEnded = false;
         component.RoundEndAt = null;
+        component.EvacuationEndAt = null;
         component.EvacuationBeacon = null;
         component.EvacuationGrid = null;
         component.EvacuationMap = null;
@@ -107,9 +115,6 @@ public sealed partial class WLFrostEvacuationRuleSystem : GameRuleSystem<WLFrost
 
         var elapsed = Timing.CurTime - component.StartedAt;
         var landingAt = component.LandingDelay;
-        var endingAt = component.LandingDelay + component.EvacuationWindow;
-        var remaining = endingAt - elapsed;
-
         if (!component.LandingAnnounced && elapsed >= landingAt)
         {
             if (!TryLandEvacuation(component))
@@ -119,7 +124,10 @@ public sealed partial class WLFrostEvacuationRuleSystem : GameRuleSystem<WLFrost
         if (!component.LandingAnnounced)
             return;
 
-        if (!component.ShuttleLandedAnnounced && TryAnnounceShuttleLanded(component, endingAt - elapsed))
+        var evacuationEndAt = GetEvacuationEndAt(component);
+        var remaining = evacuationEndAt - Timing.CurTime;
+
+        if (!component.ShuttleLandedAnnounced && TryAnnounceShuttleLanded(component, remaining))
             return;
 
         if (!component.FinalStormAnnounced && remaining <= component.FinalStormWarning)
@@ -141,7 +149,7 @@ public sealed partial class WLFrostEvacuationRuleSystem : GameRuleSystem<WLFrost
                 FinalColor);
         }
 
-        if (!component.DepartureStarted && elapsed >= endingAt)
+        if (!component.DepartureStarted && Timing.CurTime >= evacuationEndAt)
         {
             StartDeparture(component);
             return;
@@ -268,6 +276,9 @@ public sealed partial class WLFrostEvacuationRuleSystem : GameRuleSystem<WLFrost
             return false;
 
         var worldGrid = world.WorldGrid.Value;
+        if (!TryComp<MapGridComponent>(worldGrid, out _))
+            return false;
+
         var position = PickLandingPosition(world.BaseBounds, component);
         var direction = GetDirectionFromBase(position, world.BaseBounds);
         var approachPosition = position + direction * component.ShuttleApproachDistance;
@@ -283,6 +294,13 @@ public sealed partial class WLFrostEvacuationRuleSystem : GameRuleSystem<WLFrost
         }
 
         var shuttleUid = loadedGrid.Value.Owner;
+        if (!TryComp<MapGridComponent>(shuttleUid, out var shuttleGrid))
+        {
+            Log.Error($"Loaded WL evacuation shuttle grid {ToPrettyString(shuttleUid)} has no MapGridComponent.");
+            QueueDel(shuttleUid);
+            return false;
+        }
+
         var shuttle = EnsureComp<ShuttleComponent>(shuttleUid);
         var protectedGrid = EnsureComp<FrozenWeatherProtectedGridComponent>(shuttleUid);
         protectedGrid.AmbientTemperature = component.ShuttleInteriorTemperature;
@@ -291,6 +309,8 @@ public sealed partial class WLFrostEvacuationRuleSystem : GameRuleSystem<WLFrost
         protectedGrid.ShelterName = component.ShuttleShelterName;
         shuttle.FTLCooldownOverride = TimeSpan.Zero;
         _atmosphere.WLSetGridAtmosphereTemperature(shuttleUid, component.ShuttleInteriorTemperature);
+
+        ClearLandingFootprint(worldGrid, shuttleUid, shuttleGrid, position, component);
 
         _xform.SetCoordinates(shuttleUid, Transform(shuttleUid), approachCoords);
         _shuttle.FTLToCoordinates(
@@ -308,6 +328,7 @@ public sealed partial class WLFrostEvacuationRuleSystem : GameRuleSystem<WLFrost
         component.EvacuationMap = landingCoords.EntityId;
         component.EvacuationLocalPosition = position;
         component.DepartureMapPosition = departureCoords.Position;
+        component.EvacuationEndAt = Timing.CurTime + component.EvacuationWindow;
         component.LandingAnnounced = true;
 
         TryForceWeather(component, component.LandingWeather);
@@ -376,6 +397,82 @@ public sealed partial class WLFrostEvacuationRuleSystem : GameRuleSystem<WLFrost
         FinalizeManifest(component);
         GameTicker.EndRound(Loc.GetString("wl-frost-evacuation-round-end-reason"));
         Timer.Spawn(component.RoundEndDelay, GameTicker.RestartRound);
+    }
+
+    private TimeSpan GetEvacuationEndAt(WLFrostEvacuationRuleComponent component)
+    {
+        component.EvacuationEndAt ??= component.StartedAt + component.LandingDelay + component.EvacuationWindow;
+        return component.EvacuationEndAt.Value;
+    }
+
+    private void ClearLandingFootprint(
+        EntityUid worldGridUid,
+        EntityUid shuttleUid,
+        MapGridComponent shuttleGrid,
+        Vector2 landingPosition,
+        WLFrostEvacuationRuleComponent component)
+    {
+        var padding = MathF.Max(component.LandingClearPadding, 0f);
+        var bounds = shuttleGrid.LocalAABB.Translated(landingPosition).Enlarged(padding);
+        var reservedTiles = new List<(Vector2i Index, Tile Tile)>();
+
+        _biome.ReserveTiles(worldGridUid, bounds, reservedTiles);
+
+        var removedEntities = ClearLandingEntities(worldGridUid, bounds);
+        var removedDecals = ClearLandingDecals(worldGridUid, bounds);
+
+        if (removedEntities == 0 && removedDecals == 0 && reservedTiles.Count == 0)
+            return;
+
+        Log.Info(
+            $"WL evacuation shuttle {ToPrettyString(shuttleUid)} cleared landing footprint on {ToPrettyString(worldGridUid)}: " +
+            $"entities={removedEntities}, decals={removedDecals}, reservedTiles={reservedTiles.Count}, bounds={bounds}.");
+    }
+
+    private int ClearLandingEntities(EntityUid worldGridUid, Box2 bounds)
+    {
+        var removed = 0;
+        var query = EntityQueryEnumerator<TransformComponent>();
+
+        while (query.MoveNext(out var uid, out var xform))
+        {
+            if (uid == worldGridUid)
+                continue;
+
+            if (xform.ParentUid != worldGridUid)
+                continue;
+
+            if (HasComp<MapGridComponent>(uid) ||
+                HasComp<MapComponent>(uid) ||
+                HasComp<MobStateComponent>(uid) ||
+                HasComp<FTLSmashImmuneComponent>(uid))
+            {
+                continue;
+            }
+
+            if (!bounds.Contains(xform.LocalPosition))
+                continue;
+
+            QueueDel(uid);
+            removed++;
+        }
+
+        return removed;
+    }
+
+    private int ClearLandingDecals(EntityUid worldGridUid, Box2 bounds)
+    {
+        if (!TryComp<DecalGridComponent>(worldGridUid, out var decalGrid))
+            return 0;
+
+        var removed = 0;
+        foreach (var (decalId, _) in _decals.GetDecalsIntersecting(worldGridUid, bounds, decalGrid))
+        {
+            if (_decals.RemoveDecal(worldGridUid, decalId, decalGrid))
+                removed++;
+        }
+
+        return removed;
     }
 
     private void FinalizeManifest(WLFrostEvacuationRuleComponent component)

@@ -19,6 +19,8 @@
     spawnJitter: 3
     followCloseRange: 2
     followRange: 8
+    raidPathPreloadWidth: 32
+    raiderWakeDelay: 2
     raiderPrototypes:
     - WLFrostRaider
     - WLFrostRaider

@@ -55,6 +55,12 @@ public sealed partial class WLRaidRuleComponent : Component
     public float FollowRange = 8f;
 
     [DataField]
+    public float RaidPathPreloadWidth = 32f;
+
+    [DataField]
+    public TimeSpan RaiderWakeDelay = TimeSpan.FromSeconds(2);
+
+    [DataField]
     public List<EntProtoId> RaiderPrototypes = new()
     {
         "WLFrostRaider",

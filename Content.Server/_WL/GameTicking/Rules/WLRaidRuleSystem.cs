@@ -6,11 +6,16 @@ using Content.Server._WL.GameTicking.Rules.Components;
 using Content.Server.Chat.Managers;
 using Content.Server.GameTicking.Rules;
 using Content.Server.NPC;
+using Content.Server.NPC.HTN;
 using Content.Server.NPC.Systems;
+using Content.Server.Parallax;
 using Content.Shared.GameTicking;
 using Content.Shared.GameTicking.Components;
+using Content.Shared.Parallax.Biomes;
 using Robust.Shared.Map;
+using Robust.Shared.Map.Components;
 using Robust.Shared.Maths;
+using Timer = Robust.Shared.Timing.Timer;
 
 namespace Content.Server._WL.GameTicking.Rules;
 
@@ -19,6 +24,8 @@ public sealed partial class WLRaidRuleSystem : GameRuleSystem<WLRaidRuleComponen
     [Dependency] private IChatManager _chatManager = default!;
     [Dependency] private AntagSelectionSystem _antag = default!;
     [Dependency] private NPCSystem _npc = default!;
+    [Dependency] private HTNSystem _htn = default!;
+    [Dependency] private BiomeSystem _biome = default!;
 
     private static readonly Color WarningColor = Color.FromHex("#FFB35C");
     private static readonly Color RaidColor = Color.FromHex("#FF6961");
@@ -144,6 +151,7 @@ public sealed partial class WLRaidRuleSystem : GameRuleSystem<WLRaidRuleComponen
             component.MaxRaidersPerWave);
 
         var target = new EntityCoordinates(worldGrid, world.BaseBounds.Center);
+        var pinnedChunks = PinRaidPath(worldGrid, raidPosition.Value, world.BaseBounds, component);
 
         for (var i = 0; i < raiderCount; i++)
         {
@@ -154,9 +162,7 @@ public sealed partial class WLRaidRuleSystem : GameRuleSystem<WLRaidRuleComponen
             var prototype = component.RaiderPrototypes[RobustRandom.Next(component.RaiderPrototypes.Count)];
             var raider = Spawn(prototype, new EntityCoordinates(worldGrid, position));
 
-            _npc.SetBlackboard(raider, NPCBlackboard.FollowTarget, target);
-            _npc.SetBlackboard(raider, "FollowCloseRange", component.FollowCloseRange);
-            _npc.SetBlackboard(raider, "FollowRange", component.FollowRange);
+            PrepareRaiderNpc(raider, target, component);
         }
 
         _chatManager.DispatchServerAnnouncement(
@@ -167,8 +173,84 @@ public sealed partial class WLRaidRuleSystem : GameRuleSystem<WLRaidRuleComponen
                 ("direction", Loc.GetString(component.PendingRaidDirection))),
             RaidColor);
 
-        Log.Info($"WL raid wave {component.RaidCount + 1} spawned {raiderCount} raiders at {raidPosition.Value}.");
+        _chatManager.SendAdminAnnouncement(
+            Loc.GetString(
+                "wl-raid-spawn-admin-announcement",
+                ("wave", component.RaidCount + 1),
+                ("count", raiderCount),
+                ("direction", Loc.GetString(component.PendingRaidDirection)),
+                ("x", MathF.Round(raidPosition.Value.X)),
+                ("y", MathF.Round(raidPosition.Value.Y))));
+
+        Log.Info($"WL raid wave {component.RaidCount + 1} spawned {raiderCount} raiders at {raidPosition.Value}; pinnedChunks={pinnedChunks}.");
         return true;
+    }
+
+    private int PinRaidPath(
+        EntityUid worldGrid,
+        Vector2 raidPosition,
+        Box2 baseBounds,
+        WLRaidRuleComponent component)
+    {
+        if (!TryComp<BiomeComponent>(worldGrid, out var biome) ||
+            !TryComp<MapGridComponent>(worldGrid, out var grid))
+        {
+            return 0;
+        }
+
+        var min = Vector2.Min(raidPosition, baseBounds.BottomLeft);
+        var max = Vector2.Max(raidPosition, baseBounds.TopRight);
+        var area = new Box2(min, max).Enlarged(MathF.Max(component.RaidPathPreloadWidth, 0f));
+
+        return _biome.PinPreloadArea(worldGrid, biome, grid, area);
+    }
+
+    private void PrepareRaiderNpc(
+        EntityUid raider,
+        EntityCoordinates target,
+        WLRaidRuleComponent component)
+    {
+        SetRaiderFollowBlackboard(raider, target, component.FollowCloseRange, component.FollowRange);
+
+        if (!TryComp<HTNComponent>(raider, out var htn))
+            return;
+
+        _npc.SleepNPC(raider, htn);
+
+        if (component.RaiderWakeDelay <= TimeSpan.Zero)
+        {
+            WakeRaiderNpc(raider, target, component.FollowCloseRange, component.FollowRange);
+            return;
+        }
+
+        Timer.Spawn(component.RaiderWakeDelay, () =>
+            WakeRaiderNpc(raider, target, component.FollowCloseRange, component.FollowRange));
+    }
+
+    private void WakeRaiderNpc(
+        EntityUid raider,
+        EntityCoordinates target,
+        float followCloseRange,
+        float followRange)
+    {
+        if (Deleted(raider) || !TryComp<HTNComponent>(raider, out var htn))
+            return;
+
+        SetRaiderFollowBlackboard(raider, target, followCloseRange, followRange, htn);
+        _htn.Replan(htn);
+        _npc.WakeNPC(raider, htn);
+    }
+
+    private void SetRaiderFollowBlackboard(
+        EntityUid raider,
+        EntityCoordinates target,
+        float followCloseRange,
+        float followRange,
+        HTNComponent? htn = null)
+    {
+        _npc.SetBlackboard(raider, NPCBlackboard.FollowTarget, target, htn);
+        _npc.SetBlackboard(raider, "FollowCloseRange", followCloseRange, htn);
+        _npc.SetBlackboard(raider, "FollowRange", followRange, htn);
     }
 
     private void ScheduleNextRaid(WLRaidRuleComponent component)

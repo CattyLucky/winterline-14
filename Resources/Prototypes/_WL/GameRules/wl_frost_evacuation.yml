@@ -11,6 +11,7 @@
     landingMinDistance: 220
     landingMaxDistance: 280
     landingSideSpread: 55
+    landingClearPadding: 1
     evacuationBeaconPrototype: WLFrostlandEvacBeacon
     shuttleGridPath: /Maps/Shuttles/emergency.yml
     shuttleApproachDistance: 340
