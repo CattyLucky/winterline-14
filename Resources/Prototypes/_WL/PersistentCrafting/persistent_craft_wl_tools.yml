@@ -151,9 +151,9 @@
   subCategory: WLCraftSubCategoryMechanicFieldSupplies
   craftTime: 1.2
   ingredients:
-  - stackType: WLWoodPlankStack
+  - stackType: WLFrozenBranchStack
     amount: 2
-  - stackType: WLMetalPartsStack
+  - stackType: WLLooseScrapStack
     amount: 1
   results:
   - proto: WLFirestarterStone

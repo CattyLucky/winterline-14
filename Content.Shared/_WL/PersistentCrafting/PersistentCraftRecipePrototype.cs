@@ -26,6 +26,9 @@ public sealed partial class PersistentCraftRecipePrototype : IPrototype
     [DataField("tier", required: true)]
     public int Tier = 1;
 
+    [DataField("order")]
+    public int Order = 99;
+
     [DataField("requiredNode", required: true)]
     public string RequiredNode = string.Empty;
 
@@ -46,6 +49,9 @@ public sealed partial class PersistentCraftRecipePrototype : IPrototype
 
     [DataField("results", required: true)]
     public List<PersistentCraftResult> Results = new();
+
+    [DataField("nearbyRequirement")]
+    public PersistentCraftNearbyRequirement? NearbyRequirement;
 
     [DataField("placement")]
     public PersistentCraftPlacement? Placement;
@@ -125,6 +131,25 @@ public sealed partial class PersistentCraftResult
 
     [DataField("amount")]
     public int Amount = 1;
+}
+
+[DataDefinition, Serializable, NetSerializable]
+public sealed partial class PersistentCraftNearbyRequirement
+{
+    [DataField("prototypes")]
+    public List<string> Prototypes = new();
+
+    [DataField("range")]
+    public float Range = 2.5f;
+
+    [DataField("requireEnabledHeat")]
+    public bool RequireEnabledHeat;
+
+    [DataField("description")]
+    public string? Description;
+
+    [DataField("failurePopup")]
+    public string FailurePopup = "persistent-craft-station-popup-requires-nearby";
 }
 
 [DataDefinition, Serializable, NetSerializable]

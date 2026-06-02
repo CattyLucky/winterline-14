@@ -1,3 +1,4 @@
+using Content.Server._WL.Skills;
 using Content.Shared._WL.Roles;
 using Content.Shared.FixedPoint;
 using Content.Shared.GameTicking;
@@ -14,6 +15,7 @@ public sealed partial class WLRoleSkillSystem : EntitySystem
 {
     [Dependency] private IPrototypeManager _prototype = default!;
     [Dependency] private MobThresholdSystem _thresholds = default!;
+    [Dependency] private WLSkillSystem _skills = default!;
 
     public override void Initialize()
     {
@@ -27,7 +29,7 @@ public sealed partial class WLRoleSkillSystem : EntitySystem
     {
         if (args.JobId == null ||
             !_prototype.TryIndex<JobPrototype>(args.JobId, out var job) ||
-            !HasRoleSkillBonuses(job))
+            !HasRoleSkillProfile(job))
         {
             return;
         }
@@ -36,6 +38,13 @@ public sealed partial class WLRoleSkillSystem : EntitySystem
         var previousThresholdBonus = skills.AppliedMobThresholdBonus;
 
         skills.JobId = args.JobId;
+
+        if (!HasRoleSkillBonuses(job))
+        {
+            Dirty(args.Mob, skills);
+            return;
+        }
+
         skills.GatherTimeMultiplier = SanitizePositive(job.WlSkillGatherTimeMultiplier);
         skills.GatherYieldMultiplier = SanitizePositive(job.WlSkillGatherYieldMultiplier);
         skills.ProcessingYieldMultiplier = SanitizePositive(job.WlSkillProcessingYieldMultiplier);
@@ -50,6 +59,16 @@ public sealed partial class WLRoleSkillSystem : EntitySystem
 
     private void OnMeleeHit(MeleeHitEvent args)
     {
+        if (args.IsHit && args.HitEntities.Count > 0)
+        {
+            _skills.TryGrantActionPoint(
+                args.User,
+                "WLSkillHunter",
+                "melee-hit",
+                cooldownSeconds: 75,
+                showPopup: true);
+        }
+
         if (!TryComp(args.User, out WLRoleSkillsComponent? skills) ||
             MathHelper.CloseToPercent(skills.MeleeDamageMultiplier, 1f))
         {
@@ -92,6 +111,13 @@ public sealed partial class WLRoleSkillSystem : EntitySystem
                !MathHelper.CloseToPercent(job.WlSkillColdDamageMultiplier, 1f) ||
                !MathHelper.CloseToPercent(job.WlSkillMeleeDamageMultiplier, 1f) ||
                job.WlSkillMobThresholdBonus > 0f;
+    }
+
+    private static bool HasRoleSkillProfile(JobPrototype job)
+    {
+        return job.WlSkillAllBranches ||
+               job.WlSkillBranches.Count > 0 ||
+               HasRoleSkillBonuses(job);
     }
 
     private static float SanitizePositive(float value)

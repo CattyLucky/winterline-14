@@ -1,0 +1,22 @@
+- type: entity
+  id: WLFrostlandEvacBeacon
+  parent: WarpPointBeacon
+  name: wl-frost-evacuation-beacon-name
+  description: wl-frost-evacuation-beacon-description
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Wallmounts/signs.rsi
+    state: direction_evac_glow
+  - type: Transform
+    anchored: true
+  - type: NavMapBeacon
+    defaultText: wl-frost-evacuation-beacon-map-text
+    color: "#7BD7FF"
+    enabled: true
+  - type: WarpPoint
+    location: wl-frost-evacuation-beacon-map-text
+  - type: PointLight
+    radius: 5
+    energy: 1.8
+    color: "#7BD7FF"

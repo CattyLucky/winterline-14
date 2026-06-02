@@ -1,0 +1,634 @@
+# /// WL Change
+# FrozenWorld hunter craft recipes.
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryHunterTraps
+  category: WLCraftCategoryHunter
+  name: persistent-craft-wl-subcategory-hunter-traps
+  order: 10
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryHunterMelee
+  category: WLCraftCategoryHunter
+  name: persistent-craft-wl-subcategory-hunter-melee
+  order: 20
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryHunterBows
+  category: WLCraftCategoryHunter
+  name: persistent-craft-wl-subcategory-hunter-bows
+  order: 30
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryHunterThrowing
+  category: WLCraftCategoryHunter
+  name: persistent-craft-wl-subcategory-hunter-throwing
+  order: 35
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryHunterFirearms
+  category: WLCraftCategoryHunter
+  name: persistent-craft-wl-subcategory-hunter-firearms
+  order: 40
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryHunterAmmunition
+  category: WLCraftCategoryHunter
+  name: persistent-craft-wl-subcategory-hunter-ammunition
+  order: 50
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterSnare
+  name: persistent-craft-wl-recipe-hunter-snare-name
+  description: persistent-craft-wl-recipe-hunter-snare-description
+  displayProto: WLHunterSnare
+  branch: WLHunter
+  tier: 1
+  order: 10
+  requiredNode: WLCraftNodeHunterSnareT1
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterTraps
+  craftTime: 1.8
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 2
+  - stackType: WLWoodPlankStack
+    amount: 1
+  results: []
+  placement:
+    proto: WLHunterSnare
+    floorRequirement: OutdoorHeatSource
+    canBuildInImpassable: true
+
+# --- Primitive Weapons ------------------------------------------------------
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterSpear
+  name: persistent-craft-wl-recipe-hunter-spear-name
+  description: persistent-craft-wl-recipe-hunter-spear-description
+  displayProto: Spear
+  branch: WLHunter
+  tier: 1
+  order: 10
+  requiredNode: WLCraftNodeHunterMeleeT1
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterMelee
+  craftTime: 1.8
+  ingredients:
+  - stackType: WLWoodPlankStack
+    amount: 2
+  - stackType: WLMetalPartsStack
+    amount: 1
+  - stackType: WLPreparedClothStack
+    amount: 1
+  results:
+  - proto: Spear
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterBoneSpear
+  name: persistent-craft-wl-recipe-hunter-bone-spear-name
+  description: persistent-craft-wl-recipe-hunter-bone-spear-description
+  displayProto: SpearBone
+  branch: WLHunter
+  tier: 1
+  order: 20
+  requiredNode: WLCraftNodeHunterMeleeT1
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterMelee
+  craftTime: 1.8
+  ingredients:
+  - stackType: WLWoodPlankStack
+    amount: 1
+  - stackType: Bones
+    amount: 2
+  - stackType: WLPreparedClothStack
+    amount: 1
+  results:
+  - proto: SpearBone
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterMachete
+  name: persistent-craft-wl-recipe-hunter-machete-name
+  description: persistent-craft-wl-recipe-hunter-machete-description
+  displayProto: Machete
+  branch: WLHunter
+  tier: 1
+  order: 30
+  requiredNode: WLCraftNodeHunterMeleeT1
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterMelee
+  craftTime: 2
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 4
+  - stackType: WLPreparedClothStack
+    amount: 1
+  results:
+  - proto: Machete
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterReinforcedSpear
+  name: persistent-craft-wl-recipe-hunter-reinforced-spear-name
+  description: persistent-craft-wl-recipe-hunter-reinforced-spear-description
+  displayProto: SpearReinforced
+  branch: WLHunter
+  tier: 2
+  order: 10
+  requiredNode: WLCraftNodeHunterThrowingT2
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterThrowing
+  craftTime: 2.2
+  ingredients:
+  - stackType: WLWoodPlankStack
+    amount: 2
+  - stackType: WLMetalPartsStack
+    amount: 3
+  - stackType: WLPreparedClothStack
+    amount: 1
+  results:
+  - proto: SpearReinforced
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterThrowingKnives
+  name: persistent-craft-wl-recipe-hunter-throwing-knives-name
+  description: persistent-craft-wl-recipe-hunter-throwing-knives-description
+  displayProto: ThrowingKnife
+  branch: WLHunter
+  tier: 2
+  order: 20
+  requiredNode: WLCraftNodeHunterThrowingT2
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterThrowing
+  craftTime: 2.0
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 4
+  - stackType: WLPreparedClothStack
+    amount: 1
+  results:
+  - proto: ThrowingKnife
+    amount: 3
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterCutlass
+  name: persistent-craft-wl-recipe-hunter-cutlass-name
+  description: persistent-craft-wl-recipe-hunter-cutlass-description
+  displayProto: Cutlass
+  branch: WLHunter
+  tier: 2
+  order: 30
+  requiredNode: WLCraftNodeHunterAdvancedMeleeT2
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterMelee
+  craftTime: 2.6
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 6
+  - stackType: WLPreparedClothStack
+    amount: 2
+  results:
+  - proto: Cutlass
+    amount: 1
+
+# --- Bows -------------------------------------------------------------------
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterBow
+  name: persistent-craft-wl-recipe-hunter-bow-name
+  description: persistent-craft-wl-recipe-hunter-bow-description
+  displayProto: BowImprovised
+  branch: WLHunter
+  tier: 2
+  order: 10
+  requiredNode: WLCraftNodeHunterBowT2
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterBows
+  craftTime: 2.4
+  ingredients:
+  - stackType: WLWoodPlankStack
+    amount: 3
+  - stackType: WLPreparedClothStack
+    amount: 2
+  - stackType: WLAnimalHideStack
+    amount: 1
+  results:
+  - proto: BowImprovised
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterImprovisedArrows
+  name: persistent-craft-wl-recipe-hunter-improvised-arrows-name
+  description: persistent-craft-wl-recipe-hunter-improvised-arrows-description
+  displayProto: ArrowImprovised
+  branch: WLHunter
+  tier: 2
+  order: 10
+  requiredNode: WLCraftNodeHunterBowT2
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterAmmunition
+  craftTime: 1.6
+  ingredients:
+  - stackType: WLWoodPlankStack
+    amount: 1
+  - stackType: WLMetalPartsStack
+    amount: 1
+  - stackType: WLPreparedClothStack
+    amount: 1
+  results:
+  - proto: ArrowImprovised
+    amount: 6
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterRegularArrows
+  name: persistent-craft-wl-recipe-hunter-regular-arrows-name
+  description: persistent-craft-wl-recipe-hunter-regular-arrows-description
+  displayProto: ArrowRegular
+  branch: WLHunter
+  tier: 2
+  order: 20
+  requiredNode: WLCraftNodeHunterBowT2
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterAmmunition
+  craftTime: 1.8
+  ingredients:
+  - stackType: WLWoodPlankStack
+    amount: 2
+  - stackType: WLMetalPartsStack
+    amount: 2
+  - stackType: WLPreparedClothStack
+    amount: 1
+  results:
+  - proto: ArrowRegular
+    amount: 6
+
+# --- Frontier Firearms ------------------------------------------------------
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterDoubleBarrel
+  name: persistent-craft-wl-recipe-hunter-double-barrel-name
+  description: persistent-craft-wl-recipe-hunter-double-barrel-description
+  displayProto: WeaponShotgunDoubleBarreled
+  branch: WLHunter
+  tier: 3
+  order: 10
+  requiredNode: WLCraftNodeHunterFrontierFirearmsT3
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterFirearms
+  craftTime: 4
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 10
+  - stackType: WLWoodPlankStack
+    amount: 4
+  - stackType: WLPreparedClothStack
+    amount: 2
+  - stackType: WLCharcoalFuelStack
+    amount: 2
+  results:
+  - proto: WeaponShotgunDoubleBarreled
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterDeckard
+  name: persistent-craft-wl-recipe-hunter-deckard-name
+  description: persistent-craft-wl-recipe-hunter-deckard-description
+  displayProto: WeaponRevolverDeckard
+  branch: WLHunter
+  tier: 3
+  order: 20
+  requiredNode: WLCraftNodeHunterFrontierFirearmsT3
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterFirearms
+  craftTime: 4.2
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 8
+  - stackType: WLWoodPlankStack
+    amount: 2
+  - stackType: WLCharcoalFuelStack
+    amount: 2
+  results:
+  - proto: WeaponRevolverDeckard
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterMosin
+  name: persistent-craft-wl-recipe-hunter-mosin-name
+  description: persistent-craft-wl-recipe-hunter-mosin-description
+  displayProto: WeaponSniperMosin
+  branch: WLHunter
+  tier: 3
+  order: 30
+  requiredNode: WLCraftNodeHunterFrontierFirearmsT3
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterFirearms
+  craftTime: 4.8
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 12
+  - stackType: WLWoodPlankStack
+    amount: 6
+  - stackType: WLPreparedClothStack
+    amount: 2
+  - stackType: WLCharcoalFuelStack
+    amount: 3
+  results:
+  - proto: WeaponSniperMosin
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterShotgunShells
+  name: persistent-craft-wl-recipe-hunter-shotgun-shells-name
+  description: persistent-craft-wl-recipe-hunter-shotgun-shells-description
+  displayProto: BoxLethalshot
+  branch: WLHunter
+  tier: 3
+  order: 10
+  requiredNode: WLCraftNodeHunterFrontierFirearmsT3
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterAmmunition
+  craftTime: 2
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 4
+  - stackType: WLCharcoalFuelStack
+    amount: 3
+  - stackType: WLPreparedClothStack
+    amount: 1
+  results:
+  - proto: BoxLethalshot
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterMagnumAmmo
+  name: persistent-craft-wl-recipe-hunter-magnum-ammo-name
+  description: persistent-craft-wl-recipe-hunter-magnum-ammo-description
+  displayProto: MagazineBoxMagnum
+  branch: WLHunter
+  tier: 3
+  order: 20
+  requiredNode: WLCraftNodeHunterFrontierFirearmsT3
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterAmmunition
+  craftTime: 2
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 4
+  - stackType: WLCharcoalFuelStack
+    amount: 3
+  results:
+  - proto: MagazineBoxMagnum
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterLightRifleAmmo
+  name: persistent-craft-wl-recipe-hunter-light-rifle-ammo-name
+  description: persistent-craft-wl-recipe-hunter-light-rifle-ammo-description
+  displayProto: MagazineBoxLightRifle
+  branch: WLHunter
+  tier: 3
+  order: 30
+  requiredNode: WLCraftNodeHunterFrontierFirearmsT3
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterAmmunition
+  craftTime: 2.2
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 5
+  - stackType: WLCharcoalFuelStack
+    amount: 4
+  results:
+  - proto: MagazineBoxLightRifle
+    amount: 1
+
+# --- Sidearms ---------------------------------------------------------------
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterMk58
+  name: persistent-craft-wl-recipe-hunter-mk58-name
+  description: persistent-craft-wl-recipe-hunter-mk58-description
+  displayProto: WeaponPistolMk58
+  branch: WLHunter
+  tier: 4
+  order: 10
+  requiredNode: WLCraftNodeHunterSidearmsT4
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterFirearms
+  craftTime: 4
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 9
+  - stackType: WLPreparedClothStack
+    amount: 2
+  - stackType: WLCharcoalFuelStack
+    amount: 3
+  results:
+  - proto: WeaponPistolMk58
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterN1984
+  name: persistent-craft-wl-recipe-hunter-n1984-name
+  description: persistent-craft-wl-recipe-hunter-n1984-description
+  displayProto: WeaponPistolN1984
+  branch: WLHunter
+  tier: 4
+  order: 20
+  requiredNode: WLCraftNodeHunterSidearmsT4
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterFirearms
+  craftTime: 4.2
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 10
+  - stackType: WLWoodPlankStack
+    amount: 1
+  - stackType: WLCharcoalFuelStack
+    amount: 3
+  results:
+  - proto: WeaponPistolN1984
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterPistolMagazine
+  name: persistent-craft-wl-recipe-hunter-pistol-magazine-name
+  description: persistent-craft-wl-recipe-hunter-pistol-magazine-description
+  displayProto: MagazinePistol
+  branch: WLHunter
+  tier: 4
+  order: 10
+  requiredNode: WLCraftNodeHunterSidearmsT4
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterAmmunition
+  craftTime: 1.8
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 3
+  - stackType: WLCharcoalFuelStack
+    amount: 1
+  results:
+  - proto: MagazinePistol
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterPistolAmmo
+  name: persistent-craft-wl-recipe-hunter-pistol-ammo-name
+  description: persistent-craft-wl-recipe-hunter-pistol-ammo-description
+  displayProto: MagazineBoxPistol
+  branch: WLHunter
+  tier: 4
+  order: 20
+  requiredNode: WLCraftNodeHunterSidearmsT4
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterAmmunition
+  craftTime: 2
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 5
+  - stackType: WLCharcoalFuelStack
+    amount: 4
+  results:
+  - proto: MagazineBoxPistol
+    amount: 1
+
+# --- Advanced Firearms ------------------------------------------------------
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterAk
+  name: persistent-craft-wl-recipe-hunter-ak-name
+  description: persistent-craft-wl-recipe-hunter-ak-description
+  displayProto: WeaponRifleAk
+  branch: WLHunter
+  tier: 5
+  order: 10
+  requiredNode: WLCraftNodeHunterAutomaticWeaponsT5
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterFirearms
+  craftTime: 5.2
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 18
+  - stackType: WLWoodPlankStack
+    amount: 6
+  - stackType: WLPreparedClothStack
+    amount: 3
+  - stackType: WLDenseCoalFuelStack
+    amount: 4
+  results:
+  - proto: WeaponRifleAk
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterLecter
+  name: persistent-craft-wl-recipe-hunter-lecter-name
+  description: persistent-craft-wl-recipe-hunter-lecter-description
+  displayProto: WeaponRifleLecter
+  branch: WLHunter
+  tier: 5
+  order: 20
+  requiredNode: WLCraftNodeHunterAutomaticWeaponsT5
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterFirearms
+  craftTime: 5.4
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 20
+  - stackType: WLPreparedClothStack
+    amount: 3
+  - stackType: WLDenseCoalFuelStack
+    amount: 5
+  results:
+  - proto: WeaponRifleLecter
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterRifleMagazine
+  name: persistent-craft-wl-recipe-hunter-rifle-magazine-name
+  description: persistent-craft-wl-recipe-hunter-rifle-magazine-description
+  displayProto: MagazineRifle
+  branch: WLHunter
+  tier: 5
+  order: 10
+  requiredNode: WLCraftNodeHunterAutomaticWeaponsT5
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterAmmunition
+  craftTime: 1.8
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 4
+  - stackType: WLCharcoalFuelStack
+    amount: 2
+  results:
+  - proto: MagazineRifle
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterRifleAmmo
+  name: persistent-craft-wl-recipe-hunter-rifle-ammo-name
+  description: persistent-craft-wl-recipe-hunter-rifle-ammo-description
+  displayProto: MagazineBoxRifle
+  branch: WLHunter
+  tier: 5
+  order: 20
+  requiredNode: WLCraftNodeHunterAutomaticWeaponsT5
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterAmmunition
+  craftTime: 2.3
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 6
+  - stackType: WLCharcoalFuelStack
+    amount: 5
+  results:
+  - proto: MagazineBoxRifle
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterHristov
+  name: persistent-craft-wl-recipe-hunter-hristov-name
+  description: persistent-craft-wl-recipe-hunter-hristov-description
+  displayProto: WeaponSniperHristov
+  branch: WLHunter
+  tier: 5
+  order: 30
+  requiredNode: WLCraftNodeHunterSniperWeaponsT5
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterFirearms
+  craftTime: 5.8
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 24
+  - stackType: WLWoodPlankStack
+    amount: 8
+  - stackType: WLPreparedClothStack
+    amount: 4
+  - stackType: WLDenseCoalFuelStack
+    amount: 6
+  results:
+  - proto: WeaponSniperHristov
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterAntiMaterielAmmo
+  name: persistent-craft-wl-recipe-hunter-anti-materiel-ammo-name
+  description: persistent-craft-wl-recipe-hunter-anti-materiel-ammo-description
+  displayProto: MagazineBoxAntiMateriel
+  branch: WLHunter
+  tier: 5
+  order: 30
+  requiredNode: WLCraftNodeHunterSniperWeaponsT5
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterAmmunition
+  craftTime: 2.8
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 8
+  - stackType: WLDenseCoalFuelStack
+    amount: 5
+  results:
+  - proto: MagazineBoxAntiMateriel
+    amount: 1

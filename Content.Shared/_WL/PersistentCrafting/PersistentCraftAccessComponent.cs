@@ -11,4 +11,10 @@ public sealed partial class PersistentCraftAccessComponent : Component
 
     [DataField]
     public EntityUid? ActionEntity;
+
+    [DataField]
+    public EntProtoId<InstantActionComponent> PlacementAction = "ActionOpenPersistentCraftPlacementMenu";
+
+    [DataField]
+    public EntityUid? PlacementActionEntity;
 }

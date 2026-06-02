@@ -40,6 +40,7 @@
   displayProto: WLSnowFoundationTileItem
   branch: WLGathererProcessor
   tier: 1
+  order: 10
   requiredNode: WLCraftNodeGathererTilesT1
   category: WLCraftCategoryGathererProcessor
   subCategory: WLCraftSubCategoryShelterFloors
@@ -60,6 +61,7 @@
   displayProto: WLPrimitiveWoodFloorTileItem
   branch: WLGathererProcessor
   tier: 1
+  order: 20
   requiredNode: WLCraftNodeGathererTilesT1
   category: WLCraftCategoryGathererProcessor
   subCategory: WLCraftSubCategoryShelterFloors
@@ -78,6 +80,7 @@
   displayProto: WLWoodFloorTileItem
   branch: WLGathererProcessor
   tier: 2
+  order: 10
   requiredNode: WLCraftNodeGathererTilesT2
   category: WLCraftCategoryGathererProcessor
   subCategory: WLCraftSubCategoryShelterFloors
@@ -98,6 +101,7 @@
   displayProto: WLStoneFloorTileItem
   branch: WLGathererProcessor
   tier: 2
+  order: 20
   requiredNode: WLCraftNodeGathererTilesT2
   category: WLCraftCategoryGathererProcessor
   subCategory: WLCraftSubCategoryShelterFloors
@@ -116,6 +120,7 @@
   displayProto: WLInsulatedFloorTileItem
   branch: WLGathererProcessor
   tier: 3
+  order: 10
   requiredNode: WLCraftNodeGathererTilesT3
   category: WLCraftCategoryGathererProcessor
   subCategory: WLCraftSubCategoryShelterFloors
@@ -136,6 +141,7 @@
   displayProto: WLRoadFloorTileItem
   branch: WLGathererProcessor
   tier: 2
+  order: 30
   requiredNode: WLCraftNodeGathererTilesT2
   category: WLCraftCategoryGathererProcessor
   subCategory: WLCraftSubCategoryShelterFloors
@@ -156,6 +162,7 @@
   displayProto: WLCampfireHeatSource
   branch: WLSettlementHead
   tier: 1
+  order: 10
   requiredNode: WLCraftNodeSettlementHeadStarter
   category: WLCraftCategorySettlementHead
   subCategory: WLCraftSubCategoryShelterGenerators
@@ -180,6 +187,7 @@
   displayProto: WLPrimitiveWoodWall
   branch: WLSettlementHead
   tier: 1
+  order: 10
   requiredNode: WLCraftNodeSettlementHeadShelterT1
   category: WLCraftCategorySettlementHead
   subCategory: WLCraftSubCategoryShelterStructures
@@ -201,6 +209,7 @@
   displayProto: WLPrimitiveWoodDoor
   branch: WLSettlementHead
   tier: 1
+  order: 20
   requiredNode: WLCraftNodeSettlementHeadShelterT1
   category: WLCraftCategorySettlementHead
   subCategory: WLCraftSubCategoryShelterStructures
@@ -227,17 +236,18 @@
   displayProto: WLResearchTable
   branch: WLSettlementHead
   tier: 1
+  order: 30
   requiredNode: WLCraftNodeSettlementHeadStarter
   category: WLCraftCategorySettlementHead
   subCategory: WLCraftSubCategoryShelterStructures
   craftTime: 2.2
   ingredients:
   - stackType: WLFrozenBranchStack
-    amount: 5
+    amount: 4
   - stackType: WLLooseScrapStack
-    amount: 3
-  - stackType: WLTornClothStack
     amount: 2
+  - stackType: WLTornClothStack
+    amount: 1
   results: []
   placement:
     proto: WLResearchTable
@@ -252,6 +262,7 @@
   displayProto: WLPrimitiveWorkbench
   branch: WLSettlementHead
   tier: 2
+  order: 10
   requiredNode: WLCraftNodeSettlementHeadWorkshopT2
   category: WLCraftCategorySettlementHead
   subCategory: WLCraftSubCategoryShelterStructures
@@ -277,6 +288,7 @@
   displayProto: WLFireplaceHeatSource
   branch: WLSettlementHead
   tier: 2
+  order: 10
   requiredNode: WLCraftNodeSettlementHeadHeatT2
   category: WLCraftCategorySettlementHead
   subCategory: WLCraftSubCategoryShelterGenerators
@@ -304,6 +316,7 @@
   displayProto: WLFiretubeGenerator
   branch: WLSettlementHead
   tier: 3
+  order: 10
   requiredNode: WLCraftNodeSettlementHeadGeneratorT3
   category: WLCraftCategorySettlementHead
   subCategory: WLCraftSubCategoryShelterGenerators

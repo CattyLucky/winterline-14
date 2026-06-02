@@ -8,4 +8,6 @@
   description: wl-settlement-description
   showInVote: true
   supportedMaps: FrostlandMapPool
-  rules: []
+  rules:
+    - WLFrostEvacuation
+    - WLRaids

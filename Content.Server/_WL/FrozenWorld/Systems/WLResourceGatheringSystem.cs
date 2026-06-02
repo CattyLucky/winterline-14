@@ -1,3 +1,4 @@
+using Content.Server._WL.Skills;
 using Content.Shared._WL.FrozenWorld.Components;
 using Content.Shared._WL.FrozenWorld.Events;
 using Content.Shared._WL.Roles;
@@ -17,6 +18,7 @@ public sealed partial class WLResourceGatheringSystem : EntitySystem
     [Dependency] private SharedDoAfterSystem _doAfter = default!;
     [Dependency] private SharedPopupSystem _popup = default!;
     [Dependency] private IRobustRandom _random = default!;
+    [Dependency] private WLSkillSystem _skills = default!;
 
     public override void Initialize()
     {
@@ -100,7 +102,15 @@ public sealed partial class WLResourceGatheringSystem : EntitySystem
         }
 
         if (args.User is { } user)
+        {
             _popup.PopupEntity(Loc.GetString("wl-resource-point-gathered"), ent.Owner, user);
+            _skills.TryGrantActionPoint(
+                user,
+                "WLSkillGatherer",
+                "resource-gather",
+                cooldownSeconds: 60,
+                showPopup: true);
+        }
 
         if (ent.Comp.Charges <= 0)
             Deplete(ent);

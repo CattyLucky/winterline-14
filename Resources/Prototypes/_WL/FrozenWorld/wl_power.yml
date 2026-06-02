@@ -1,0 +1,293 @@
+# /// WL Change
+# Low-voltage FrozenWorld settlement power.
+
+- type: entity
+  id: WLSettlementPowerController
+  parent: BaseAPC
+  name: settlement power controller
+  description: A rugged low-voltage controller for shelter-scale settlement power.
+  suffix: WL, Low Voltage
+  components:
+  - type: Battery
+    maxCharge: 30000
+    startingCharge: 0
+  - type: NodeContainer
+    examinable: true
+    nodes:
+      input:
+        !type:CableDeviceNode
+        nodeGroupID: Apc
+      output:
+        !type:CableDeviceNode
+        nodeGroupID: Apc
+  - type: PowerMonitoringDevice
+    group: APC
+    sourceNode: input
+    loadNode: output
+    collectionName: apc
+    sprite: Structures/Power/apc.rsi
+    state: static
+  - type: BatteryCharger
+    voltage: Apc
+    node: input
+  - type: PowerProvider
+    voltage: Apc
+    node: output
+  - type: Apc
+    voltage: Apc
+    node: output
+    maxLoad: 20000
+  - type: PowerNetworkBattery
+    maxSupply: 20000
+    maxChargeRate: 6000
+    supplyRampTolerance: 1000
+    supplyRampRate: 500
+  - type: Electrified
+    onHandInteract: false
+    onInteractUsing: false
+    onBump: false
+    requirePower: true
+    lowVoltageNode: output
+
+- type: entity
+  id: WLLowVoltageSMES
+  parent: BaseSMES
+  name: low-voltage settlement SMES
+  description: A settlement-grade SMES rebuilt to charge and discharge through green low-voltage wiring.
+  suffix: WL, Low Voltage
+  components:
+  - type: Battery
+    maxCharge: 1200000
+    startingCharge: 0
+  - type: NodeContainer
+    examinable: true
+    nodes:
+      input:
+        !type:CableDeviceNode
+        nodeGroupID: Apc
+      output:
+        !type:CableDeviceNode
+        nodeGroupID: Apc
+  - type: PowerMonitoringDevice
+    group: SMES
+    sourceNode: input
+    loadNode: output
+    collectionName: smes
+    sprite: Structures/Power/smes.rsi
+    state: static
+  - type: BatteryDischarger
+    voltage: Apc
+    node: output
+  - type: BatteryCharger
+    voltage: Apc
+    node: input
+  - type: PowerNetworkBattery
+    maxSupply: 20000
+    maxChargeRate: 12000
+    supplyRampTolerance: 2000
+    supplyRampRate: 1000
+  - type: BatteryInterface
+    minChargeRate: 1000
+    maxChargeRate: 12000
+    minSupply: 1000
+    maxSupply: 20000
+  - type: PointLight
+    radius: 1.2
+    energy: 3.0
+    color: "#3db83b"
+    castShadows: false
+  - type: Electrified
+    onHandInteract: false
+    onInteractUsing: false
+    onBump: false
+    requirePower: true
+    lowVoltageNode: input
+
+- type: entity
+  id: WLSettlementLightPost
+  parent: PoweredLEDLightPostSmall
+  name: settlement light post
+  description: A low-voltage LED light post for lighting shelter rooms and paths.
+  suffix: WL, Low Voltage
+  components:
+  - type: ApcPowerReceiver
+    powerLoad: 20
+  - type: PointLight
+    radius: 9
+    energy: 1.2
+    softness: 0.9
+    color: "#E8F6FF"
+  - type: FrozenShelterDeconstructible
+    doAfter: 2.5
+    refunds:
+    - proto: WLMetalParts1
+      count: 2
+
+- type: entity
+  id: WLElectricHeater
+  parent: SpaceHeaterEnabled
+  name: settlement electric heater
+  description: A compact low-voltage heater for keeping finished rooms above freezing.
+  suffix: WL, Low Voltage
+  components:
+  - type: ApcPowerReceiver
+    powerLoad: 2500
+  - type: SpaceHeater
+    powerConsumption: 2500
+    maxTemperature: 313.15
+    minTemperature: 263.15
+  - type: FrozenShelterDeconstructible
+    doAfter: 4
+    refunds:
+    - proto: WLMetalParts1
+      count: 6
+    - proto: WLPreparedCloth1
+      count: 1
+
+- type: entity
+  id: WLWoodGenerator
+  parent: PortableGeneratorBase
+  name: wood settlement generator
+  description: A low-voltage generator assembled to burn prepared firewood and other wooden fuel.
+  suffix: WL, Wood, 6 kW
+  components:
+  - type: Transform
+    anchored: true
+  - type: Physics
+    bodyType: Static
+  - type: Sprite
+    sprite: Structures/Power/Generation/portable_generator.rsi
+    noRot: true
+    layers:
+    - state: portgen0
+      map: [ "enum.GeneratorVisualLayers.Body" ]
+    - state: portgen_on_unlit
+      map: [ "enum.GeneratorVisualLayers.Unlit" ]
+      shader: unshaded
+      visible: false
+  - type: GenericVisualizer
+    visuals:
+      enum.GeneratorVisuals.Running:
+        enum.GeneratorVisualLayers.Body:
+          True: { state: portgen0on }
+          False: { state: portgen0 }
+        enum.GeneratorVisualLayers.Unlit:
+          True: { visible: true }
+          False: { visible: false }
+  - type: NodeContainer
+    examinable: true
+    nodes:
+      output:
+        !type:CableDeviceNode
+        nodeGroupID: Apc
+  - type: FuelGenerator
+    targetPower: 6000
+    minTargetPower: 2000
+    optimalPower: 6000
+    maxTargetPower: 8000
+    optimalBurnRate: 0.016
+    fuelEfficiencyConstant: 0.45
+  - type: SolidFuelGeneratorAdapter
+    fuelMaterial: Wood
+    multiplier: 0.01
+  - type: MaterialStorage
+    storageLimit: 2000
+    materialWhiteList: [ Wood ]
+  - type: PowerMonitoringDevice
+    group: Generator
+    loadNode: output
+    sprite: Structures/Power/Generation/portable_generator.rsi
+    state: portgen0
+  - type: PowerSupplier
+    voltage: Apc
+    supplyRate: 6000
+    supplyRampRate: 1000
+    supplyRampTolerance: 500
+    enabled: false
+  - type: Electrified
+    onHandInteract: false
+    onInteractUsing: false
+    onBump: false
+    requirePower: true
+    lowVoltageNode: output
+  - type: FrozenShelterDeconstructible
+    doAfter: 5
+    refunds:
+    - proto: WLMetalParts1
+      count: 8
+    - proto: WLWoodPlank1
+      count: 3
+
+- type: entity
+  id: WLCoalGenerator
+  parent: PortableGeneratorBase
+  name: coal settlement generator
+  description: A stronger low-voltage generator rebuilt to burn coal for settlement power.
+  suffix: WL, Coal, 16 kW
+  components:
+  - type: Transform
+    anchored: true
+  - type: Physics
+    bodyType: Static
+  - type: Sprite
+    sprite: Structures/Power/Generation/portable_generator.rsi
+    noRot: true
+    layers:
+    - state: portgen1
+      map: [ "enum.GeneratorVisualLayers.Body" ]
+    - state: portgen_on_unlit
+      map: [ "enum.GeneratorVisualLayers.Unlit" ]
+      shader: unshaded
+      visible: false
+  - type: GenericVisualizer
+    visuals:
+      enum.GeneratorVisuals.Running:
+        enum.GeneratorVisualLayers.Body:
+          True: { state: portgen1on }
+          False: { state: portgen1 }
+        enum.GeneratorVisualLayers.Unlit:
+          True: { visible: true }
+          False: { visible: false }
+  - type: NodeContainer
+    examinable: true
+    nodes:
+      output:
+        !type:CableDeviceNode
+        nodeGroupID: Apc
+  - type: FuelGenerator
+    targetPower: 16000
+    minTargetPower: 6000
+    optimalPower: 16000
+    maxTargetPower: 20000
+    optimalBurnRate: 0.011
+    fuelEfficiencyConstant: 0.35
+  - type: SolidFuelGeneratorAdapter
+    fuelMaterial: Coal
+    multiplier: 0.018
+  - type: MaterialStorage
+    storageLimit: 3000
+    materialWhiteList: [ Coal ]
+  - type: PowerMonitoringDevice
+    group: Generator
+    loadNode: output
+    sprite: Structures/Power/Generation/portable_generator.rsi
+    state: portgen1
+  - type: PowerSupplier
+    voltage: Apc
+    supplyRate: 16000
+    supplyRampRate: 2000
+    supplyRampTolerance: 1000
+    enabled: false
+  - type: Electrified
+    onHandInteract: false
+    onInteractUsing: false
+    onBump: false
+    requirePower: true
+    lowVoltageNode: output
+  - type: FrozenShelterDeconstructible
+    doAfter: 6
+    refunds:
+    - proto: WLMetalParts1
+      count: 12
+    - proto: WLRoughStone
+      count: 3

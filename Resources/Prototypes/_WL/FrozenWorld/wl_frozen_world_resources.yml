@@ -23,13 +23,13 @@
     sprite: _WL/Objects/Misc/materials.rsi
     state: scrap_wood
   - type: WLResourcePoint
-    charges: 3
-    maxCharges: 3
-    gatherTime: 2.5
+    charges: 6
+    maxCharges: 6
+    gatherTime: 2.2
     loot:
     - prototype: WLFrozenBranch
-      minCount: 2
-      maxCount: 4
+      minCount: 3
+      maxCount: 5
 
 - type: entity
   id: WLResourceLooseScrapPileT1
@@ -42,13 +42,13 @@
     sprite: _WL/Objects/Misc/materials.rsi
     state: scrap_steel
   - type: WLResourcePoint
-    charges: 2
-    maxCharges: 2
-    gatherTime: 2.8
+    charges: 5
+    maxCharges: 5
+    gatherTime: 2.4
     loot:
     - prototype: WLLooseScrap
-      minCount: 2
-      maxCount: 3
+      minCount: 3
+      maxCount: 5
 
 - type: entity
   id: WLResourceTornSupplyBagT1
@@ -61,16 +61,16 @@
     sprite: _WL/Objects/Materials/Scrap/generic.rsi
     state: clothing_uniform_trash2
   - type: WLResourcePoint
-    charges: 1
-    maxCharges: 1
+    charges: 3
+    maxCharges: 3
     gatherTime: 2.0
     loot:
     - prototype: WLTornCloth
-      minCount: 2
-      maxCount: 4
+      minCount: 3
+      maxCount: 5
     - prototype: WLLooseScrap
-      minCount: 1
-      maxCount: 2
+      minCount: 2
+      maxCount: 3
 
 # --- Tier 2: Near Field ------------------------------------------------------
 
@@ -85,16 +85,16 @@
     sprite: _WL/Objects/Misc/materials.rsi
     state: log
   - type: WLResourcePoint
-    charges: 3
-    maxCharges: 3
-    gatherTime: 3.8
+    charges: 5
+    maxCharges: 5
+    gatherTime: 3.4
     loot:
     - prototype: WLLog
-      minCount: 1
-      maxCount: 2
+      minCount: 2
+      maxCount: 3
     - prototype: WLFrozenBranch
-      minCount: 1
-      maxCount: 2
+      minCount: 2
+      maxCount: 3
 
 - type: entity
   id: WLResourceCharcoalPitT2
@@ -107,13 +107,13 @@
     sprite: _WL/Objects/Misc/materials.rsi
     state: coal
   - type: WLResourcePoint
-    charges: 2
-    maxCharges: 2
-    gatherTime: 4.0
+    charges: 4
+    maxCharges: 4
+    gatherTime: 3.6
     loot:
     - prototype: WLCharcoalFuel1
-      minCount: 2
-      maxCount: 3
+      minCount: 3
+      maxCount: 5
 
 - type: entity
   id: WLResourceSmallScrapPileT2
@@ -126,16 +126,16 @@
     sprite: _WL/Objects/Misc/materials.rsi
     state: scrap_2
   - type: WLResourcePoint
-    charges: 3
-    maxCharges: 3
-    gatherTime: 3.8
+    charges: 5
+    maxCharges: 5
+    gatherTime: 3.5
     loot:
     - prototype: WLLooseScrap
-      minCount: 2
-      maxCount: 4
+      minCount: 3
+      maxCount: 5
     - prototype: WLTornCloth
-      minCount: 1
-      maxCount: 2
+      minCount: 2
+      maxCount: 3
 
 # --- Tier 3: Work Field ------------------------------------------------------
 
@@ -150,13 +150,13 @@
     sprite: Objects/Materials/ore.rsi
     state: coal
   - type: WLResourcePoint
-    charges: 4
-    maxCharges: 4
-    gatherTime: 4.8
+    charges: 6
+    maxCharges: 6
+    gatherTime: 4.4
     loot:
     - prototype: WLCoalFuel1
-      minCount: 2
-      maxCount: 4
+      minCount: 3
+      maxCount: 5
 
 - type: entity
   id: WLResourceScrapWreckT3
@@ -169,16 +169,16 @@
     sprite: _WL/Objects/Misc/materials.rsi
     state: scrap_3
   - type: WLResourcePoint
-    charges: 4
-    maxCharges: 4
-    gatherTime: 4.8
+    charges: 6
+    maxCharges: 6
+    gatherTime: 4.4
     loot:
     - prototype: WLLooseScrap
-      minCount: 3
-      maxCount: 5
+      minCount: 4
+      maxCount: 7
     - prototype: WLTornCloth
-      minCount: 1
-      maxCount: 2
+      minCount: 2
+      maxCount: 3
 
 - type: entity
   id: WLResourceFrozenGroveT3
@@ -191,16 +191,16 @@
     sprite: _WL/Objects/Misc/materials.rsi
     state: log
   - type: WLResourcePoint
-    charges: 4
-    maxCharges: 4
-    gatherTime: 5.0
+    charges: 6
+    maxCharges: 6
+    gatherTime: 4.6
     loot:
     - prototype: WLLog
-      minCount: 2
-      maxCount: 4
+      minCount: 3
+      maxCount: 5
     - prototype: WLFrozenBranch
-      minCount: 2
-      maxCount: 3
+      minCount: 3
+      maxCount: 4
 
 # --- Tier 4: Expedition Field ------------------------------------------------
 
@@ -216,16 +216,16 @@
     state: coal
     color: "#cfcfe0"
   - type: WLResourcePoint
-    charges: 5
-    maxCharges: 5
-    gatherTime: 5.8
+    charges: 7
+    maxCharges: 7
+    gatherTime: 5.4
     loot:
     - prototype: WLCoalFuel1
-      minCount: 3
-      maxCount: 5
+      minCount: 4
+      maxCount: 6
     - prototype: WLDenseCoalFuel1
-      minCount: 1
-      maxCount: 2
+      minCount: 2
+      maxCount: 3
 
 - type: entity
   id: WLResourceFrozenConvoyWreckT4
@@ -238,19 +238,19 @@
     sprite: _WL/Objects/Materials/Scrap/generic.rsi
     state: balka_trash
   - type: WLResourcePoint
-    charges: 4
-    maxCharges: 4
-    gatherTime: 5.6
+    charges: 6
+    maxCharges: 6
+    gatherTime: 5.2
     loot:
     - prototype: WLLooseScrap
-      minCount: 4
-      maxCount: 7
+      minCount: 5
+      maxCount: 8
     - prototype: WLTornCloth
-      minCount: 2
-      maxCount: 4
+      minCount: 3
+      maxCount: 5
     - prototype: WLCoalFuel1
-      minCount: 1
-      maxCount: 2
+      minCount: 2
+      maxCount: 3
 
 - type: entity
   id: WLResourceOldSupplyCacheT4
@@ -263,19 +263,19 @@
     sprite: _WL/Objects/Materials/Scrap/securedbox.rsi
     state: icon
   - type: WLResourcePoint
-    charges: 3
-    maxCharges: 3
-    gatherTime: 5.2
+    charges: 5
+    maxCharges: 5
+    gatherTime: 4.8
     loot:
     - prototype: WLTornCloth
+      minCount: 4
+      maxCount: 6
+    - prototype: WLLooseScrap
       minCount: 3
       maxCount: 5
-    - prototype: WLLooseScrap
-      minCount: 2
-      maxCount: 4
     - prototype: WLLog
-      minCount: 1
-      maxCount: 2
+      minCount: 2
+      maxCount: 3
 
 # --- Tier 5: Deep Expedition Finds ------------------------------------------
 
@@ -291,16 +291,16 @@
     state: coal
     color: "#b8c2ff"
   - type: WLResourcePoint
-    charges: 6
-    maxCharges: 6
-    gatherTime: 6.5
+    charges: 8
+    maxCharges: 8
+    gatherTime: 6.0
     loot:
     - prototype: WLDenseCoalFuel1
+      minCount: 4
+      maxCount: 6
+    - prototype: WLCoalFuel1
       minCount: 3
       maxCount: 5
-    - prototype: WLCoalFuel1
-      minCount: 2
-      maxCount: 3
 
 - type: entity
   id: WLResourceIndustrialRuinT5
@@ -313,19 +313,19 @@
     sprite: _WL/Objects/Materials/Scrap/generic.rsi
     state: hv_cabel_trash
   - type: WLResourcePoint
-    charges: 5
-    maxCharges: 5
-    gatherTime: 6.2
+    charges: 7
+    maxCharges: 7
+    gatherTime: 5.8
     loot:
     - prototype: WLLooseScrap
-      minCount: 6
-      maxCount: 9
+      minCount: 7
+      maxCount: 10
     - prototype: WLTornCloth
-      minCount: 2
-      maxCount: 4
+      minCount: 3
+      maxCount: 5
     - prototype: WLDenseCoalFuel1
-      minCount: 1
-      maxCount: 2
+      minCount: 2
+      maxCount: 3
 
 - type: entity
   id: WLResourceSealedExpeditionCacheT5
@@ -339,19 +339,19 @@
     state: closed
     color: "#b9c7d8"
   - type: WLResourcePoint
-    charges: 3
-    maxCharges: 3
-    gatherTime: 6.0
+    charges: 5
+    maxCharges: 5
+    gatherTime: 5.4
     loot:
     - prototype: WLTornCloth
+      minCount: 6
+      maxCount: 9
+    - prototype: WLLooseScrap
       minCount: 5
       maxCount: 8
-    - prototype: WLLooseScrap
-      minCount: 4
-      maxCount: 6
     - prototype: WLDenseCoalFuel1
       minCount: 1
-      maxCount: 1
+      maxCount: 2
 
 # --- Rough Stone Resource Points ---------------------------------------------
 
@@ -359,7 +359,7 @@
   id: WLRoughStonePileDebug
   parent: WLBaseResourcePoint
   name: rough stone pile
-  suffix: WL, Debug
+  suffix: WL, Resource, T2
   description: Broken frozen masonry and loose stone. Heavy, but useful for proper floors.
   components:
   - type: Sprite
@@ -367,19 +367,19 @@
     state: orebox
     color: "#77716a"
   - type: WLResourcePoint
-    charges: 2
-    maxCharges: 2
-    gatherTime: 3.5
+    charges: 4
+    maxCharges: 4
+    gatherTime: 3.2
     loot:
     - prototype: WLRoughStone
-      minCount: 2
-      maxCount: 4
+      minCount: 3
+      maxCount: 5
 
 - type: entity
   id: WLFrozenRubbleOutcropDebug
   parent: WLBaseResourcePoint
   name: frozen rubble outcrop
-  suffix: WL, Debug
+  suffix: WL, Resource, T3
   description: A compact pile of cracked stone locked into the ice. Good material for floors and heat-safe masonry.
   components:
   - type: Sprite
@@ -387,19 +387,19 @@
     state: orebox
     color: "#6f6962"
   - type: WLResourcePoint
-    charges: 4
-    maxCharges: 4
-    gatherTime: 5.0
+    charges: 6
+    maxCharges: 6
+    gatherTime: 4.6
     loot:
     - prototype: WLRoughStone
-      minCount: 3
-      maxCount: 5
+      minCount: 4
+      maxCount: 7
 
 - type: entity
   id: WLOldMasonryRuinDebug
   parent: WLBaseResourcePoint
   name: old masonry ruin
-  suffix: WL, Debug
+  suffix: WL, Resource, T4
   description: A collapsed stone ruin buried under frost. Slow to break apart, but rich in heavy building material.
   components:
   - type: Sprite
@@ -407,13 +407,13 @@
     state: orebox
     color: "#5f5b55"
   - type: WLResourcePoint
-    charges: 5
-    maxCharges: 5
-    gatherTime: 6.0
+    charges: 7
+    maxCharges: 7
+    gatherTime: 5.4
     loot:
     - prototype: WLRoughStone
-      minCount: 4
-      maxCount: 7
+      minCount: 5
+      maxCount: 8
     - prototype: WLLooseScrap
-      minCount: 1
-      maxCount: 2
+      minCount: 2
+      maxCount: 3

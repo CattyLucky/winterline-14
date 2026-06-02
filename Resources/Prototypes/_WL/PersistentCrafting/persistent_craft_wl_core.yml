@@ -153,6 +153,18 @@
   - WLCraftNodeMechanicHandToolsT1
 
 - type: persistentCraftNode
+  id: WLCraftNodeMechanicLightingT2
+  name: persistent-craft-wl-node-mechanic-lighting-t2
+  description: persistent-craft-wl-node-description-lighting
+  branch: WLMechanic
+  cost: 2
+  displayProto: LightTube
+  treeColumn: 2
+  treeRow: 4
+  prerequisites:
+  - WLCraftNodeMechanicWiringT2
+
+- type: persistentCraftNode
   id: WLCraftNodeMechanicWeldingT2
   name: persistent-craft-wl-node-mechanic-welding-t2
   description: persistent-craft-wl-node-description-welding
@@ -177,6 +189,18 @@
   - WLCraftNodeMechanicFieldToolsT2
 
 - type: persistentCraftNode
+  id: WLCraftNodeMechanicPowerControlT3
+  name: persistent-craft-wl-node-mechanic-power-control-t3
+  description: persistent-craft-wl-node-description-power-control
+  branch: WLMechanic
+  cost: 3
+  displayProto: WLSettlementPowerController
+  treeColumn: 3
+  treeRow: 1
+  prerequisites:
+  - WLCraftNodeMechanicWiringT2
+
+- type: persistentCraftNode
   id: WLCraftNodeMechanicWiringT3
   name: persistent-craft-wl-node-mechanic-wiring-t3
   description: persistent-craft-wl-node-description-wiring
@@ -187,6 +211,32 @@
   treeRow: 2
   prerequisites:
   - WLCraftNodeMechanicWiringT2
+
+- type: persistentCraftNode
+  id: WLCraftNodeMechanicWoodGeneratorT4
+  name: persistent-craft-wl-node-mechanic-wood-generator-t4
+  description: persistent-craft-wl-node-description-power-generation
+  branch: WLMechanic
+  cost: 4
+  displayProto: WLWoodGenerator
+  treeColumn: 4
+  treeRow: 1
+  prerequisites:
+  - WLCraftNodeMechanicPowerControlT3
+  - WLCraftNodeMechanicIgnitionT2
+
+- type: persistentCraftNode
+  id: WLCraftNodeMechanicElectricHeatingT4
+  name: persistent-craft-wl-node-mechanic-electric-heating-t4
+  description: persistent-craft-wl-node-description-electric-heating
+  branch: WLMechanic
+  cost: 4
+  displayProto: WLElectricHeater
+  treeColumn: 4
+  treeRow: 4
+  prerequisites:
+  - WLCraftNodeMechanicPowerControlT3
+  - WLCraftNodeMechanicLightingT2
 
 - type: persistentCraftNode
   id: WLCraftNodeMechanicWeldingT3
@@ -212,6 +262,32 @@
   prerequisites:
   - WLCraftNodeMechanicWiringT3
   - WLCraftNodeMechanicWeldingT3
+
+- type: persistentCraftNode
+  id: WLCraftNodeMechanicGreenSmesT5
+  name: persistent-craft-wl-node-mechanic-green-smes-t5
+  description: persistent-craft-wl-node-description-power-storage
+  branch: WLMechanic
+  cost: 5
+  displayProto: WLLowVoltageSMES
+  treeColumn: 5
+  treeRow: 0
+  prerequisites:
+  - WLCraftNodeMechanicWoodGeneratorT4
+  - WLCraftNodeMechanicWiringT3
+
+- type: persistentCraftNode
+  id: WLCraftNodeMechanicCoalGeneratorT5
+  name: persistent-craft-wl-node-mechanic-coal-generator-t5
+  description: persistent-craft-wl-node-description-power-generation
+  branch: WLMechanic
+  cost: 5
+  displayProto: WLCoalGenerator
+  treeColumn: 5
+  treeRow: 1
+  prerequisites:
+  - WLCraftNodeMechanicWoodGeneratorT4
+  - WLCraftNodeMechanicWiringT3
 
 - type: persistentCraftNode
   id: WLCraftNodeMechanicAdvancedIndustrialT5
@@ -284,6 +360,142 @@
   treeRow: 5
   prerequisites:
   - WLCraftNodeMechanicClothingT4
+
+# --- Hunter -----------------------------------------------------------------
+
+- type: persistentCraftBranch
+  id: WLHunter
+  name: persistent-craft-wl-branch-hunter
+  order: 30
+  defaultCategory: WLCraftCategoryHunter
+  accentColor: "#A8C66C"
+  useTierSubcategories: false
+
+- type: persistentCraftCategory
+  id: WLCraftCategoryHunter
+  name: persistent-craft-wl-category-hunter
+  order: 30
+
+- type: persistentCraftNode
+  id: WLCraftNodeHunterStarter
+  name: persistent-craft-wl-node-hunter-starter
+  description: persistent-craft-wl-node-description-starter
+  branch: WLHunter
+  cost: 0
+  displayProto: SurvivalKnife
+  treeColumn: 0
+  treeRow: 0
+  prerequisites: []
+
+- type: persistentCraftNode
+  id: WLCraftNodeHunterSnareT1
+  name: persistent-craft-wl-node-hunter-snare-t1
+  description: persistent-craft-wl-node-description-hunting-traps
+  branch: WLHunter
+  cost: 1
+  displayProto: WLHunterSnare
+  treeColumn: 1
+  treeRow: 0
+  prerequisites:
+  - WLCraftNodeHunterStarter
+
+- type: persistentCraftNode
+  id: WLCraftNodeHunterMeleeT1
+  name: persistent-craft-wl-node-hunter-melee-t1
+  description: persistent-craft-wl-node-description-hunter-weapons
+  branch: WLHunter
+  cost: 1
+  displayProto: Spear
+  treeColumn: 1
+  treeRow: 1
+  prerequisites:
+  - WLCraftNodeHunterStarter
+
+- type: persistentCraftNode
+  id: WLCraftNodeHunterBowT2
+  name: persistent-craft-wl-node-hunter-bow-t2
+  description: persistent-craft-wl-node-description-hunter-weapons
+  branch: WLHunter
+  cost: 2
+  displayProto: BowImprovised
+  treeColumn: 2
+  treeRow: 1
+  prerequisites:
+  - WLCraftNodeHunterMeleeT1
+
+- type: persistentCraftNode
+  id: WLCraftNodeHunterThrowingT2
+  name: persistent-craft-wl-node-hunter-throwing-t2
+  description: persistent-craft-wl-node-description-hunter-weapons
+  branch: WLHunter
+  cost: 2
+  displayProto: SpearReinforced
+  treeColumn: 2
+  treeRow: 3
+  prerequisites:
+  - WLCraftNodeHunterMeleeT1
+
+- type: persistentCraftNode
+  id: WLCraftNodeHunterAdvancedMeleeT2
+  name: persistent-craft-wl-node-hunter-advanced-melee-t2
+  description: persistent-craft-wl-node-description-hunter-weapons
+  branch: WLHunter
+  cost: 2
+  displayProto: Cutlass
+  treeColumn: 2
+  treeRow: 2
+  prerequisites:
+  - WLCraftNodeHunterMeleeT1
+
+- type: persistentCraftNode
+  id: WLCraftNodeHunterFrontierFirearmsT3
+  name: persistent-craft-wl-node-hunter-frontier-firearms-t3
+  description: persistent-craft-wl-node-description-hunter-firearms
+  branch: WLHunter
+  cost: 3
+  displayProto: WeaponShotgunDoubleBarreled
+  treeColumn: 3
+  treeRow: 1
+  prerequisites:
+  - WLCraftNodeHunterBowT2
+  - WLCraftNodeHunterAdvancedMeleeT2
+  - WLCraftNodeHunterThrowingT2
+
+- type: persistentCraftNode
+  id: WLCraftNodeHunterSidearmsT4
+  name: persistent-craft-wl-node-hunter-sidearms-t4
+  description: persistent-craft-wl-node-description-hunter-firearms
+  branch: WLHunter
+  cost: 4
+  displayProto: WeaponPistolMk58
+  treeColumn: 4
+  treeRow: 1
+  prerequisites:
+  - WLCraftNodeHunterFrontierFirearmsT3
+
+- type: persistentCraftNode
+  id: WLCraftNodeHunterAutomaticWeaponsT5
+  name: persistent-craft-wl-node-hunter-automatic-weapons-t5
+  description: persistent-craft-wl-node-description-hunter-firearms
+  branch: WLHunter
+  cost: 5
+  displayProto: WeaponRifleAk
+  treeColumn: 5
+  treeRow: 1
+  prerequisites:
+  - WLCraftNodeHunterSidearmsT4
+
+- type: persistentCraftNode
+  id: WLCraftNodeHunterSniperWeaponsT5
+  name: persistent-craft-wl-node-hunter-sniper-weapons-t5
+  description: persistent-craft-wl-node-description-hunter-firearms
+  branch: WLHunter
+  cost: 5
+  displayProto: WeaponSniperHristov
+  treeColumn: 5
+  treeRow: 2
+  prerequisites:
+  - WLCraftNodeHunterSidearmsT4
 
 # --- Gatherer Processor -----------------------------------------------------
 
@@ -372,6 +584,18 @@
   - WLCraftNodeGathererProcessingT1
 
 - type: persistentCraftNode
+  id: WLCraftNodeGathererBotanyT2
+  name: persistent-craft-wl-node-gatherer-botany-t2
+  description: persistent-craft-wl-node-description-botany
+  branch: WLGathererProcessor
+  cost: 2
+  displayProto: HydroponicsTrayEmpty
+  treeColumn: 2
+  treeRow: 3
+  prerequisites:
+  - WLCraftNodeGathererProcessingT1
+
+- type: persistentCraftNode
   id: WLCraftNodeGathererTilesT3
   name: persistent-craft-wl-node-gatherer-tiles-t3
   description: persistent-craft-wl-node-description-tiles
@@ -396,6 +620,18 @@
   - WLCraftNodeGathererFuelT2
 
 - type: persistentCraftNode
+  id: WLCraftNodeGathererSeedExtractionT3
+  name: persistent-craft-wl-node-gatherer-seed-extraction-t3
+  description: persistent-craft-wl-node-description-botany
+  branch: WLGathererProcessor
+  cost: 3
+  displayProto: SeedExtractor
+  treeColumn: 3
+  treeRow: 3
+  prerequisites:
+  - WLCraftNodeGathererBotanyT2
+
+- type: persistentCraftNode
   id: WLCraftNodeGathererFuelT4
   name: persistent-craft-wl-node-gatherer-fuel-t4
   description: persistent-craft-wl-node-description-fuel
@@ -408,6 +644,18 @@
   - WLCraftNodeGathererFuelT3
 
 - type: persistentCraftNode
+  id: WLCraftNodeGathererMedicinalCropsT4
+  name: persistent-craft-wl-node-gatherer-medicinal-crops-t4
+  description: persistent-craft-wl-node-description-botany
+  branch: WLGathererProcessor
+  cost: 4
+  displayProto: AloeSeeds
+  treeColumn: 4
+  treeRow: 3
+  prerequisites:
+  - WLCraftNodeGathererSeedExtractionT3
+
+- type: persistentCraftNode
   id: WLCraftNodeGathererFuelT5
   name: persistent-craft-wl-node-gatherer-fuel-t5
   description: persistent-craft-wl-node-description-fuel
@@ -418,6 +666,80 @@
   treeRow: 2
   prerequisites:
   - WLCraftNodeGathererFuelT4
+
+# --- Cooking ----------------------------------------------------------------
+
+- type: persistentCraftBranch
+  id: WLCooking
+  name: persistent-craft-wl-branch-cooking
+  order: 45
+  defaultCategory: WLCraftCategoryCooking
+  accentColor: "#D98B5F"
+  useTierSubcategories: false
+
+- type: persistentCraftCategory
+  id: WLCraftCategoryCooking
+  name: persistent-craft-wl-category-cooking
+  order: 45
+
+- type: persistentCraftNode
+  id: WLCraftNodeCookingStarter
+  name: persistent-craft-wl-node-cooking-starter
+  description: persistent-craft-wl-node-description-cooking
+  branch: WLCooking
+  cost: 0
+  displayProto: FoodMeatCooked
+  treeColumn: 0
+  treeRow: 0
+  prerequisites: []
+
+- type: persistentCraftNode
+  id: WLCraftNodeCookingButcheryT2
+  name: persistent-craft-wl-node-cooking-butchery-t2
+  description: persistent-craft-wl-node-description-cooking
+  branch: WLCooking
+  cost: 2
+  displayProto: WLAnimalFat1
+  treeColumn: 1
+  treeRow: 0
+  prerequisites:
+  - WLCraftNodeCookingStarter
+
+- type: persistentCraftNode
+  id: WLCraftNodeCookingCropMealsT2
+  name: persistent-craft-wl-node-cooking-crop-meals-t2
+  description: persistent-craft-wl-node-description-cooking
+  branch: WLCooking
+  cost: 2
+  displayProto: FoodSoupVegetable
+  treeColumn: 1
+  treeRow: 1
+  prerequisites:
+  - WLCraftNodeCookingStarter
+
+- type: persistentCraftNode
+  id: WLCraftNodeCookingBrothT3
+  name: persistent-craft-wl-node-cooking-broth-t3
+  description: persistent-craft-wl-node-description-cooking
+  branch: WLCooking
+  cost: 3
+  displayProto: FoodSoupStew
+  treeColumn: 2
+  treeRow: 0
+  prerequisites:
+  - WLCraftNodeCookingButcheryT2
+
+- type: persistentCraftNode
+  id: WLCraftNodeCookingFieldBakingT3
+  name: persistent-craft-wl-node-cooking-field-baking-t3
+  description: persistent-craft-wl-node-description-cooking
+  branch: WLCooking
+  cost: 3
+  displayProto: FoodBreadPlain
+  treeColumn: 2
+  treeRow: 1
+  prerequisites:
+  - WLCraftNodeCookingCropMealsT2
 
 # --- Field Medicine ---------------------------------------------------------
 
@@ -458,6 +780,30 @@
   - WLCraftNodeMedicineStarter
 
 - type: persistentCraftNode
+  id: WLCraftNodeMedicineBedT2
+  name: persistent-craft-wl-node-medicine-bed-t2
+  description: persistent-craft-wl-node-description-medical-bed
+  branch: WLFieldMedicine
+  cost: 2
+  displayProto: MedicalBed
+  treeColumn: 1
+  treeRow: 1
+  prerequisites:
+  - WLCraftNodeMedicineStarter
+
+- type: persistentCraftNode
+  id: WLCraftNodeMedicineHerbalChemistryT2
+  name: persistent-craft-wl-node-medicine-herbal-chemistry-t2
+  description: persistent-craft-wl-node-description-medicine-chemistry
+  branch: WLFieldMedicine
+  cost: 2
+  displayProto: ChemistryBottleInaprovaline
+  treeColumn: 1
+  treeRow: 2
+  prerequisites:
+  - WLCraftNodeMedicineStarter
+
+- type: persistentCraftNode
   id: WLCraftNodeMedicineTraumaT3
   name: persistent-craft-wl-node-medicine-trauma-t3
   description: persistent-craft-wl-node-description-medicine
@@ -468,6 +814,31 @@
   treeRow: 0
   prerequisites:
   - WLCraftNodeMedicineOintmentT2
+
+- type: persistentCraftNode
+  id: WLCraftNodeMedicineAdvancedChemistryT4
+  name: persistent-craft-wl-node-medicine-advanced-chemistry-t4
+  description: persistent-craft-wl-node-description-medicine-chemistry
+  branch: WLFieldMedicine
+  cost: 4
+  displayProto: ChemistryBottleBicaridine
+  treeColumn: 3
+  treeRow: 1
+  prerequisites:
+  - WLCraftNodeMedicineHerbalChemistryT2
+  - WLCraftNodeMedicineTraumaT3
+
+- type: persistentCraftNode
+  id: WLCraftNodeMedicineStabilizersT5
+  name: persistent-craft-wl-node-medicine-stabilizers-t5
+  description: persistent-craft-wl-node-description-medicine-chemistry
+  branch: WLFieldMedicine
+  cost: 5
+  displayProto: ChemistryBottleTricordrazine
+  treeColumn: 4
+  treeRow: 1
+  prerequisites:
+  - WLCraftNodeMedicineAdvancedChemistryT4
 
 - type: persistentCraftNode
   id: WLCraftNodeMedicineExpeditionT5

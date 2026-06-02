@@ -378,3 +378,82 @@
   - type: FrozenFootwear
     surfaceColdPenaltyMultiplier: 0.05
     surfaceSpeedPenaltyMultiplier: 0.20
+
+# --- Armored Winter Coats ----------------------------------------------------
+
+- type: entity
+  parent: ClothingOuterWinterCoatWarmWL
+  id: ClothingOuterArmoredWinterCoatWarmWL
+  name: warm armored winter coat
+  description: A padded winter coat with scrap plates sewn under the lining. It keeps warmth in and glancing blows out.
+  suffix: WL, T2, Armored
+  components:
+  - type: Armor
+    modifiers:
+      coefficients:
+        Blunt: 0.85
+        Slash: 0.80
+        Piercing: 0.90
+        Heat: 0.90
+  - type: ExplosionResistance
+    damageCoefficient: 0.95
+
+- type: entity
+  parent: ClothingOuterWinterCoatWL
+  id: ClothingOuterArmoredWinterCoatWL
+  name: armored winter coat
+  description: A heavy winter coat reinforced with fitted plates and thick hide backing for dangerous patrols.
+  suffix: WL, T3, Armored
+  components:
+  - type: Armor
+    modifiers:
+      coefficients:
+        Blunt: 0.75
+        Slash: 0.75
+        Piercing: 0.80
+        Heat: 0.85
+  - type: ExplosionResistance
+    damageCoefficient: 0.90
+  - type: ClothingSpeedModifier
+    walkModifier: 1
+    sprintModifier: 0.98
+
+- type: entity
+  parent: ClothingOuterWinterCoatArcticWL
+  id: ClothingOuterArmoredWinterCoatArcticWL
+  name: armored arctic coat
+  description: A sealed arctic coat with layered metal reinforcement for raids, escorts and deep expeditions.
+  suffix: WL, T4, Armored
+  components:
+  - type: Armor
+    modifiers:
+      coefficients:
+        Blunt: 0.65
+        Slash: 0.65
+        Piercing: 0.70
+        Heat: 0.80
+  - type: ExplosionResistance
+    damageCoefficient: 0.85
+  - type: ClothingSpeedModifier
+    walkModifier: 0.98
+    sprintModifier: 0.95
+
+- type: entity
+  parent: ClothingOuterWinterCoatExtremeWL
+  id: ClothingOuterArmoredWinterCoatExtremeWL
+  name: extreme armored winter coat
+  description: A dense expedition coat with heavy armor plates. It is built for the worst weather and the worst people.
+  suffix: WL, T5, Armored
+  components:
+  - type: Armor
+    modifiers:
+      coefficients:
+        Blunt: 0.55
+        Slash: 0.60
+        Piercing: 0.60
+        Heat: 0.75
+  - type: ExplosionResistance
+    damageCoefficient: 0.80
+  - type: ClothingSpeedModifier
+    walkModifier: 0.96
+    sprintModifier: 0.90

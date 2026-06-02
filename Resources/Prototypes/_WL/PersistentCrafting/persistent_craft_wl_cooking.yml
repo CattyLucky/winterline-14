@@ -1,0 +1,440 @@
+# /// WL Change
+# FrozenWorld personal cooking recipes.
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryCookingField
+  category: WLCraftCategoryCooking
+  name: persistent-craft-wl-subcategory-cooking-field
+  order: 0
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryCookingButchery
+  category: WLCraftCategoryCooking
+  name: persistent-craft-wl-subcategory-cooking-butchery
+  order: 10
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryCookingWater
+  category: WLCraftCategoryCooking
+  name: persistent-craft-wl-subcategory-cooking-water
+  order: 20
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeFieldRoast
+  name: persistent-craft-wl-recipe-field-roast-name
+  description: persistent-craft-wl-recipe-field-roast-description
+  displayProto: FoodMeatCooked
+  branch: WLCooking
+  tier: 1
+  order: 10
+  requiredNode: WLCraftNodeCookingStarter
+  category: WLCraftCategoryCooking
+  subCategory: WLCraftSubCategoryCookingField
+  craftTime: 1.6
+  nearbyRequirement:
+    prototypes:
+    - WLCampfireHeatSource
+    - WLFireplaceHeatSource
+    range: 2.8
+    requireEnabledHeat: true
+    description: persistent-craft-wl-requirement-burning-heat
+    failurePopup: persistent-craft-station-popup-requires-burning-heat
+  ingredients:
+  - proto: FoodMeat
+    amount: 1
+  - stackType: WLWoodFuelStack
+    amount: 1
+  results:
+  - proto: FoodMeatCooked
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeFatRoast
+  name: persistent-craft-wl-recipe-fat-roast-name
+  description: persistent-craft-wl-recipe-fat-roast-description
+  displayProto: FoodMeatCooked
+  branch: WLCooking
+  tier: 2
+  order: 20
+  requiredNode: WLCraftNodeCookingButcheryT2
+  category: WLCraftCategoryCooking
+  subCategory: WLCraftSubCategoryCookingButchery
+  craftTime: 2.0
+  nearbyRequirement:
+    prototypes:
+    - WLCampfireHeatSource
+    - WLFireplaceHeatSource
+    range: 2.8
+    requireEnabledHeat: true
+    description: persistent-craft-wl-requirement-burning-heat
+    failurePopup: persistent-craft-station-popup-requires-burning-heat
+  ingredients:
+  - proto: FoodMeat
+    amount: 2
+  - stackType: WLAnimalFatStack
+    amount: 1
+  - stackType: WLCharcoalFuelStack
+    amount: 1
+  results:
+  - proto: FoodMeatCooked
+    amount: 3
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeBearRoast
+  name: persistent-craft-wl-recipe-bear-roast-name
+  description: persistent-craft-wl-recipe-bear-roast-description
+  displayProto: FoodMeatBearCooked
+  branch: WLCooking
+  tier: 2
+  order: 30
+  requiredNode: WLCraftNodeCookingButcheryT2
+  category: WLCraftCategoryCooking
+  subCategory: WLCraftSubCategoryCookingButchery
+  craftTime: 2.4
+  nearbyRequirement:
+    prototypes:
+    - WLCampfireHeatSource
+    - WLFireplaceHeatSource
+    range: 2.8
+    requireEnabledHeat: true
+    description: persistent-craft-wl-requirement-burning-heat
+    failurePopup: persistent-craft-station-popup-requires-burning-heat
+  ingredients:
+  - proto: FoodMeatBear
+    amount: 1
+  - stackType: WLAnimalFatStack
+    amount: 1
+  - stackType: WLCharcoalFuelStack
+    amount: 1
+  results:
+  - proto: FoodMeatBearCooked
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeBoneStew
+  name: persistent-craft-wl-recipe-bone-stew-name
+  description: persistent-craft-wl-recipe-bone-stew-description
+  displayProto: FoodSoupStew
+  branch: WLCooking
+  tier: 3
+  order: 10
+  requiredNode: WLCraftNodeCookingBrothT3
+  category: WLCraftCategoryCooking
+  subCategory: WLCraftSubCategoryCookingButchery
+  craftTime: 3.0
+  nearbyRequirement:
+    prototypes:
+    - WLCampfireHeatSource
+    - WLFireplaceHeatSource
+    range: 2.8
+    requireEnabledHeat: true
+    description: persistent-craft-wl-requirement-burning-heat
+    failurePopup: persistent-craft-station-popup-requires-burning-heat
+  ingredients:
+  - stackType: Bones
+    amount: 2
+  - proto: FoodMeatCooked
+    amount: 1
+  - stackType: WLAnimalFatStack
+    amount: 1
+  results:
+  - proto: FoodSoupStew
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipePotatoSoup
+  name: persistent-craft-wl-recipe-potato-soup-name
+  description: persistent-craft-wl-recipe-potato-soup-description
+  displayProto: FoodSoupPotato
+  branch: WLCooking
+  tier: 2
+  order: 10
+  requiredNode: WLCraftNodeCookingCropMealsT2
+  category: WLCraftCategoryCooking
+  subCategory: WLCraftSubCategoryCookingField
+  craftTime: 2.4
+  nearbyRequirement:
+    prototypes:
+    - WLCampfireHeatSource
+    - WLFireplaceHeatSource
+    range: 2.8
+    requireEnabledHeat: true
+    description: persistent-craft-wl-requirement-burning-heat
+    failurePopup: persistent-craft-station-popup-requires-burning-heat
+  ingredients:
+  - proto: WLWoodenBowlWater
+    amount: 1
+  - proto: FoodPotato
+    amount: 2
+  - stackType: WLWoodFuelStack
+    amount: 1
+  results:
+  - proto: FoodSoupPotato
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeVegetableSoup
+  name: persistent-craft-wl-recipe-vegetable-soup-name
+  description: persistent-craft-wl-recipe-vegetable-soup-description
+  displayProto: FoodSoupVegetable
+  branch: WLCooking
+  tier: 2
+  order: 20
+  requiredNode: WLCraftNodeCookingCropMealsT2
+  category: WLCraftCategoryCooking
+  subCategory: WLCraftSubCategoryCookingField
+  craftTime: 2.8
+  nearbyRequirement:
+    prototypes:
+    - WLCampfireHeatSource
+    - WLFireplaceHeatSource
+    range: 2.8
+    requireEnabledHeat: true
+    description: persistent-craft-wl-requirement-burning-heat
+    failurePopup: persistent-craft-station-popup-requires-burning-heat
+  ingredients:
+  - proto: WLWoodenBowlWater
+    amount: 1
+  - proto: FoodPotato
+    amount: 1
+  - proto: FoodCarrot
+    amount: 2
+  - stackType: WLWoodFuelStack
+    amount: 1
+  results:
+  - proto: FoodSoupVegetable
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWildernessStew
+  name: persistent-craft-wl-recipe-wilderness-stew-name
+  description: persistent-craft-wl-recipe-wilderness-stew-description
+  displayProto: FoodSoupStew
+  branch: WLCooking
+  tier: 3
+  order: 20
+  requiredNode: WLCraftNodeCookingBrothT3
+  category: WLCraftCategoryCooking
+  subCategory: WLCraftSubCategoryCookingButchery
+  craftTime: 3.4
+  nearbyRequirement:
+    prototypes:
+    - WLCampfireHeatSource
+    - WLFireplaceHeatSource
+    range: 2.8
+    requireEnabledHeat: true
+    description: persistent-craft-wl-requirement-burning-heat
+    failurePopup: persistent-craft-station-popup-requires-burning-heat
+  ingredients:
+  - proto: WLWoodenBowlWater
+    amount: 1
+  - proto: FoodMeatCooked
+    amount: 1
+  - proto: FoodPotato
+    amount: 1
+  - proto: FoodCarrot
+    amount: 1
+  - stackType: WLAnimalFatStack
+    amount: 1
+  results:
+  - proto: FoodSoupStew
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeFieldBread
+  name: persistent-craft-wl-recipe-field-bread-name
+  description: persistent-craft-wl-recipe-field-bread-description
+  displayProto: FoodBreadPlain
+  branch: WLCooking
+  tier: 3
+  order: 10
+  requiredNode: WLCraftNodeCookingFieldBakingT3
+  category: WLCraftCategoryCooking
+  subCategory: WLCraftSubCategoryCookingField
+  craftTime: 3.0
+  nearbyRequirement:
+    prototypes:
+    - WLCampfireHeatSource
+    - WLFireplaceHeatSource
+    range: 2.8
+    requireEnabledHeat: true
+    description: persistent-craft-wl-requirement-burning-heat
+    failurePopup: persistent-craft-station-popup-requires-burning-heat
+  ingredients:
+  - proto: WheatBushel
+    amount: 2
+  - proto: WLWoodenCupWater
+    amount: 1
+  - stackType: WLCharcoalFuelStack
+    amount: 1
+  results:
+  - proto: FoodBreadPlain
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeButcherSpike
+  name: persistent-craft-wl-recipe-butcher-spike-name
+  description: persistent-craft-wl-recipe-butcher-spike-description
+  displayProto: WLButcherSpike
+  branch: WLCooking
+  tier: 2
+  order: 10
+  requiredNode: WLCraftNodeCookingButcheryT2
+  category: WLCraftCategoryCooking
+  subCategory: WLCraftSubCategoryCookingButchery
+  craftTime: 2.4
+  ingredients:
+  - stackType: WLWoodPlankStack
+    amount: 3
+  - stackType: WLMetalPartsStack
+    amount: 2
+  results: []
+  placement:
+    proto: WLButcherSpike
+    floorRequirement: Furniture
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWoodenCup
+  name: persistent-craft-wl-recipe-wooden-cup-name
+  description: persistent-craft-wl-recipe-wooden-cup-description
+  displayProto: WLWoodenCup
+  branch: WLCooking
+  tier: 1
+  order: 10
+  requiredNode: WLCraftNodeCookingStarter
+  category: WLCraftCategoryCooking
+  subCategory: WLCraftSubCategoryCookingWater
+  craftTime: 1.2
+  ingredients:
+  - stackType: WLWoodPlankStack
+    amount: 1
+  results:
+  - proto: WLWoodenCup
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWoodenBowl
+  name: persistent-craft-wl-recipe-wooden-bowl-name
+  description: persistent-craft-wl-recipe-wooden-bowl-description
+  displayProto: WLWoodenBowl
+  branch: WLCooking
+  tier: 1
+  order: 20
+  requiredNode: WLCraftNodeCookingStarter
+  category: WLCraftCategoryCooking
+  subCategory: WLCraftSubCategoryCookingWater
+  craftTime: 1.4
+  ingredients:
+  - stackType: WLWoodPlankStack
+    amount: 2
+  results:
+  - proto: WLWoodenBowl
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeLeatherWaterskin
+  name: persistent-craft-wl-recipe-leather-waterskin-name
+  description: persistent-craft-wl-recipe-leather-waterskin-description
+  displayProto: WLLeatherWaterskin
+  branch: WLCooking
+  tier: 2
+  order: 10
+  requiredNode: WLCraftNodeCookingButcheryT2
+  category: WLCraftCategoryCooking
+  subCategory: WLCraftSubCategoryCookingWater
+  craftTime: 2.0
+  ingredients:
+  - stackType: WLAnimalHideStack
+    amount: 2
+  - stackType: WLPreparedClothStack
+    amount: 1
+  results:
+  - proto: WLLeatherWaterskin
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeMeltSnowCup
+  name: persistent-craft-wl-recipe-melt-snow-cup-name
+  description: persistent-craft-wl-recipe-melt-snow-cup-description
+  displayProto: WLWoodenCupWater
+  branch: WLCooking
+  tier: 1
+  order: 30
+  requiredNode: WLCraftNodeCookingStarter
+  category: WLCraftCategoryCooking
+  subCategory: WLCraftSubCategoryCookingWater
+  craftTime: 1.6
+  nearbyRequirement:
+    prototypes:
+    - WLCampfireHeatSource
+    - WLFireplaceHeatSource
+    range: 2.8
+    requireEnabledHeat: true
+    description: persistent-craft-wl-requirement-burning-heat
+    failurePopup: persistent-craft-station-popup-requires-burning-heat
+  ingredients:
+  - stackType: WLSnowChunkStack
+    amount: 2
+  - proto: WLWoodenCup
+    amount: 1
+  results:
+  - proto: WLWoodenCupWater
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeMeltSnowBowl
+  name: persistent-craft-wl-recipe-melt-snow-bowl-name
+  description: persistent-craft-wl-recipe-melt-snow-bowl-description
+  displayProto: WLWoodenBowlWater
+  branch: WLCooking
+  tier: 1
+  order: 40
+  requiredNode: WLCraftNodeCookingStarter
+  category: WLCraftCategoryCooking
+  subCategory: WLCraftSubCategoryCookingWater
+  craftTime: 1.8
+  nearbyRequirement:
+    prototypes:
+    - WLCampfireHeatSource
+    - WLFireplaceHeatSource
+    range: 2.8
+    requireEnabledHeat: true
+    description: persistent-craft-wl-requirement-burning-heat
+    failurePopup: persistent-craft-station-popup-requires-burning-heat
+  ingredients:
+  - stackType: WLSnowChunkStack
+    amount: 3
+  - proto: WLWoodenBowl
+    amount: 1
+  results:
+  - proto: WLWoodenBowlWater
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeMeltSnowWaterskin
+  name: persistent-craft-wl-recipe-melt-snow-waterskin-name
+  description: persistent-craft-wl-recipe-melt-snow-waterskin-description
+  displayProto: WLLeatherWaterskinWater
+  branch: WLCooking
+  tier: 2
+  order: 20
+  requiredNode: WLCraftNodeCookingButcheryT2
+  category: WLCraftCategoryCooking
+  subCategory: WLCraftSubCategoryCookingWater
+  craftTime: 2.4
+  nearbyRequirement:
+    prototypes:
+    - WLCampfireHeatSource
+    - WLFireplaceHeatSource
+    range: 2.8
+    requireEnabledHeat: true
+    description: persistent-craft-wl-requirement-burning-heat
+    failurePopup: persistent-craft-station-popup-requires-burning-heat
+  ingredients:
+  - stackType: WLSnowChunkStack
+    amount: 5
+  - proto: WLLeatherWaterskin
+    amount: 1
+  results:
+  - proto: WLLeatherWaterskinWater
+    amount: 1

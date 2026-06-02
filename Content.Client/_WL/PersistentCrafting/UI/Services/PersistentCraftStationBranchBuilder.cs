@@ -176,19 +176,8 @@ public static class PersistentCraftStationBranchBuilder
             }
         }
 
-        var preferredTier = 0;
-        var maxTier = int.MinValue;
-        for (var i = 0; i < recipes.Count; i++)
-        {
-            if (recipes[i].Tier > maxTier)
-                maxTier = recipes[i].Tier;
-        }
-
-        if (maxTier > int.MinValue)
-            preferredTier = maxTier;
-
-        viewModel.SetSelectedTierFilter(branch, preferredTier);
-        return preferredTier;
+        viewModel.SetSelectedTierFilter(branch, 0);
+        return 0;
     }
 }
 

@@ -1,0 +1,187 @@
+# /// WL Change
+# FrozenWorld growing and hydroponics craft.
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryGathererBotany
+  category: WLCraftCategoryGathererProcessor
+  name: persistent-craft-wl-subcategory-gatherer-botany
+  order: 20
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHydroponicsTray
+  name: persistent-craft-wl-recipe-hydroponics-tray-name
+  description: persistent-craft-wl-recipe-hydroponics-tray-description
+  displayProto: HydroponicsTrayEmpty
+  branch: WLGathererProcessor
+  tier: 2
+  order: 10
+  requiredNode: WLCraftNodeGathererBotanyT2
+  category: WLCraftCategoryGathererProcessor
+  subCategory: WLCraftSubCategoryGathererBotany
+  craftTime: 3.2
+  ingredients:
+  - stackType: WLWoodPlankStack
+    amount: 4
+  - stackType: WLMetalPartsStack
+    amount: 4
+  - stackType: WLRoughStoneStack
+    amount: 2
+  results: []
+  placement:
+    proto: HydroponicsTrayEmpty
+    blueprintProto: WLHydroponicsTrayBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Furniture
+    requireRoom: true
+    minFloorTier: Wood
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHydroponicsToolKit
+  name: persistent-craft-wl-recipe-hydroponics-tool-kit-name
+  description: persistent-craft-wl-recipe-hydroponics-tool-kit-description
+  displayProto: HydroponicsToolMiniHoe
+  branch: WLGathererProcessor
+  tier: 2
+  order: 20
+  requiredNode: WLCraftNodeGathererBotanyT2
+  category: WLCraftCategoryGathererProcessor
+  subCategory: WLCraftSubCategoryGathererBotany
+  craftTime: 2.2
+  ingredients:
+  - stackType: WLWoodPlankStack
+    amount: 3
+  - stackType: WLMetalPartsStack
+    amount: 3
+  results:
+  - proto: HydroponicsToolMiniHoe
+    amount: 1
+  - proto: HydroponicsToolSpade
+    amount: 1
+  - proto: HydroponicsToolClippers
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeBasicCropSeeds
+  name: persistent-craft-wl-recipe-basic-crop-seeds-name
+  description: persistent-craft-wl-recipe-basic-crop-seeds-description
+  displayProto: WheatSeeds
+  branch: WLGathererProcessor
+  tier: 2
+  order: 30
+  requiredNode: WLCraftNodeGathererBotanyT2
+  category: WLCraftCategoryGathererProcessor
+  subCategory: WLCraftSubCategoryGathererBotany
+  craftTime: 1.6
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 1
+  - stackType: WLWoodPlankStack
+    amount: 1
+  results:
+  - proto: WheatSeeds
+    amount: 1
+  - proto: CarrotSeeds
+    amount: 1
+  - proto: PotatoSeeds
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeSimplePlantNutrients
+  name: persistent-craft-wl-recipe-simple-plant-nutrients-name
+  description: persistent-craft-wl-recipe-simple-plant-nutrients-description
+  displayProto: ChemistryBottleEZNutrient
+  branch: WLGathererProcessor
+  tier: 2
+  order: 40
+  requiredNode: WLCraftNodeGathererBotanyT2
+  category: WLCraftCategoryGathererProcessor
+  subCategory: WLCraftSubCategoryGathererBotany
+  craftTime: 2.0
+  ingredients:
+  - stackType: WLRoughStoneStack
+    amount: 1
+  - stackType: WLSnowChunkStack
+    amount: 2
+  - stackType: WLCharcoalFuelStack
+    amount: 1
+  results:
+  - proto: ChemistryBottleEZNutrient
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeSeedExtractor
+  name: persistent-craft-wl-recipe-seed-extractor-name
+  description: persistent-craft-wl-recipe-seed-extractor-description
+  displayProto: SeedExtractor
+  branch: WLGathererProcessor
+  tier: 3
+  order: 10
+  requiredNode: WLCraftNodeGathererSeedExtractionT3
+  category: WLCraftCategoryGathererProcessor
+  subCategory: WLCraftSubCategoryGathererBotany
+  craftTime: 4.0
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 8
+  - stackType: WLWoodPlankStack
+    amount: 2
+  - proto: CableApcStack10
+    amount: 1
+  results: []
+  placement:
+    proto: SeedExtractor
+    blueprintProto: WLSeedExtractorBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Furniture
+    requireRoom: true
+    minFloorTier: Wood
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeMedicinalCropSeeds
+  name: persistent-craft-wl-recipe-medicinal-crop-seeds-name
+  description: persistent-craft-wl-recipe-medicinal-crop-seeds-description
+  displayProto: AloeSeeds
+  branch: WLGathererProcessor
+  tier: 4
+  order: 10
+  requiredNode: WLCraftNodeGathererMedicinalCropsT4
+  category: WLCraftCategoryGathererProcessor
+  subCategory: WLCraftSubCategoryGathererBotany
+  craftTime: 2.0
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 2
+  - proto: ChemistryBottleEZNutrient
+    amount: 1
+  results:
+  - proto: AloeSeeds
+    amount: 1
+  - proto: PoppySeeds
+    amount: 1
+  - proto: AmbrosiaVulgarisSeeds
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeRichPlantNutrients
+  name: persistent-craft-wl-recipe-rich-plant-nutrients-name
+  description: persistent-craft-wl-recipe-rich-plant-nutrients-description
+  displayProto: ChemistryBottleRobustHarvest
+  branch: WLGathererProcessor
+  tier: 4
+  order: 20
+  requiredNode: WLCraftNodeGathererMedicinalCropsT4
+  category: WLCraftCategoryGathererProcessor
+  subCategory: WLCraftSubCategoryGathererBotany
+  craftTime: 2.6
+  ingredients:
+  - stackType: WLRoughStoneStack
+    amount: 1
+  - proto: FoodPotato
+    amount: 1
+  - proto: FoodCarrot
+    amount: 1
+  - stackType: WLCharcoalFuelStack
+    amount: 1
+  results:
+  - proto: ChemistryBottleRobustHarvest
+    amount: 1

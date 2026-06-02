@@ -40,6 +40,7 @@ public sealed class PersistentCraftClientPrototypeCache
         var allRecipes = prototype.EnumeratePrototypes<PersistentCraftRecipePrototype>()
             .OrderBy(recipe => GetBranchOrder(branchRegistry, recipe.Branch))
             .ThenBy(recipe => recipe.Tier)
+            .ThenBy(recipe => recipe.Order)
             .ThenBy(recipe => recipe.ID)
             .ToList();
 

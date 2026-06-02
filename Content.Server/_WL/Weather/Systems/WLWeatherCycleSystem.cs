@@ -86,6 +86,22 @@ public sealed partial class WLWeatherCycleSystem : EntitySystem
         InitializeCycle(uid, comp, applyWeather);
     }
 
+    public bool TryForceWeather(EntityUid uid, ProtoId<FrozenWeatherPrototype> weatherId)
+    {
+        var mapXform = Transform(uid);
+        var mapUid = mapXform.MapUid ?? uid;
+
+        if (!_proto.TryIndex(weatherId, out FrozenWeatherPrototype? weather))
+        {
+            Log.Error($"Frozen weather prototype '{weatherId}' does not exist.");
+            return false;
+        }
+
+        ApplyGameplayWeather(mapUid, weather);
+        ApplyClientVisualWeather(mapUid, weather);
+        return true;
+    }
+
     private void TryApplyWeather(EntityUid uid, WLWeatherCycleComponent comp, int index)
     {
         var mapXform = Transform(uid);

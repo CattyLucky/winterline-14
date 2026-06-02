@@ -16,8 +16,7 @@ public sealed partial class PersistentCraftStationWindow
 
         if (branch == GetCurrentBranch() &&
             _recipeEntryControlsByBranch.TryGetValue(branch, out var entries) &&
-            _detailContentHostsByBranch.ContainsKey(branch) &&
-            _visibleBranchStatesByBranch.ContainsKey(branch))
+            _detailContentHostsByBranch.ContainsKey(branch))
         {
             if (!string.IsNullOrWhiteSpace(previousRecipeId) &&
                 entries.TryGetValue(previousRecipeId, out var previousControls) &&
@@ -125,15 +124,14 @@ public sealed partial class PersistentCraftStationWindow
 
     private void UpdateRecipeDetails(string branch, PersistentCraftRecipePrototype recipe)
     {
-        if (!_detailContentHostsByBranch.TryGetValue(branch, out var detailHost) ||
-            !_visibleBranchStatesByBranch.TryGetValue(branch, out var branchState))
+        if (!_detailContentHostsByBranch.TryGetValue(branch, out var detailHost))
         {
             PopulateBranch(GetBranchContainer(branch), branch);
             return;
         }
 
         detailHost.RemoveAllChildren();
-        detailHost.AddChild(CreateRecipeDetailsPanel(recipe, branchState));
+        detailHost.AddChild(CreateRecipeDetailsPanel(recipe));
 
         if (_activeDetailScrollByBranch.TryGetValue(branch, out var detailScroll))
             detailScroll.SetScrollValue(Vector2.Zero);

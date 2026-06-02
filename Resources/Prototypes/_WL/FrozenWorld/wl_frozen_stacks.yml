@@ -54,6 +54,29 @@
   icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: thread }
   spawn: WLPreparedCloth1
 
+# --- Animal Processing Materials --------------------------------------------
+
+- type: stack
+  parent: BaseMediumStack
+  id: WLAnimalHideStack
+  name: stack-wl-animal-hide
+  icon: { sprite: /Textures/Objects/Materials/materials.rsi, state: hide }
+  spawn: WLAnimalHide1
+
+- type: stack
+  parent: BaseMediumStack
+  id: WLAnimalFatStack
+  name: stack-wl-animal-fat
+  icon: { sprite: /Textures/Objects/Consumable/Food/meat.rsi, state: bacon }
+  spawn: WLAnimalFat1
+
+- type: stack
+  parent: BaseMediumStack
+  id: WLSnowChunkStack
+  name: stack-wl-snow-chunks
+  icon: { sprite: /Textures/Objects/Materials/materials.rsi, state: ash }
+  spawn: WLSnowChunk1
+
 # --- Fuel Materials ----------------------------------------------------------
 
 - type: stack

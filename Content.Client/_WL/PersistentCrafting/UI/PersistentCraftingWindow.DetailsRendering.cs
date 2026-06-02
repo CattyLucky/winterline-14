@@ -219,15 +219,53 @@ public sealed partial class PersistentCraftingWindow
             return $"[color={PersistentCraftingWindow.DescriptionTextColor.ToHex()}]{Loc.GetString("persistent-craft-none")}[/color]";
 
         var builder = new StringBuilder();
+        var addedAny = false;
+        var addedCraftHeader = false;
+        var addedPlacementHeader = false;
+
         for (var i = 0; i < recipes.Count; i++)
         {
-            if (i > 0)
-                builder.Append('\n');
+            var recipe = recipes[i];
+            if (recipe.Placement == null)
+            {
+                if (!addedCraftHeader)
+                {
+                    AppendRewardHeader(builder, Loc.GetString("persistent-craft-node-reward-craft-recipes"), addedAny);
+                    addedCraftHeader = true;
+                    addedAny = true;
+                }
 
-            builder.Append($"[color={PersistentCraftingWindow.DescriptionTextColor.ToHex()}]- {FormattedMessage.EscapeText(ResolveRecipeName(recipes[i]))}[/color]");
+                AppendRewardRecipe(builder, recipe);
+                continue;
+            }
+
+            if (!addedPlacementHeader)
+            {
+                AppendRewardHeader(builder, Loc.GetString("persistent-craft-node-reward-building-plans"), addedAny);
+                addedPlacementHeader = true;
+                addedAny = true;
+            }
+
+            AppendRewardRecipe(builder, recipe);
         }
 
         return builder.ToString();
+    }
+
+    private void AppendRewardHeader(StringBuilder builder, string title, bool addSpacing)
+    {
+        if (addSpacing)
+            builder.Append('\n');
+
+        builder.Append($"[color={PersistentCraftingWindow.MutedTextColor.ToHex()}]{FormattedMessage.EscapeText(title)}[/color]");
+    }
+
+    private void AppendRewardRecipe(StringBuilder builder, PersistentCraftRecipePrototype recipe)
+    {
+        if (builder.Length > 0)
+            builder.Append('\n');
+
+        builder.Append($"[color={PersistentCraftingWindow.DescriptionTextColor.ToHex()}]- {FormattedMessage.EscapeText(ResolveRecipeName(recipe))}[/color]");
     }
 
     private string BuildRequirementMarkup(PersistentCraftNodePrototype node)

@@ -86,6 +86,132 @@
     state: icon1
 
 - type: entity
+  id: WLSettlementPowerControllerBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: settlement power controller blueprint
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Power/apc.rsi
+    state: base
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Power/apc.rsi
+    state: base
+
+- type: entity
+  id: WLLowVoltageSMESBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: low-voltage SMES blueprint
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Power/smes.rsi
+    state: smes
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Power/smes.rsi
+    state: smes
+
+- type: entity
+  id: WLSettlementLightPostBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: settlement light post blueprint
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Lighting/LightPosts/small_light_post.rsi
+    state: base
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Lighting/LightPosts/small_light_post.rsi
+    state: base
+
+- type: entity
+  id: WLElectricHeaterBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: electric heater blueprint
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Piping/Atmospherics/Portable/portable_sheater.rsi
+    state: sheaterOff
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Piping/Atmospherics/Portable/portable_sheater.rsi
+    state: sheaterOff
+
+- type: entity
+  id: WLWoodGeneratorBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: wood generator blueprint
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Power/Generation/portable_generator.rsi
+    state: portgen0
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Power/Generation/portable_generator.rsi
+    state: portgen0
+
+- type: entity
+  id: WLCoalGeneratorBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: coal generator blueprint
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Power/Generation/portable_generator.rsi
+    state: portgen1
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Power/Generation/portable_generator.rsi
+    state: portgen1
+
+- type: entity
+  id: WLMedicalBedBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: medical bed blueprint
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Furniture/furniture.rsi
+    state: bed-MED
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Furniture/furniture.rsi
+    state: bed-MED
+
+- type: entity
+  id: WLHydroponicsTrayBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: hydroponics tray blueprint
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Hydroponics/containers.rsi
+    state: hydrotray3
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Hydroponics/containers.rsi
+    state: hydrotray3
+
+- type: entity
+  id: WLSeedExtractorBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: seed extractor blueprint
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Machines/seed_extractor.rsi
+    state: seedextractor-off
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Machines/seed_extractor.rsi
+    state: seedextractor-off
+
+- type: entity
   id: WLCampfireHeatSourceBlueprint
   parent: WLPersistentCraftBlueprint
   name: campfire blueprint
@@ -293,5 +419,5 @@
     key: metaltable
     base: state_
   - type: PersistentCraftResearchBench
-    doAfter: 12
+    doAfter: 24
     pointReward: 1

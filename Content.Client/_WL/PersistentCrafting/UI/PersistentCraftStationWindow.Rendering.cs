@@ -71,7 +71,6 @@ public sealed partial class PersistentCraftStationWindow
 
     private Control CreateBranchHeader(
         string branch,
-        PersistentCraftBranchState branchState,
         int unlockedRecipes,
         int totalRecipes)
     {
@@ -82,9 +81,8 @@ public sealed partial class PersistentCraftStationWindow
         var control = new PersistentCraftBranchSummaryBlock();
         control.SetData(
             ResolveBranchTitle(branch),
-            $"{Loc.GetString("persistent-craft-branch-points-label")}: {branchState.AvailablePoints} | {Loc.GetString("persistent-craft-spent-points-label")}: {branchState.SpentPoints} | " +
             $"{Loc.GetString("persistent-craft-recipes-short")}: {unlockedRecipes}/{totalRecipes}",
-            Loc.GetString("persistent-craft-unlocked-summary", ("unlocked", unlockedRecipes)),
+            Loc.GetString("persistent-craft-craft-branch-summary", ("available", unlockedRecipes), ("total", totalRecipes)),
             unlockProgress,
             accent,
             null);
@@ -352,9 +350,7 @@ public sealed partial class PersistentCraftStationWindow
         return card;
     }
 
-    private PanelContainer CreateRecipeDetailsPanel(
-        PersistentCraftRecipePrototype recipe,
-        PersistentCraftBranchState branchState)
+    private PanelContainer CreateRecipeDetailsPanel(PersistentCraftRecipePrototype recipe)
     {
         var loaded = _state?.Loaded == true;
         var requirementMet = _state != null && HasRequirement(_state, recipe);
@@ -385,7 +381,7 @@ public sealed partial class PersistentCraftStationWindow
             VerticalExpand = true,
         };
 
-        body.AddChild(CreateRecipeDetailHeader(recipe, branchState, canCraft, accent));
+        body.AddChild(CreateRecipeDetailHeader(recipe, canCraft, accent));
         body.AddChild(new Control { MinSize = new Vector2(1, 12) });
 
         body.AddChild(CreateSection(
@@ -395,13 +391,64 @@ public sealed partial class PersistentCraftStationWindow
         body.AddChild(new Control { MinSize = new Vector2(1, 10) });
 
         body.AddChild(CreateSection(
+            Loc.GetString("persistent-craft-recipe-status-label"),
+            BuildRecipeAvailabilityMarkup(loaded, requirementMet, hasMaterials, recipe),
+            10));
+        body.AddChild(new Control { MinSize = new Vector2(1, 10) });
+
+        body.AddChild(CreateSection(
+            Loc.GetString("persistent-craft-requirements-label"),
+            BuildRequirementMarkup(recipe),
+            10));
+        body.AddChild(new Control { MinSize = new Vector2(1, 10) });
+
+        body.AddChild(CreateSection(
             Loc.GetString("persistent-craft-recipe-ingredients"),
             BuildIngredientMarkup(recipe),
+            10));
+        body.AddChild(new Control { MinSize = new Vector2(1, 10) });
+
+        body.AddChild(CreateSection(
+            Loc.GetString("persistent-craft-recipe-results"),
+            BuildResultMarkup(recipe),
             10));
         body.AddChild(new Control { VerticalExpand = true });
         panel.AddChild(body);
 
         return panel;
+    }
+
+    private string BuildRecipeAvailabilityMarkup(
+        bool loaded,
+        bool requirementMet,
+        bool hasMaterials,
+        PersistentCraftRecipePrototype recipe)
+    {
+        var color = GetRecipeMetaColor(recipe);
+        var status = Loc.GetString(GetStatusKey(loaded, requirementMet, recipe.Placement != null || hasMaterials));
+        var lines = new List<string>
+        {
+            $"[color={color.ToHex()}]- {FormattedMessage.EscapeText(status)}[/color]"
+        };
+
+        if (!loaded)
+        {
+            lines.Add($"[color={PersistentCraftStationWindow.MutedText.ToHex()}]- {FormattedMessage.EscapeText(Loc.GetString("persistent-craft-recipe-status-loading-detail"))}[/color]");
+        }
+        else if (!requirementMet)
+        {
+            lines.Add($"[color={PersistentCraftStationWindow.MissingColor.ToHex()}]- {FormattedMessage.EscapeText(Loc.GetString("persistent-craft-recipe-status-locked-detail", ("requirement", GetRequirementText(recipe))))}[/color]");
+        }
+        else if (recipe.Placement == null && !hasMaterials)
+        {
+            lines.Add($"[color={PersistentCraftStationWindow.MissingColor.ToHex()}]- {FormattedMessage.EscapeText(Loc.GetString("persistent-craft-recipe-status-missing-materials-detail"))}[/color]");
+        }
+        else
+        {
+            lines.Add($"[color={PersistentCraftStationWindow.EnoughColor.ToHex()}]- {FormattedMessage.EscapeText(Loc.GetString("persistent-craft-recipe-status-ready-detail"))}[/color]");
+        }
+
+        return string.Join("\n", lines);
     }
 
     private Control CreateSection(string title, string markupText, int padding)
@@ -413,7 +460,6 @@ public sealed partial class PersistentCraftStationWindow
 
     private Control CreateRecipeDetailHeader(
         PersistentCraftRecipePrototype recipe,
-        PersistentCraftBranchState branchState,
         bool canCraft,
         Color accent)
     {
@@ -461,7 +507,7 @@ public sealed partial class PersistentCraftStationWindow
         BindActiveRecipeIconOverlay(recipe.ID, accent, progressOverlay);
 
         header.MetaContainer.AddChild(CreateMetaBadge(
-            $"{Loc.GetString("persistent-craft-branch-points-label")}: {branchState.AvailablePoints} | {Loc.GetString("persistent-craft-spent-points-label")}: {branchState.SpentPoints}",
+            Loc.GetString("persistent-craft-recipe-branch", ("branch", ResolveBranchTitle(recipe.Branch))),
             PersistentCraftUiTheme.SurfacePanelAlt,
             PersistentCraftUiTheme.TextPrimary,
             PersistentCraftUiTheme.BorderSoft));

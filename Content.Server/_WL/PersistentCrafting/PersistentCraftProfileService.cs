@@ -6,6 +6,8 @@ namespace Content.Server._WL.PersistentCrafting;
 
 public sealed class PersistentCraftProfileService
 {
+    private const string UniversalResearchPointsKey = "__WLUniversalResearch";
+
     private readonly IPrototypeManager _prototype;
     private readonly PersistentCraftBranchRegistry _branchRegistry;
     private readonly IReadOnlyList<PersistentCraftNodePrototype> _nodeCache;
@@ -120,7 +122,10 @@ public sealed class PersistentCraftProfileService
 
     public Dictionary<string, PersistentCraftBranchProfile> CreateDefaultBranchProfiles()
     {
-        var result = new Dictionary<string, PersistentCraftBranchProfile>(_branchRegistry.OrderedBranchIds.Count);
+        var result = new Dictionary<string, PersistentCraftBranchProfile>(_branchRegistry.OrderedBranchIds.Count + 1)
+        {
+            [UniversalResearchPointsKey] = new PersistentCraftBranchProfile(),
+        };
 
         for (var i = 0; i < _branchRegistry.OrderedBranchIds.Count; i++)
         {
@@ -269,20 +274,25 @@ public sealed class PersistentCraftProfileService
         if (points <= 0)
             return 0;
 
-        var granted = 0;
+        var canGrant = false;
         foreach (var branch in branches)
         {
             if (!IsBranchAccessible(profile, branch))
                 continue;
 
-            var branchProfile = GetOrCreateBranchProfile(profile, branch);
-            var totalEarned = (long) branchProfile.TotalEarnedPoints + points;
-            branchProfile.TotalEarnedPoints = (int) Math.Min(int.MaxValue, totalEarned);
-            granted += points;
+            canGrant = true;
+            break;
         }
 
+        if (!canGrant)
+            return 0;
+
+        var branchProfile = GetOrCreateBranchProfile(profile, UniversalResearchPointsKey);
+        var totalEarned = (long) branchProfile.TotalEarnedPoints + points;
+        branchProfile.TotalEarnedPoints = (int) Math.Min(int.MaxValue, totalEarned);
+
         EnsureAutoTierNodesUnlocked(profile);
-        return granted;
+        return points;
     }
 
     public bool HasNodeUnlockedOrAutoAvailable(PersistentCraftProfileComponent profile, string nodeId)
@@ -317,9 +327,7 @@ public sealed class PersistentCraftProfileService
         if (!IsBranchAccessible(profile, branch))
             return 0;
 
-        var branchProfile = GetOrCreateBranchProfile(profile, branch);
-        var spent = GetSpentBranchPoints(profile, branch);
-        return Math.Max(0, branchProfile.TotalEarnedPoints - spent);
+        return Math.Max(0, GetTotalEarnedBranchPoints(profile, branch) - GetSpentAccessiblePoints(profile));
     }
 
     public int GetTotalEarnedBranchPoints(PersistentCraftProfileComponent profile, string branch)
@@ -327,7 +335,7 @@ public sealed class PersistentCraftProfileService
         if (!IsBranchAccessible(profile, branch))
             return 0;
 
-        return GetOrCreateBranchProfile(profile, branch).TotalEarnedPoints;
+        return GetOrCreateBranchProfile(profile, UniversalResearchPointsKey).TotalEarnedPoints;
     }
 
     public int GetSpentBranchPoints(PersistentCraftProfileComponent profile, string branch)
@@ -364,6 +372,14 @@ public sealed class PersistentCraftProfileService
             spentByBranch[node.Branch] = current + node.Cost;
         }
 
+        var totalSpent = 0;
+        foreach (var spent in spentByBranch.Values)
+        {
+            totalSpent += spent;
+        }
+
+        var totalEarned = GetOrCreateBranchProfile(profile, UniversalResearchPointsKey).TotalEarnedPoints;
+        var available = Math.Max(0, totalEarned - totalSpent);
         var result = new List<PersistentCraftBranchState>(profile.AccessibleBranches.Count);
         for (var i = 0; i < _branchRegistry.OrderedBranchIds.Count; i++)
         {
@@ -371,9 +387,7 @@ public sealed class PersistentCraftProfileService
             if (!IsBranchAccessible(profile, branch))
                 continue;
 
-            var branchProfile = GetOrCreateBranchProfile(profile, branch);
             spentByBranch.TryGetValue(branch, out var spent);
-            var available = Math.Max(0, branchProfile.TotalEarnedPoints - spent);
             result.Add(new PersistentCraftBranchState(branch, available, spent));
         }
 
@@ -384,6 +398,26 @@ public sealed class PersistentCraftProfileService
     public PersistentCraftBranchProfile GetOrCreateBranchProfile(PersistentCraftProfileComponent profile, string branch)
     {
         return GetOrCreateBranchProfile(profile.BranchProgress, branch);
+    }
+
+    private int GetSpentAccessiblePoints(PersistentCraftProfileComponent profile)
+    {
+        var spent = 0;
+
+        for (var i = 0; i < _nodeCache.Count; i++)
+        {
+            var node = _nodeCache[i];
+            if (node.Cost <= 0 ||
+                !IsBranchAccessible(profile, node.Branch) ||
+                !profile.UnlockedNodes.Contains(node.ID))
+            {
+                continue;
+            }
+
+            spent += node.Cost;
+        }
+
+        return spent;
     }
 
     public PersistentCraftBranchProfile GetOrCreateBranchProfile(

@@ -1,0 +1,256 @@
+# /// WL Change
+# FrozenWorld low-voltage settlement power craft.
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryMechanicPower
+  category: WLCraftCategoryMechanic
+  name: persistent-craft-wl-subcategory-mechanic-power
+  order: 35
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryMechanicLighting
+  category: WLCraftCategoryMechanic
+  name: persistent-craft-wl-subcategory-mechanic-lighting
+  order: 32
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeLightBulbs
+  name: persistent-craft-wl-recipe-light-bulbs-name
+  description: persistent-craft-wl-recipe-light-bulbs-description
+  displayProto: LightBulb
+  branch: WLMechanic
+  tier: 2
+  order: 10
+  requiredNode: WLCraftNodeMechanicLightingT2
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategoryMechanicLighting
+  craftTime: 1.4
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 1
+  - stackType: WLRoughStoneStack
+    amount: 1
+  results:
+  - proto: LightBulb
+    amount: 2
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeLightTubes
+  name: persistent-craft-wl-recipe-light-tubes-name
+  description: persistent-craft-wl-recipe-light-tubes-description
+  displayProto: LightTube
+  branch: WLMechanic
+  tier: 2
+  order: 20
+  requiredNode: WLCraftNodeMechanicLightingT2
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategoryMechanicLighting
+  craftTime: 1.8
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 2
+  - stackType: WLRoughStoneStack
+    amount: 1
+  - stackType: WLPreparedClothStack
+    amount: 1
+  results:
+  - proto: LightTube
+    amount: 2
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeFieldLamp
+  name: persistent-craft-wl-recipe-field-lamp-name
+  description: persistent-craft-wl-recipe-field-lamp-description
+  displayProto: Lamp
+  branch: WLMechanic
+  tier: 2
+  order: 30
+  requiredNode: WLCraftNodeMechanicLightingT2
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategoryMechanicLighting
+  craftTime: 2.0
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 4
+  - stackType: WLPreparedClothStack
+    amount: 2
+  - proto: CableApcStack10
+    amount: 1
+  results:
+  - proto: Lamp
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeSettlementLightPost
+  name: persistent-craft-wl-recipe-settlement-light-post-name
+  description: persistent-craft-wl-recipe-settlement-light-post-description
+  displayProto: WLSettlementLightPost
+  branch: WLMechanic
+  tier: 2
+  order: 40
+  requiredNode: WLCraftNodeMechanicLightingT2
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategoryMechanicLighting
+  craftTime: 2.8
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 5
+  - proto: CableApcStack10
+    amount: 1
+  - proto: LightTube
+    amount: 1
+  results: []
+  placement:
+    proto: WLSettlementLightPost
+    blueprintProto: WLSettlementLightPostBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Furniture
+    minFloorTier: Wood
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeSettlementPowerController
+  name: persistent-craft-wl-recipe-settlement-power-controller-name
+  description: persistent-craft-wl-recipe-settlement-power-controller-description
+  displayProto: WLSettlementPowerController
+  branch: WLMechanic
+  tier: 3
+  order: 10
+  requiredNode: WLCraftNodeMechanicPowerControlT3
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategoryMechanicPower
+  craftTime: 4.0
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 8
+  - stackType: WLPreparedClothStack
+    amount: 2
+  - proto: CableApcStack10
+    amount: 1
+  results: []
+  placement:
+    proto: WLSettlementPowerController
+    blueprintProto: WLSettlementPowerControllerBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Furniture
+    requireRoom: true
+    minFloorTier: Wood
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeWoodGenerator
+  name: persistent-craft-wl-recipe-wood-generator-name
+  description: persistent-craft-wl-recipe-wood-generator-description
+  displayProto: WLWoodGenerator
+  branch: WLMechanic
+  tier: 4
+  order: 10
+  requiredNode: WLCraftNodeMechanicWoodGeneratorT4
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategoryMechanicPower
+  craftTime: 4.8
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 10
+  - stackType: WLWoodPlankStack
+    amount: 6
+  - stackType: WLRoughStoneStack
+    amount: 2
+  - stackType: WLWoodFuelStack
+    amount: 3
+  - proto: CableApcStack10
+    amount: 1
+  results: []
+  placement:
+    proto: WLWoodGenerator
+    blueprintProto: WLWoodGeneratorBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Furniture
+    minFloorTier: Wood
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeCoalGenerator
+  name: persistent-craft-wl-recipe-coal-generator-name
+  description: persistent-craft-wl-recipe-coal-generator-description
+  displayProto: WLCoalGenerator
+  branch: WLMechanic
+  tier: 5
+  order: 10
+  requiredNode: WLCraftNodeMechanicCoalGeneratorT5
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategoryMechanicPower
+  craftTime: 6.2
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 18
+  - stackType: WLRoughStoneStack
+    amount: 6
+  - stackType: WLCoalFuelStack
+    amount: 4
+  - proto: CableApcStack10
+    amount: 2
+  results: []
+  placement:
+    proto: WLCoalGenerator
+    blueprintProto: WLCoalGeneratorBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Furniture
+    minFloorTier: Stone
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeLowVoltageSMES
+  name: persistent-craft-wl-recipe-low-voltage-smes-name
+  description: persistent-craft-wl-recipe-low-voltage-smes-description
+  displayProto: WLLowVoltageSMES
+  branch: WLMechanic
+  tier: 5
+  order: 20
+  requiredNode: WLCraftNodeMechanicGreenSmesT5
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategoryMechanicPower
+  craftTime: 6.0
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 18
+  - stackType: WLPreparedClothStack
+    amount: 4
+  - stackType: WLCoalFuelStack
+    amount: 3
+  - proto: CableApcStack10
+    amount: 3
+  results: []
+  placement:
+    proto: WLLowVoltageSMES
+    blueprintProto: WLLowVoltageSMESBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Furniture
+    requireRoom: true
+    minFloorTier: Stone
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeElectricHeater
+  name: persistent-craft-wl-recipe-electric-heater-name
+  description: persistent-craft-wl-recipe-electric-heater-description
+  displayProto: WLElectricHeater
+  branch: WLMechanic
+  tier: 4
+  order: 20
+  requiredNode: WLCraftNodeMechanicElectricHeatingT4
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategoryMechanicPower
+  craftTime: 4.6
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 12
+  - stackType: WLPreparedClothStack
+    amount: 3
+  - stackType: WLCharcoalFuelStack
+    amount: 2
+  - proto: CableApcStack10
+    amount: 2
+  results: []
+  placement:
+    proto: WLElectricHeater
+    blueprintProto: WLElectricHeaterBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Furniture
+    requireRoom: true
+    minFloorTier: Wood

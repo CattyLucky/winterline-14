@@ -12,3 +12,18 @@
       state: icon
   - type: InstantAction
     event: !type:OpenPersistentCraftMenuActionEvent
+
+- type: entity
+  parent: BaseMentalAction
+  id: ActionOpenPersistentCraftPlacementMenu
+  name: building plans
+  description: Open available building plans.
+  components:
+  - type: Action
+    itemIconStyle: NoItem
+    raiseOnUser: true
+    icon:
+      sprite: Objects/Tools/blueprint.rsi
+      state: icon
+  - type: InstantAction
+    event: !type:OpenPersistentCraftPlacementMenuActionEvent

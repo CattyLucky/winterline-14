@@ -9,6 +9,7 @@ using Content.Shared.Actions.Components;
 using Content.Shared.Maps;
 using Content.Shared.Roles;
 using Content.Shared.Stacks;
+using Content.Shared.Tag;
 using Content.Shared.Tiles;
 using Robust.Shared.GameObjects;
 using Robust.Shared.Map;
@@ -45,28 +46,46 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
             Assert.That(actions!.Actions, Is.Not.Empty);
             Assert.That(actions.Actions, Has.Some.Matches<EntityUid>(action =>
                 entManager.GetComponent<MetaDataComponent>(action).EntityPrototype?.ID == "ActionOpenPersistentCraftMenu"));
+            Assert.That(actions.Actions, Has.Some.Matches<EntityUid>(action =>
+                entManager.GetComponent<MetaDataComponent>(action).EntityPrototype?.ID == "ActionOpenPersistentCraftPlacementMenu"));
 
             var openAction = actions.Actions.Single(action =>
                 entManager.GetComponent<MetaDataComponent>(action).EntityPrototype?.ID == "ActionOpenPersistentCraftMenu");
             Assert.That(entManager.GetComponent<ActionComponent>(openAction).RaiseOnUser, Is.True);
+
+            var placementAction = actions.Actions.Single(action =>
+                entManager.GetComponent<MetaDataComponent>(action).EntityPrototype?.ID == "ActionOpenPersistentCraftPlacementMenu");
+            Assert.That(entManager.GetComponent<ActionComponent>(placementAction).RaiseOnUser, Is.True);
         });
     }
 
     [Test]
-    public async Task WlJobsGrantPersistentCraftAccess()
+    public async Task WlJobsUseExpectedPersistentCraftBranches()
     {
         var server = Pair.Server;
         var proto = server.ResolveDependency<IPrototypeManager>();
-        var componentFactory = server.ResolveDependency<IComponentFactory>();
 
         await server.WaitAssertion(() =>
         {
             Assert.Multiple(() =>
             {
-                AssertWlJobGrantsPersistentCraftAccess(proto, "WLSettlementHead");
-                AssertWlJobGrantsPersistentCraftAccess(proto, "WLMechanic");
-                AssertWlJobGrantsPersistentCraftAccess(proto, "WLHunter");
-                AssertWlJobGrantsPersistentCraftAccess(proto, "WLGathererProcessor");
+                AssertWlJobGrantsAllPersistentCraftBranches(proto, "WLSettlementHead");
+                AssertWlJobGrantsAllSkillBranches(proto, "WLSettlementHead");
+                AssertWlJobGrantsPersistentCraftBranches(
+                    proto,
+                    "WLMechanic",
+                    new[] { "WLSettlementHead", "WLMechanic" });
+                AssertWlJobCanResearchAllBranches(proto, "WLMechanic");
+                AssertWlJobGrantsSkillBranches(proto, "WLMechanic", new[] { "WLSkillMechanic" });
+                AssertWlJobGrantsPersistentCraftBranches(
+                    proto,
+                    "WLGathererProcessor",
+                    new[] { "WLGathererProcessor", "WLCooking", "WLFieldMedicine" });
+                AssertWlJobCannotResearch(proto, "WLGathererProcessor");
+                AssertWlJobGrantsSkillBranches(proto, "WLGathererProcessor", new[] { "WLSkillGatherer" });
+                AssertWlJobGrantsPersistentCraftBranches(proto, "WLHunter", new[] { "WLHunter" });
+                AssertWlJobCannotResearch(proto, "WLHunter");
+                AssertWlJobGrantsSkillBranches(proto, "WLHunter", new[] { "WLSkillHunter" });
             });
         });
     }
@@ -139,6 +158,74 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
                         if (ingredient.StackType != null)
                             Assert.That(proto.HasIndex<StackPrototype>(ingredient.StackType), Is.True, $"{recipe.ID} references missing stack type '{ingredient.StackType}'.");
                     }
+                }
+            });
+        });
+    }
+
+    [Test]
+    public async Task WlPersistentCraftRecipesReferenceValidResearchNodes()
+    {
+        var server = Pair.Server;
+        var proto = server.ResolveDependency<IPrototypeManager>();
+
+        await server.WaitAssertion(() =>
+        {
+            Assert.Multiple(() =>
+            {
+                foreach (var recipe in proto.EnumeratePrototypes<PersistentCraftRecipePrototype>())
+                {
+                    if (!recipe.ID.StartsWith("WLCraftRecipe", StringComparison.Ordinal))
+                        continue;
+
+                    Assert.That(proto.HasIndex<PersistentCraftBranchPrototype>(recipe.Branch), Is.True, $"{recipe.ID} references missing branch '{recipe.Branch}'.");
+
+                    Assert.That(proto.TryIndex<PersistentCraftNodePrototype>(recipe.RequiredNode, out var node), Is.True, $"{recipe.ID} references missing node '{recipe.RequiredNode}'.");
+                    Assert.That(node!.Branch, Is.EqualTo(recipe.Branch), $"{recipe.ID} uses node '{node.ID}' from branch '{node.Branch}' but recipe branch is '{recipe.Branch}'.");
+
+                    if (recipe.Category != null)
+                        Assert.That(proto.HasIndex<PersistentCraftCategoryPrototype>(recipe.Category), Is.True, $"{recipe.ID} references missing category '{recipe.Category}'.");
+
+                    if (recipe.SubCategory != null)
+                    {
+                        Assert.That(proto.TryIndex<PersistentCraftSubCategoryPrototype>(recipe.SubCategory, out var subCategory), Is.True, $"{recipe.ID} references missing subcategory '{recipe.SubCategory}'.");
+                        if (recipe.Category != null)
+                            Assert.That(subCategory!.Category, Is.EqualTo(recipe.Category), $"{recipe.ID} subcategory '{recipe.SubCategory}' belongs to '{subCategory.Category}', not '{recipe.Category}'.");
+                    }
+
+                    if (recipe.DisplayProto != null)
+                        Assert.That(proto.HasIndex<EntityPrototype>(recipe.DisplayProto), Is.True, $"{recipe.ID} references missing display proto '{recipe.DisplayProto}'.");
+
+                    foreach (var ingredient in recipe.Ingredients)
+                    {
+                        if (ingredient.Proto != null)
+                            Assert.That(proto.HasIndex<EntityPrototype>(ingredient.Proto), Is.True, $"{recipe.ID} references missing ingredient proto '{ingredient.Proto}'.");
+
+                        if (ingredient.StackType != null)
+                            Assert.That(proto.HasIndex<StackPrototype>(ingredient.StackType), Is.True, $"{recipe.ID} references missing stack type '{ingredient.StackType}'.");
+
+                        if (ingredient.Tag != null)
+                            Assert.That(proto.HasIndex<TagPrototype>(ingredient.Tag), Is.True, $"{recipe.ID} references missing tag '{ingredient.Tag}'.");
+                    }
+
+                    foreach (var result in recipe.Results)
+                    {
+                        Assert.That(proto.HasIndex<EntityPrototype>(result.Proto), Is.True, $"{recipe.ID} references missing result proto '{result.Proto}'.");
+                    }
+
+                    if (recipe.NearbyRequirement != null)
+                    {
+                        foreach (var nearbyProto in recipe.NearbyRequirement.Prototypes)
+                        {
+                            Assert.That(proto.HasIndex<EntityPrototype>(nearbyProto), Is.True, $"{recipe.ID} references missing nearby proto '{nearbyProto}'.");
+                        }
+                    }
+
+                    if (recipe.Placement == null)
+                        continue;
+
+                    Assert.That(proto.HasIndex<EntityPrototype>(recipe.Placement.Proto), Is.True, $"{recipe.ID} references missing placement proto '{recipe.Placement.Proto}'.");
+                    Assert.That(proto.HasIndex<EntityPrototype>(recipe.Placement.BlueprintProto), Is.True, $"{recipe.ID} references missing blueprint proto '{recipe.Placement.BlueprintProto}'.");
                 }
             });
         });
@@ -260,10 +347,54 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
         Assert.That(floorTile.Outputs, Does.Contain(new ProtoId<ContentTileDefinition>(expectedTile)));
     }
 
-    private static void AssertWlJobGrantsPersistentCraftAccess(IPrototypeManager proto, string jobId)
+    private static void AssertWlJobGrantsAllPersistentCraftBranches(IPrototypeManager proto, string jobId)
     {
         Assert.That(proto.TryIndex<JobPrototype>(jobId, out var job), Is.True);
         Assert.That(job!.GrantPersistentCraftAccess, Is.True);
+        Assert.That(job.PersistentCraftAllBranches, Is.True);
+        Assert.That(job.PersistentCraftCanResearch, Is.True);
+        Assert.That(job.PersistentCraftResearchAllBranches, Is.True);
+    }
+
+    private static void AssertWlJobGrantsPersistentCraftBranches(
+        IPrototypeManager proto,
+        string jobId,
+        string[] craftBranches)
+    {
+        Assert.That(proto.TryIndex<JobPrototype>(jobId, out var job), Is.True);
+        Assert.That(job!.GrantPersistentCraftAccess, Is.True);
+        Assert.That(job.PersistentCraftAllBranches, Is.False);
+        Assert.That(job.PersistentCraftBranches, Is.EquivalentTo(craftBranches));
+    }
+
+    private static void AssertWlJobCanResearchAllBranches(IPrototypeManager proto, string jobId)
+    {
+        Assert.That(proto.TryIndex<JobPrototype>(jobId, out var job), Is.True);
+        Assert.That(job!.PersistentCraftCanResearch, Is.True);
+        Assert.That(job.PersistentCraftResearchAllBranches, Is.True);
+        Assert.That(job.PersistentCraftResearchBranches, Is.Empty);
+    }
+
+    private static void AssertWlJobCannotResearch(IPrototypeManager proto, string jobId)
+    {
+        Assert.That(proto.TryIndex<JobPrototype>(jobId, out var job), Is.True);
+        Assert.That(job!.PersistentCraftCanResearch, Is.False);
+        Assert.That(job.PersistentCraftResearchAllBranches, Is.False);
+        Assert.That(job.PersistentCraftResearchBranches, Is.Empty);
+    }
+
+    private static void AssertWlJobGrantsAllSkillBranches(IPrototypeManager proto, string jobId)
+    {
+        Assert.That(proto.TryIndex<JobPrototype>(jobId, out var job), Is.True);
+        Assert.That(job!.WlSkillAllBranches, Is.True);
+        Assert.That(job.WlSkillBranches, Is.Empty);
+    }
+
+    private static void AssertWlJobGrantsSkillBranches(IPrototypeManager proto, string jobId, string[] skillBranches)
+    {
+        Assert.That(proto.TryIndex<JobPrototype>(jobId, out var job), Is.True);
+        Assert.That(job!.WlSkillAllBranches, Is.False);
+        Assert.That(job.WlSkillBranches, Is.EquivalentTo(skillBranches));
     }
 
     private static void AssertPlacementRecipe(

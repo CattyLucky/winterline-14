@@ -1,0 +1,75 @@
+# /// WL Change
+# FrozenWorld raider NPCs.
+
+- type: startingGear
+  id: WLFrostRaiderMeleeGear
+  parent: SyndicateFootsoldierGearRuin
+  inhand:
+  - Machete
+
+- type: startingGear
+  id: WLFrostRaiderShooterGear
+  parent: SyndicateFootsoldierGearRuin
+  equipment:
+    pocket1: MagazinePistol
+    pocket2: MagazinePistol
+  storage:
+    back:
+    - BoxSurvival
+    - MagazinePistol
+  inhand:
+  - WeaponPistolMk58
+
+- type: htnCompound
+  id: WLRaiderCompound
+  branches:
+  - tasks:
+    - !type:HTNCompoundTask
+      task: RangedCombatCompound
+  - tasks:
+    - !type:HTNCompoundTask
+      task: MeleeCombatCompound
+  - tasks:
+    - !type:HTNCompoundTask
+      task: FollowCompound
+  - tasks:
+    - !type:HTNCompoundTask
+      task: IdleCompound
+
+- type: entity
+  id: WLFrostRaider
+  parent: MobSyndicateFootsoldier
+  name: frost raider
+  suffix: WL, FrozenWorld
+  description: A desperate armed raider moving in from the frozen outskirts.
+  components:
+  - type: Loadout
+    prototypes:
+    - WLFrostRaiderMeleeGear
+    roleLoadout:
+    - RoleSurvivalSyndicate
+  - type: HTN
+    rootTask:
+      task: WLRaiderCompound
+    blackboard:
+      VisionRadius: !type:Single
+        12
+      AggroVisionRadius: !type:Single
+        14
+      NavInteract: !type:Bool
+        true
+      NavSmash: !type:Bool
+        true
+
+- type: entity
+  id: WLFrostRaiderShooter
+  parent: WLFrostRaider
+  name: frost raider gunman
+  suffix: WL, FrozenWorld
+  description: A raider carrying a worn pistol from the frozen outskirts.
+  components:
+  - type: Loadout
+    prototypes:
+    - WLFrostRaiderShooterGear
+    roleLoadout:
+    - RoleSurvivalSyndicate

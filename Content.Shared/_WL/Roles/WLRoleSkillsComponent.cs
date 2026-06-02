@@ -34,6 +34,12 @@ public sealed partial class WLRoleSkillsComponent : Component
     [DataField]
     public float MobThresholdBonus;
 
+    [DataField]
+    public float CraftTimeMultiplier = 1f;
+
+    [DataField]
+    public float ResearchTimeMultiplier = 1f;
+
     [ViewVariables]
     public float AppliedMobThresholdBonus;
 }
