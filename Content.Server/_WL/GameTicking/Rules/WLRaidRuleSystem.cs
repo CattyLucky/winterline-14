@@ -11,7 +11,10 @@ using Content.Server.NPC.Systems;
 using Content.Server.Parallax;
 using Content.Shared.GameTicking;
 using Content.Shared.GameTicking.Components;
+using Content.Shared.Mind.Components;
 using Content.Shared.Parallax.Biomes;
+using Content.Shared.SSDIndicator;
+using Content.Shared.StatusEffectNew;
 using Robust.Shared.Map;
 using Robust.Shared.Map.Components;
 using Robust.Shared.Maths;
@@ -26,6 +29,7 @@ public sealed partial class WLRaidRuleSystem : GameRuleSystem<WLRaidRuleComponen
     [Dependency] private NPCSystem _npc = default!;
     [Dependency] private HTNSystem _htn = default!;
     [Dependency] private BiomeSystem _biome = default!;
+    [Dependency] private StatusEffectsSystem _statusEffects = default!;
 
     private static readonly Color WarningColor = Color.FromHex("#FFB35C");
     private static readonly Color RaidColor = Color.FromHex("#FF6961");
@@ -210,6 +214,7 @@ public sealed partial class WLRaidRuleSystem : GameRuleSystem<WLRaidRuleComponen
         EntityCoordinates target,
         WLRaidRuleComponent component)
     {
+        SanitizeRaiderNpc(raider);
         SetRaiderFollowBlackboard(raider, target, component.FollowCloseRange, component.FollowRange);
 
         if (!TryComp<HTNComponent>(raider, out var htn))
@@ -225,6 +230,13 @@ public sealed partial class WLRaidRuleSystem : GameRuleSystem<WLRaidRuleComponen
 
         Timer.Spawn(component.RaiderWakeDelay, () =>
             WakeRaiderNpc(raider, target, component.FollowCloseRange, component.FollowRange));
+    }
+
+    private void SanitizeRaiderNpc(EntityUid raider)
+    {
+        RemComp<MindExaminableComponent>(raider);
+        RemComp<SSDIndicatorComponent>(raider);
+        _statusEffects.TryRemoveStatusEffect(raider, SSDIndicatorSystem.StatusEffectSSDSleeping);
     }
 
     private void WakeRaiderNpc(
