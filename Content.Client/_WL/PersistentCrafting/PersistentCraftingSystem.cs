@@ -84,17 +84,15 @@ public sealed partial class PersistentCraftingSystem : EntitySystem
         OpenResearchWindow();
     }
 
-    private void TogglePlacementWindowFromCraft()
+    private void OpenPlacementWindowFromCraft()
     {
         EnsurePlacementWindow();
 
-        if (_placementWindow!.IsOpen)
-        {
-            _placementWindow.Close();
-            return;
-        }
+        if (!_placementWindow!.IsOpen)
+            _placementWindow.OpenCentered();
+        else
+            _placementWindow.MoveToFront();
 
-        _placementWindow.OpenCentered();
         RefreshPlacementWindow();
         RequestState();
     }
@@ -187,8 +185,8 @@ public sealed partial class PersistentCraftingSystem : EntitySystem
 
         _craftWindow.OnCraftPressed -= OnCraftRequestedFromWindow;
         _craftWindow.OnCraftPressed += OnCraftRequestedFromWindow;
-        _craftWindow.OnOpenPlacementPressed -= TogglePlacementWindowFromCraft;
-        _craftWindow.OnOpenPlacementPressed += TogglePlacementWindowFromCraft;
+        _craftWindow.OnOpenPlacementPressed -= OpenPlacementWindowFromCraft;
+        _craftWindow.OnOpenPlacementPressed += OpenPlacementWindowFromCraft;
         _craftWindow.OnOpenResearchPressed -= ToggleResearchWindowFromCraft;
         _craftWindow.OnOpenResearchPressed += ToggleResearchWindowFromCraft;
     }

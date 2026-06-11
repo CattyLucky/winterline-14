@@ -3,9 +3,13 @@ using Content.Shared._WL.FrozenWorld.Components;
 using Content.Shared._WL.FrozenWorld.Events;
 using Content.Shared._WL.Roles;
 using Content.Shared.DoAfter;
+using Content.Shared.Hands.EntitySystems;
 using Content.Shared.Interaction;
 using Content.Shared.Popups;
+using Content.Shared.Stacks;
 using Content.Shared.Whitelist;
+using Robust.Shared.Map;
+using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
 
 namespace Content.Server._WL.FrozenWorld.Systems;
@@ -21,6 +25,8 @@ public sealed partial class WLResourceGatheringSystem : EntitySystem
     [Dependency] private IRobustRandom _random = default!;
     [Dependency] private WLSkillSystem _skills = default!;
     [Dependency] private EntityWhitelistSystem _whitelist = default!;
+    [Dependency] private SharedHandsSystem _hands = default!;
+    [Dependency] private SharedStackSystem _stacks = default!;
 
     public override void Initialize()
     {
@@ -123,16 +129,11 @@ public sealed partial class WLResourceGatheringSystem : EntitySystem
 
         ent.Comp.Charges--;
 
-        var coords = Transform(ent.Owner).Coordinates;
-
         foreach (var entry in ent.Comp.Loot)
         {
             var count = _random.Next(entry.MinCount, entry.MaxCount + 1);
             count = ApplyGatherYieldMultiplier(count, args.User);
-            for (var i = 0; i < count; i++)
-            {
-                Spawn(entry.Prototype, coords);
-            }
+            SpawnLoot(entry.Prototype, count, args.User, Transform(ent.Owner).Coordinates);
         }
 
         if (args.User is { } user)
@@ -156,6 +157,43 @@ public sealed partial class WLResourceGatheringSystem : EntitySystem
             Spawn(proto, Transform(ent.Owner).Coordinates);
 
         QueueDel(ent.Owner);
+    }
+
+    private void SpawnLoot(EntProtoId prototype, int count, EntityUid? user, EntityCoordinates fallbackCoordinates)
+    {
+        if (count <= 0)
+            return;
+
+        var spawnCoordinates = user is { } lootUser && Exists(lootUser)
+            ? Transform(lootUser).Coordinates
+            : fallbackCoordinates;
+
+        var remaining = count;
+        while (remaining > 0)
+        {
+            var spawned = Spawn(prototype, spawnCoordinates);
+
+            if (!TryComp(spawned, out StackComponent? stack))
+            {
+                TryPickupOrDrop(user, spawned);
+                remaining--;
+                continue;
+            }
+
+            var stackCount = Math.Min(remaining, _stacks.GetMaxCount(stack));
+            _stacks.SetCount((spawned, stack), stackCount);
+            remaining -= stackCount;
+            if (user is { } validUser && Exists(validUser))
+                _stacks.TryMergeToHands((spawned, stack), validUser);
+        }
+    }
+
+    private void TryPickupOrDrop(EntityUid? user, EntityUid spawned)
+    {
+        if (user is not { } validUser || !Exists(validUser))
+            return;
+
+        _hands.PickupOrDrop(validUser, spawned, checkActionBlocker: false, animate: false, dropNear: true);
     }
 
     private float GetGatherTimeMultiplier(EntityUid user)

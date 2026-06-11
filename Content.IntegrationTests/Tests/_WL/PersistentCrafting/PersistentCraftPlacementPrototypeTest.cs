@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Content.IntegrationTests.Fixtures;
+using Content.Server._WL.PersistentCrafting;
 using Content.Shared._WL.FrozenWorld;
 using Content.Shared._WL.FrozenWorld.Components;
 using Content.Shared._WL.FrozenWorld.Prototypes;
@@ -499,6 +501,25 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
     }
 
     [Test]
+    public async Task WlOutdoorPlacementAllowsFieldSurfaces()
+    {
+        var server = Pair.Server;
+        var tileDefs = server.ResolveDependency<ITileDefinitionManager>();
+
+        await server.WaitAssertion(() =>
+        {
+            Assert.Multiple(() =>
+            {
+                AssertOutdoorPlacementTile((ContentTileDefinition) tileDefs["WLFloorSnow"], true);
+                AssertOutdoorPlacementTile((ContentTileDefinition) tileDefs["WLFloorSnowDug"], true);
+                AssertOutdoorPlacementTile((ContentTileDefinition) tileDefs["WLPlatingSnowFoundation"], true);
+                AssertOutdoorPlacementTile((ContentTileDefinition) tileDefs["WLRoadFloor"], true);
+                AssertOutdoorPlacementTile((ContentTileDefinition) tileDefs["WLFloorPrimitiveWood"], true);
+            });
+        });
+    }
+
+    [Test]
     public async Task WlTestingStacksSpawnAsFullStacks()
     {
         var server = Pair.Server;
@@ -734,6 +755,20 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
         Assert.That(tile.WLAllowsDoorConstruction, Is.False);
         Assert.That(tile.WLAllowsFurnitureConstruction, Is.False);
         Assert.That(tile.WLCountsAsRoomFloor, Is.False);
+    }
+
+    private static void AssertOutdoorPlacementTile(ContentTileDefinition tile, bool expected)
+    {
+        Assert.That(AllowsPlacementOnFloor(tile, FrozenBuildableFloorRequirement.OutdoorHeatSource), Is.EqualTo(expected));
+    }
+
+    private static bool AllowsPlacementOnFloor(ContentTileDefinition tile, FrozenBuildableFloorRequirement requirement)
+    {
+        var method = typeof(PersistentCraftingSystem).GetMethod(
+            "AllowsPlacementOnFloor",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        Assert.That(method, Is.Not.Null);
+        return (bool) method!.Invoke(null, new object[] { tile, requirement })!;
     }
 
     private static void AssertRecipeHasStackIngredient(

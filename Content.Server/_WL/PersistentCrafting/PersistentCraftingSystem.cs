@@ -1431,7 +1431,7 @@ public sealed partial class PersistentCraftingSystem : EntitySystem
             tileRefNullable.Value.Tile.IsEmpty ||
             !TryComp<MapGridComponent>(tileRefNullable.Value.GridUid, out var grid))
         {
-            PopupPlacementFailure(user, showPopup, "persistent-craft-placement-popup-invalid-floor");
+            PopupPlacementFailure(user, showPopup, GetInvalidFloorPopupKey(placement));
             return false;
         }
 
@@ -1440,7 +1440,7 @@ public sealed partial class PersistentCraftingSystem : EntitySystem
         if (!tileDef.WLHasFrozenConstructionMetadata ||
             !AllowsPlacementOnFloor(tileDef, placement.FloorRequirement))
         {
-            PopupPlacementFailure(user, showPopup, "persistent-craft-placement-popup-invalid-floor");
+            PopupPlacementFailure(user, showPopup, GetInvalidFloorPopupKey(placement));
             return false;
         }
 
@@ -1566,9 +1566,17 @@ public sealed partial class PersistentCraftingSystem : EntitySystem
             FrozenBuildableFloorRequirement.Furniture => tileDef.WLAllowsFurnitureConstruction,
             FrozenBuildableFloorRequirement.OutdoorHeatSource =>
                 tileDef.WLAllowsFurnitureConstruction ||
+                tileDef.WLTerrainTags.Contains("Snow", StringComparer.Ordinal) ||
                 tileDef.WLTerrainTags.Contains("PackedSnow", StringComparer.Ordinal),
             _ => false,
         };
+    }
+
+    private static string GetInvalidFloorPopupKey(PersistentCraftPlacement placement)
+    {
+        return placement.FloorRequirement == FrozenBuildableFloorRequirement.OutdoorHeatSource
+            ? "persistent-craft-placement-popup-invalid-outdoor-surface"
+            : "persistent-craft-placement-popup-invalid-floor";
     }
 
     private bool HasBlueprintAt(EntityUid gridUid, MapGridComponent grid, Vector2i origin, EntityUid? ignoredBlueprint)
