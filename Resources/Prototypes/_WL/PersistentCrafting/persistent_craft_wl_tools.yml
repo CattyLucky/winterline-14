@@ -308,28 +308,6 @@
     amount: 1
 
 - type: persistentCraftRecipe
-  id: WLCraftRecipeFieldSpear
-  name: persistent-craft-wl-recipe-field-spear-name
-  description: persistent-craft-wl-recipe-field-spear-description
-  displayProto: Spear
-  branch: WLMechanic
-  tier: 3
-  requiredNode: WLCraftNodeMechanicAdvancedToolsT3
-  category: WLCraftCategoryMechanic
-  subCategory: WLCraftSubCategoryMechanicTools
-  craftTime: 2.8
-  ingredients:
-  - stackType: WLWoodPlankStack
-    amount: 3
-  - stackType: WLIronIngotStack
-    amount: 5
-  - stackType: WLPreparedClothStack
-    amount: 2
-  results:
-  - proto: Spear
-    amount: 1
-
-- type: persistentCraftRecipe
   id: WLCraftRecipeMediumVoltageCable
   name: persistent-craft-wl-recipe-medium-voltage-cable-name
   description: persistent-craft-wl-recipe-medium-voltage-cable-description
@@ -371,26 +349,6 @@
     amount: 2
   results:
   - proto: Welder
-    amount: 1
-
-- type: persistentCraftRecipe
-  id: WLCraftRecipeSurvivalKnife
-  name: persistent-craft-wl-recipe-survival-knife-name
-  description: persistent-craft-wl-recipe-survival-knife-description
-  displayProto: SurvivalKnife
-  branch: WLMechanic
-  tier: 3
-  requiredNode: WLCraftNodeMechanicAdvancedToolsT3
-  category: WLCraftCategoryMechanic
-  subCategory: WLCraftSubCategoryMechanicTools
-  craftTime: 2.2
-  ingredients:
-  - stackType: WLIronIngotStack
-    amount: 6
-  - stackType: WLPreparedClothStack
-    amount: 2
-  results:
-  - proto: SurvivalKnife
     amount: 1
 
 # --- Mechanic: Tier 4 --------------------------------------------------------

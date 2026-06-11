@@ -443,6 +443,30 @@
   - WLCraftNodeHunterStarter
 
 - type: persistentCraftNode
+  id: WLCraftNodeHunterSnareT2
+  name: persistent-craft-wl-node-hunter-snare-t2
+  description: persistent-craft-wl-node-description-hunting-traps
+  branch: WLHunter
+  cost: 2
+  displayProto: WLHunterSnareReinforced
+  treeColumn: 2
+  treeRow: 0
+  prerequisites:
+  - WLCraftNodeHunterSnareT1
+
+- type: persistentCraftNode
+  id: WLCraftNodeHunterSnareT3
+  name: persistent-craft-wl-node-hunter-snare-t3
+  description: persistent-craft-wl-node-description-hunting-traps
+  branch: WLHunter
+  cost: 3
+  displayProto: WLHunterSnareLarge
+  treeColumn: 3
+  treeRow: 0
+  prerequisites:
+  - WLCraftNodeHunterSnareT2
+
+- type: persistentCraftNode
   id: WLCraftNodeHunterMeleeT1
   name: persistent-craft-wl-node-hunter-melee-t1
   description: persistent-craft-wl-node-description-hunter-weapons

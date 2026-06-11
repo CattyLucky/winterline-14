@@ -98,9 +98,13 @@
     description: persistent-craft-wl-requirement-burning-heat
     failurePopup: persistent-craft-station-popup-requires-burning-heat
   ingredients:
+  - proto: WLWoodenBowlWater
+    amount: 1
   - stackType: Bones
     amount: 2
   - proto: FoodMeatCooked
+    amount: 1
+  - stackType: WLCharcoalFuelStack
     amount: 1
   results:
   - proto: FoodSoupStew
@@ -198,6 +202,8 @@
   - proto: FoodPotato
     amount: 1
   - proto: FoodCarrot
+    amount: 1
+  - stackType: WLCharcoalFuelStack
     amount: 1
   results:
   - proto: FoodSoupStew

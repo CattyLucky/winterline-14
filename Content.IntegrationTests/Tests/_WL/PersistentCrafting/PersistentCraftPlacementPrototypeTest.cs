@@ -158,6 +158,7 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
     {
         var server = Pair.Server;
         var proto = server.ResolveDependency<IPrototypeManager>();
+        var componentFactory = server.ResolveDependency<IComponentFactory>();
 
         await server.WaitAssertion(() =>
         {
@@ -172,12 +173,23 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
                 AssertRecipeUsesNode(proto, "WLCraftRecipeButcherStation", "WLCraftNodeCookingStarter", tier: 1);
                 AssertRecipeUsesNode(proto, "WLCraftRecipePreparedWoodFuel", "WLCraftNodeGathererProcessingT1", tier: 1);
                 AssertRecipeUsesNode(proto, "WLCraftRecipeHunterSnare", "WLCraftNodeHunterSnareT1", tier: 1);
+                AssertRecipeUsesNode(proto, "WLCraftRecipeSurvivalKnife", "WLCraftNodeHunterMeleeT1", tier: 1);
+                AssertRecipeUsesBranch(proto, "WLCraftRecipeSurvivalKnife", "WLHunter");
                 AssertRecipeUsesNode(proto, "WLCraftRecipeHunterSpear", "WLCraftNodeHunterMeleeT1", tier: 1);
                 AssertRecipeUsesNode(proto, "WLCraftRecipeHunterMachete", "WLCraftNodeHunterMeleeT1", tier: 1);
 
                 AssertRecipeHasStackIngredient(proto, "WLCraftRecipePreparedWoodFuel", "WLFrozenBranchStack", 3);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeHunterSnare", "WLPreparedClothStack", 1);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeHunterSnare", "WLWoodPlankStack", 1);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeSurvivalKnife", "WLScrapMetalStack", 2);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeSurvivalKnife", "WLPreparedClothStack", 1);
                 AssertRecipeHasStackIngredient(proto, "WLCraftRecipeHunterSpear", "WLScrapMetalStack", 1);
                 AssertRecipeHasStackIngredient(proto, "WLCraftRecipeHunterMachete", "WLScrapMetalStack", 4);
+                AssertRecipeDoesNotUseStackIngredients(
+                    proto,
+                    "WLCraftRecipeSurvivalKnife",
+                    "WLIronIngotStack",
+                    "WLLeadIngotStack");
                 AssertRecipeDoesNotUseStackIngredients(
                     proto,
                     "WLCraftRecipeHunterSpear",
@@ -188,14 +200,106 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
                     "WLCraftRecipeHunterMachete",
                     "WLIronIngotStack",
                     "WLLeadIngotStack");
+                AssertEntityHasToolQuality(proto, "SurvivalKnife", "Slicing");
                 AssertEntityHasToolQuality(proto, "Spear", "Slicing");
                 AssertEntityHasToolQuality(proto, "Machete", "Slicing");
+                AssertSnareCatchesDeadPrey(
+                    proto,
+                    componentFactory,
+                    "WLHunterSnare",
+                    minChance: 0.5f,
+                    maxDelay: 60f,
+                    expectedCatchPrototypes: new[] { "WLSnowSheep", "WLSnowGoat" },
+                    forbiddenCatchPrototypes: new[] { "WLFrostStalker", "WLFrostElk", "WLFrostBear" });
+
+                AssertRecipeHasProtoIngredient(proto, "WLCraftRecipeBoneStew", "WLWoodenBowlWater", 1);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeBoneStew", "WLCharcoalFuelStack", 1);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeWildernessStew", "WLCharcoalFuelStack", 1);
 
                 AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "SpawnField", "WLResourceFrozenBranchPileT1", minCount: 6);
                 AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "SpawnField", "WLResourceLooseScrapPileT1", minCount: 5);
                 AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "SpawnField", "WLResourceTornSupplyBagT1", minCount: 3);
                 AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "NearField", "WLSnowSheepDen", minCount: 1);
                 AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "NearField", "WLSnowGoatDen", minCount: 1);
+            });
+        });
+    }
+
+    [Test]
+    public async Task WlHunterSnareTiersAreProgressive()
+    {
+        var server = Pair.Server;
+        var proto = server.ResolveDependency<IPrototypeManager>();
+        var componentFactory = server.ResolveDependency<IComponentFactory>();
+
+        await server.WaitAssertion(() =>
+        {
+            Assert.Multiple(() =>
+            {
+                AssertNodeHasPrerequisites(proto, "WLCraftNodeHunterSnareT2", "WLCraftNodeHunterSnareT1");
+                AssertNodeHasPrerequisites(proto, "WLCraftNodeHunterSnareT3", "WLCraftNodeHunterSnareT2");
+
+                AssertRecipeUsesNode(proto, "WLCraftRecipeHunterSnare", "WLCraftNodeHunterSnareT1", tier: 1);
+                AssertRecipeUsesNode(proto, "WLCraftRecipeHunterSnareReinforced", "WLCraftNodeHunterSnareT2", tier: 2);
+                AssertRecipeUsesNode(proto, "WLCraftRecipeHunterSnareLarge", "WLCraftNodeHunterSnareT3", tier: 3);
+
+                AssertPlacementRecipe(proto, "WLCraftRecipeHunterSnare", FrozenBuildableFloorRequirement.OutdoorHeatSource, requireRoom: false, forbidRoom: true);
+                AssertPlacementRecipe(proto, "WLCraftRecipeHunterSnareReinforced", FrozenBuildableFloorRequirement.OutdoorHeatSource, requireRoom: false, forbidRoom: true);
+                AssertPlacementRecipe(proto, "WLCraftRecipeHunterSnareLarge", FrozenBuildableFloorRequirement.OutdoorHeatSource, requireRoom: false, forbidRoom: true);
+
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeHunterSnareReinforced", "WLAnimalHideStack", 1);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeHunterSnareReinforced", "WLScrapMetalStack", 2);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeHunterSnareLarge", "WLAnimalHideStack", 2);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeHunterSnareLarge", "WLIronIngotStack", 2);
+
+                AssertSnareCatchesDeadPrey(
+                    proto,
+                    componentFactory,
+                    "WLHunterSnareReinforced",
+                    minChance: 0.65f,
+                    maxDelay: 80f,
+                    expectedCatchPrototypes: new[] { "WLSnowSheep", "WLSnowGoat", "WLFrostStalker" },
+                    forbiddenCatchPrototypes: new[] { "WLFrostElk", "WLFrostBear" });
+                AssertSnareCatchesDeadPrey(
+                    proto,
+                    componentFactory,
+                    "WLHunterSnareLarge",
+                    minChance: 0.6f,
+                    maxDelay: 100f,
+                    expectedCatchPrototypes: new[] { "WLFrostElk", "WLFrostStalker" },
+                    forbiddenCatchPrototypes: new[] { "WLSnowSheep", "WLSnowGoat", "WLFrostBear" });
+            });
+        });
+    }
+
+    [Test]
+    public async Task WlFrozenWorldProductionSpawnLogicIsTiered()
+    {
+        var server = Pair.Server;
+        var proto = server.ResolveDependency<IPrototypeManager>();
+
+        await server.WaitAssertion(() =>
+        {
+            Assert.Multiple(() =>
+            {
+                AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "SpawnField", "WLResourceFrozenBranchPileT1", minCount: 6);
+                AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "SpawnField", "WLResourceLooseScrapPileT1", minCount: 5);
+                AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "SpawnField", "WLResourceTornSupplyBagT1", minCount: 3);
+                AssertZoneDoesNotContainSpawn(proto, "FrostRimDefaultZones", "SpawnField", "WLSnowSheepDen");
+                AssertZoneDoesNotContainSpawn(proto, "FrostRimDefaultZones", "SpawnField", "WLFrostBearDen");
+
+                AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "NearField", "WLSnowSheepDen", minCount: 1);
+                AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "NearField", "WLSnowGoatDen", minCount: 1);
+                AssertZoneDoesNotContainSpawn(proto, "FrostRimDefaultZones", "NearField", "WLFrostStalkerDen");
+                AssertZoneDoesNotContainSpawn(proto, "FrostRimDefaultZones", "NearField", "WLFrostBearDen");
+
+                AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "WorkField", "WLResourceIronOreVeinT3", minCount: 4);
+                AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "WorkField", "WLResourceCoalOutcropT3", minCount: 6);
+                AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "WorkField", "WLFrostStalkerDen", minCount: 1);
+                AssertZoneDoesNotContainSpawn(proto, "FrostRimDefaultZones", "WorkField", "WLFrostBearDen");
+
+                AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "ExpeditionField", "WLResourceLeadOreVeinT4", minCount: 2);
+                AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "ExpeditionField", "WLFrostBearDen", minCount: 1);
             });
         });
     }
@@ -547,6 +651,21 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
         Assert.That(recipe.Tier, Is.EqualTo(tier));
     }
 
+    private static void AssertRecipeUsesBranch(IPrototypeManager proto, string recipeId, string branchId)
+    {
+        Assert.That(proto.TryIndex<PersistentCraftRecipePrototype>(recipeId, out var recipe), Is.True);
+        Assert.That(recipe!.Branch, Is.EqualTo(branchId));
+    }
+
+    private static void AssertNodeHasPrerequisites(
+        IPrototypeManager proto,
+        string nodeId,
+        params string[] prerequisites)
+    {
+        Assert.That(proto.TryIndex<PersistentCraftNodePrototype>(nodeId, out var node), Is.True);
+        Assert.That(node!.Prerequisites, Is.EquivalentTo(prerequisites));
+    }
+
     private static void AssertPlacementRecipe(
         IPrototypeManager proto,
         string recipeId,
@@ -590,6 +709,25 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
             $"{entityId} must provide {quality} for first-stage butchery.");
     }
 
+    private static void AssertSnareCatchesDeadPrey(
+        IPrototypeManager proto,
+        IComponentFactory componentFactory,
+        string entityId,
+        float minChance,
+        float maxDelay,
+        string[] expectedCatchPrototypes,
+        string[] forbiddenCatchPrototypes)
+    {
+        Assert.That(proto.TryIndex<EntityPrototype>(entityId, out var entity), Is.True);
+        Assert.That(entity!.TryGetComponent<WLSnareTrapComponent>(out var snare, componentFactory), Is.True);
+        Assert.That(snare!.KillCaughtPrey, Is.True);
+        Assert.That(snare.CatchPrototypes, Is.EquivalentTo(expectedCatchPrototypes));
+        Assert.That(snare.CatchPrototypes, Has.None.Matches<string>(prototype =>
+            forbiddenCatchPrototypes.Contains(prototype)));
+        Assert.That(snare.CatchChance, Is.GreaterThanOrEqualTo(minChance));
+        Assert.That(snare.TriggerDelay, Is.LessThanOrEqualTo(maxDelay));
+    }
+
     private static void AssertNoConstructionTile(ContentTileDefinition tile)
     {
         Assert.That(tile.WLAllowsWallConstruction, Is.False);
@@ -607,6 +745,18 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
         Assert.That(proto.TryIndex<PersistentCraftRecipePrototype>(recipeId, out var recipe), Is.True);
         Assert.That(recipe!.Ingredients, Has.Some.Matches<PersistentCraftIngredient>(ingredient =>
             ingredient.StackType == stackType &&
+            ingredient.Amount == amount));
+    }
+
+    private static void AssertRecipeHasProtoIngredient(
+        IPrototypeManager proto,
+        string recipeId,
+        string prototype,
+        int amount)
+    {
+        Assert.That(proto.TryIndex<PersistentCraftRecipePrototype>(recipeId, out var recipe), Is.True);
+        Assert.That(recipe!.Ingredients, Has.Some.Matches<PersistentCraftIngredient>(ingredient =>
+            ingredient.Proto == prototype &&
             ingredient.Amount == amount));
     }
 
@@ -637,6 +787,19 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
         Assert.That(spawn, Is.Not.Null, $"{presetId}/{zoneId} must spawn '{entityId}'.");
         Assert.That(spawn!.MinCount, Is.GreaterThanOrEqualTo(minCount), $"{presetId}/{zoneId} must guarantee enough '{entityId}'.");
         Assert.That(spawn.MaxCount, Is.GreaterThanOrEqualTo(spawn.MinCount));
+    }
+
+    private static void AssertZoneDoesNotContainSpawn(
+        IPrototypeManager proto,
+        string presetId,
+        string zoneId,
+        string entityId)
+    {
+        Assert.That(proto.TryIndex<FrozenWorldZonePresetPrototype>(presetId, out var preset), Is.True);
+        var zone = preset!.Zones.FirstOrDefault(entry => entry.Id == zoneId);
+        Assert.That(zone, Is.Not.Null, $"{presetId} must contain zone '{zoneId}'.");
+        Assert.That(zone!.Spawns, Has.None.Matches<FrozenWorldZoneSpawnEntry>(entry =>
+            entry.Prototype.ToString() == entityId));
     }
 
     private static void AssertStackEntity(

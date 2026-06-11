@@ -51,16 +51,94 @@
   craftTime: 1.8
   ingredients:
   - stackType: WLPreparedClothStack
-    amount: 2
+    amount: 1
   - stackType: WLWoodPlankStack
     amount: 1
   results: []
   placement:
     proto: WLHunterSnare
     floorRequirement: OutdoorHeatSource
+    forbidRoom: true
+    canBuildInImpassable: true
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterSnareReinforced
+  name: persistent-craft-wl-recipe-hunter-snare-reinforced-name
+  description: persistent-craft-wl-recipe-hunter-snare-reinforced-description
+  displayProto: WLHunterSnareReinforced
+  branch: WLHunter
+  tier: 2
+  order: 20
+  requiredNode: WLCraftNodeHunterSnareT2
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterTraps
+  craftTime: 2.4
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 2
+  - stackType: WLWoodPlankStack
+    amount: 2
+  - stackType: WLScrapMetalStack
+    amount: 2
+  - stackType: WLAnimalHideStack
+    amount: 1
+  results: []
+  placement:
+    proto: WLHunterSnareReinforced
+    floorRequirement: OutdoorHeatSource
+    forbidRoom: true
+    canBuildInImpassable: true
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeHunterSnareLarge
+  name: persistent-craft-wl-recipe-hunter-snare-large-name
+  description: persistent-craft-wl-recipe-hunter-snare-large-description
+  displayProto: WLHunterSnareLarge
+  branch: WLHunter
+  tier: 3
+  order: 30
+  requiredNode: WLCraftNodeHunterSnareT3
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterTraps
+  craftTime: 3.0
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 3
+  - stackType: WLWoodPlankStack
+    amount: 2
+  - stackType: WLIronIngotStack
+    amount: 2
+  - stackType: WLAnimalHideStack
+    amount: 2
+  results: []
+  placement:
+    proto: WLHunterSnareLarge
+    floorRequirement: OutdoorHeatSource
+    forbidRoom: true
     canBuildInImpassable: true
 
 # --- Primitive Weapons ------------------------------------------------------
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeSurvivalKnife
+  name: persistent-craft-wl-recipe-survival-knife-name
+  description: persistent-craft-wl-recipe-survival-knife-description
+  displayProto: SurvivalKnife
+  branch: WLHunter
+  tier: 1
+  order: 5
+  requiredNode: WLCraftNodeHunterMeleeT1
+  category: WLCraftCategoryHunter
+  subCategory: WLCraftSubCategoryHunterMelee
+  craftTime: 1.4
+  ingredients:
+  - stackType: WLScrapMetalStack
+    amount: 2
+  - stackType: WLPreparedClothStack
+    amount: 1
+  results:
+  - proto: SurvivalKnife
+    amount: 1
 
 - type: persistentCraftRecipe
   id: WLCraftRecipeHunterSpear

@@ -69,6 +69,7 @@
     sprite: Objects/Misc/ensnare.rsi
     drawdepth: SmallMobs
     state: icon
+    color: "#c8b88a"
   - type: Fixtures
     fixtures:
       fix1:
@@ -82,11 +83,44 @@
         layer:
         - LowImpassable
   - type: WLSnareTrap
-    catchChance: 0.7
-    triggerDelay: 45
+    catchChance: 0.55
+    triggerDelay: 60
     catchPrototypes:
     - WLSnowSheep
     - WLSnowGoat
+
+- type: entity
+  id: WLHunterSnareReinforced
+  parent: WLHunterSnare
+  name: reinforced hunter snare
+  suffix: WL, FrozenWorld
+  description: A reinforced hide-and-rope snare for more reliable small-game catches and lean predators.
+  components:
+  - type: Sprite
+    color: "#b8975a"
+  - type: WLSnareTrap
+    catchChance: 0.72
+    triggerDelay: 75
+    catchPrototypes:
+    - WLSnowSheep
+    - WLSnowGoat
+    - WLFrostStalker
+
+- type: entity
+  id: WLHunterSnareLarge
+  parent: WLHunterSnare
+  name: large-game hunter snare
+  suffix: WL, FrozenWorld
+  description: A heavy anchored snare for elk-sized prey and dangerous lean predators.
+  components:
+  - type: Sprite
+    color: "#9b6b58"
+  - type: WLSnareTrap
+    catchChance: 0.68
+    triggerDelay: 90
+    catchPrototypes:
+    - WLFrostElk
+    - WLFrostStalker
 
 - type: entity
   id: WLFrozenWildlifeBase

@@ -13,6 +13,9 @@ public sealed partial class WLSnareTrapComponent : Component
     public float TriggerDelay = 60f;
 
     [DataField]
+    public bool KillCaughtPrey = true;
+
+    [DataField]
     public List<string> CatchPrototypes = new()
     {
         "WLSnowSheep",
