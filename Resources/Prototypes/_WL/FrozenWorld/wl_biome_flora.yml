@@ -35,6 +35,9 @@
           WLLog:
             min: 2
             max: 8
+          WLFrozenBranch:
+            min: 4
+            max: 8
 
 - type: entity
   id: WLFloraTreeSnow
@@ -67,6 +70,9 @@
         spawn:
           WLLog:
             min: 2
+            max: 8
+          WLFrozenBranch:
+            min: 4
             max: 8
 
 - type: entity
@@ -101,6 +107,9 @@
           WLLog:
             min: 2
             max: 8
+          WLFrozenBranch:
+            min: 4
+            max: 8
 
 - type: entity
   id: WLFloraTreeStumpConifer
@@ -133,4 +142,7 @@
         spawn:
           WLLog:
             min: 2
+            max: 8
+          WLFrozenBranch:
+            min: 4
             max: 8

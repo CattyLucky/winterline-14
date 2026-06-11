@@ -4,6 +4,9 @@
 - type: startingGear
   id: WLFrostRaiderMeleeGear
   parent: SyndicateFootsoldierGearRuin
+  equipment:
+    outerClothing: ClothingOuterArmoredWinterCoatWL
+    shoes: ClothingShoesBootsWinterSyndicate
   inhand:
   - Machete
 
@@ -11,6 +14,8 @@
   id: WLFrostRaiderShooterGear
   parent: SyndicateFootsoldierGearRuin
   equipment:
+    outerClothing: ClothingOuterArmoredWinterCoatWL
+    shoes: ClothingShoesBootsWinterSyndicate
     pocket1: MagazinePistol
     pocket2: MagazinePistol
   storage:
@@ -30,7 +35,7 @@
         targetKey: FollowTarget
         rangeKey: FollowRange
       operator: !type:MoveToOperator
-        pathfindInPlanning: false
+        pathfindInPlanning: true
         targetKey: FollowTarget
         rangeKey: FollowCloseRange
         removeKeyOnFinish: false

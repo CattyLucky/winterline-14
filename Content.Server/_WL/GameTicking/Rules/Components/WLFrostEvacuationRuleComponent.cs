@@ -37,7 +37,7 @@ public sealed partial class WLFrostEvacuationRuleComponent : Component
     public float LandingSideSpread = 55f;
 
     [DataField]
-    public float LandingClearPadding = 1f;
+    public float LandingClearPadding = 3f;
 
     [DataField]
     public EntProtoId EvacuationBeaconPrototype = "WLFrostlandEvacBeacon";
@@ -93,9 +93,24 @@ public sealed partial class WLFrostEvacuationRuleComponent : Component
 
     public EntityUid? EvacuationBeacon;
     public EntityUid? EvacuationGrid;
-    public EntityUid? EvacuationMap;
+    public EntityUid? EvacuationWorldGrid;
     public Vector2 EvacuationLocalPosition;
-    public Vector2 DepartureMapPosition;
+    public Vector2 DepartureGridPosition;
+
+    /// <summary>
+    /// Departure hyperspace jump is in progress or waiting to start.
+    /// </summary>
+    public bool AwaitingDepartureFtl;
+
+    /// <summary>
+    /// Set once the post-evacuation FTL jump completes.
+    /// </summary>
+    public bool DepartureFtlCompleted;
+
+    /// <summary>
+    /// If departure FTL never finishes, force round end after this time.
+    /// </summary>
+    public TimeSpan? DepartureFtlFallbackAt;
 
     public readonly Dictionary<NetUserId, WLFrostEvacuationManifestEntry> Manifest = new();
 }

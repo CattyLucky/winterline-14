@@ -28,7 +28,7 @@
   parent: BaseMediumStack
   id: WLTornClothStack
   name: stack-wl-torn-cloth
-  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: cloth }
+  icon: { sprite: /Textures/_WL/Objects/Materials/rags.rsi, state: rags-3 }
   spawn: WLTornCloth
 
 # --- Processed Craft Materials ----------------------------------------------
@@ -46,6 +46,13 @@
   name: stack-wl-metal-parts
   icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: scrap_parts_3 }
   spawn: WLMetalParts1
+
+- type: stack
+  parent: BaseMediumStack
+  id: WLStoneBlockStack
+  name: stack-wl-stone-blocks
+  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: ceramic_3 }
+  spawn: WLStoneBlock1
 
 - type: stack
   parent: BaseMediumStack
@@ -104,5 +111,5 @@
   parent: BaseMediumStack
   id: WLDenseCoalFuelStack
   name: stack-wl-dense-coal
-  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: coal }
+  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: dense_coal }
   spawn: WLDenseCoalFuel1

@@ -9,6 +9,7 @@
 # - WLFrozenBranchStack: crude wood for first shelter construction.
 # - WLLooseScrapStack: metal fittings, frames, and machinery.
 # - WLRoughStoneStack: masonry, heavy floors, and outdoor paving.
+# - WLStoneBlockStack: shaped masonry blocks for proper walls and doors.
 # - WLTornClothStack: clothing, seals, and insulation.
 
 # --- Subcategories -----------------------------------------------------------
@@ -24,6 +25,12 @@
   category: WLCraftCategorySettlementHead
   name: persistent-craft-wl-subcategory-shelter-structures
   order: 30
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryMechanicShelterStructures
+  category: WLCraftCategoryMechanic
+  name: persistent-craft-wl-subcategory-mechanic-shelter-structures
+  order: 25
 
 - type: persistentCraftSubCategory
   id: WLCraftSubCategoryShelterGenerators
@@ -185,12 +192,12 @@
   name: persistent-craft-wl-recipe-primitive-wood-wall-name
   description: persistent-craft-wl-recipe-primitive-wood-wall-description
   displayProto: WLPrimitiveWoodWall
-  branch: WLSettlementHead
+  branch: WLMechanic
   tier: 1
   order: 10
-  requiredNode: WLCraftNodeSettlementHeadShelterT1
-  category: WLCraftCategorySettlementHead
-  subCategory: WLCraftSubCategoryShelterStructures
+  requiredNode: WLCraftNodeMechanicShelterT1
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategoryMechanicShelterStructures
   craftTime: 1.8
   ingredients:
   - stackType: WLWoodPlankStack
@@ -207,12 +214,12 @@
   name: persistent-craft-wl-recipe-primitive-wood-door-name
   description: persistent-craft-wl-recipe-primitive-wood-door-description
   displayProto: WLPrimitiveWoodDoor
-  branch: WLSettlementHead
+  branch: WLMechanic
   tier: 1
   order: 20
-  requiredNode: WLCraftNodeSettlementHeadShelterT1
-  category: WLCraftCategorySettlementHead
-  subCategory: WLCraftSubCategoryShelterStructures
+  requiredNode: WLCraftNodeMechanicShelterT1
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategoryMechanicShelterStructures
   craftTime: 2.0
   ingredients:
   - stackType: WLWoodPlankStack
@@ -226,6 +233,177 @@
     placementMode: SnapgridCenter
     floorRequirement: Door
     requireAdjacentBoundary: true
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeInsulatedWoodWall
+  name: persistent-craft-wl-recipe-insulated-wood-wall-name
+  description: persistent-craft-wl-recipe-insulated-wood-wall-description
+  displayProto: WLInsulatedWoodWall
+  branch: WLMechanic
+  tier: 1
+  order: 25
+  requiredNode: WLCraftNodeMechanicShelterT1
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategoryMechanicShelterStructures
+  craftTime: 2.2
+  ingredients:
+  - stackType: WLWoodPlankStack
+    amount: 4
+  - stackType: WLPreparedClothStack
+    amount: 3
+  results: []
+  placement:
+    proto: WLInsulatedWoodWall
+    blueprintProto: WLInsulatedWoodWallBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Wall
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeStoneWall
+  name: persistent-craft-wl-recipe-stone-wall-name
+  description: persistent-craft-wl-recipe-stone-wall-description
+  displayProto: WLStoneWall
+  branch: WLMechanic
+  tier: 2
+  order: 30
+  requiredNode: WLCraftNodeMechanicStoneShelterT2
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategoryMechanicShelterStructures
+  craftTime: 2.6
+  ingredients:
+  - stackType: WLStoneBlockStack
+    amount: 4
+  - stackType: WLMetalPartsStack
+    amount: 1
+  results: []
+  placement:
+    proto: WLStoneWall
+    blueprintProto: WLStoneWallBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Wall
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeStoneDoor
+  name: persistent-craft-wl-recipe-stone-door-name
+  description: persistent-craft-wl-recipe-stone-door-description
+  displayProto: WLStoneDoor
+  branch: WLMechanic
+  tier: 2
+  order: 40
+  requiredNode: WLCraftNodeMechanicStoneShelterT2
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategoryMechanicShelterStructures
+  craftTime: 2.8
+  ingredients:
+  - stackType: WLStoneBlockStack
+    amount: 3
+  - stackType: WLMetalPartsStack
+    amount: 2
+  - stackType: WLPreparedClothStack
+    amount: 1
+  results: []
+  placement:
+    proto: WLStoneDoor
+    blueprintProto: WLStoneDoorBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Door
+    requireAdjacentBoundary: true
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeStoneLoopholeWall
+  name: persistent-craft-wl-recipe-stone-loophole-wall-name
+  description: persistent-craft-wl-recipe-stone-loophole-wall-description
+  displayProto: WLStoneLoopholeWall
+  branch: WLMechanic
+  tier: 2
+  order: 45
+  requiredNode: WLCraftNodeMechanicStoneShelterT2
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategoryMechanicShelterStructures
+  craftTime: 2.4
+  ingredients:
+  - stackType: WLStoneBlockStack
+    amount: 3
+  - stackType: WLMetalPartsStack
+    amount: 1
+  results: []
+  placement:
+    proto: WLStoneLoopholeWall
+    blueprintProto: WLStoneLoopholeWallBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Wall
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeScrapMetalWall
+  name: persistent-craft-wl-recipe-scrap-metal-wall-name
+  description: persistent-craft-wl-recipe-scrap-metal-wall-description
+  displayProto: WLScrapMetalWall
+  branch: WLMechanic
+  tier: 2
+  order: 50
+  requiredNode: WLCraftNodeMechanicWeldingT2
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategoryMechanicShelterStructures
+  craftTime: 2.4
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 6
+  - stackType: WLPreparedClothStack
+    amount: 1
+  results: []
+  placement:
+    proto: WLScrapMetalWall
+    blueprintProto: WLScrapMetalWallBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Wall
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeSteelWall
+  name: persistent-craft-wl-recipe-steel-wall-name
+  description: persistent-craft-wl-recipe-steel-wall-description
+  displayProto: WLSteelWall
+  branch: WLMechanic
+  tier: 2
+  order: 55
+  requiredNode: WLCraftNodeMechanicWeldingT2
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategoryMechanicShelterStructures
+  craftTime: 3.0
+  ingredients:
+  - stackType: WLMetalPartsStack
+    amount: 9
+  - stackType: WLPreparedClothStack
+    amount: 2
+  results: []
+  placement:
+    proto: WLSteelWall
+    blueprintProto: WLSteelWallBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Wall
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeReinforcedStoneWall
+  name: persistent-craft-wl-recipe-reinforced-stone-wall-name
+  description: persistent-craft-wl-recipe-reinforced-stone-wall-description
+  displayProto: WLReinforcedStoneWall
+  branch: WLMechanic
+  tier: 3
+  order: 60
+  requiredNode: WLCraftNodeMechanicHeavyShelterT3
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategoryMechanicShelterStructures
+  craftTime: 3.6
+  ingredients:
+  - stackType: WLStoneBlockStack
+    amount: 6
+  - stackType: WLMetalPartsStack
+    amount: 3
+  results: []
+  placement:
+    proto: WLReinforcedStoneWall
+    blueprintProto: WLReinforcedStoneWallBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Wall
 
 # --- Indoor Stations And Heat ------------------------------------------------
 

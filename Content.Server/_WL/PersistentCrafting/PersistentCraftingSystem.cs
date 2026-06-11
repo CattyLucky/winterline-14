@@ -1196,7 +1196,7 @@ public sealed partial class PersistentCraftingSystem : EntitySystem
             used: user)
         {
             BreakOnMove = true,
-            BreakOnDamage = true,
+            BreakOnDamage = false,
             NeedHand = false,
             RequireCanInteract = true,
             BlockDuplicate = true,
@@ -1263,10 +1263,20 @@ public sealed partial class PersistentCraftingSystem : EntitySystem
     private void GrantSkillPointForCraft(EntityUid user, PersistentCraftRecipePrototype recipe)
     {
         var source = BuildCraftSkillSource(recipe);
+        if (recipe.Branch == "WLCooking")
+        {
+            _skills.TryGrantActionPoint(
+                user,
+                "WLSkillGatherer",
+                $"craft:WLCooking:{recipe.ID}",
+                cooldownSeconds: 45,
+                showPopup: true);
+            return;
+        }
+
         switch (recipe.Branch)
         {
             case "WLGathererProcessor":
-            case "WLCooking":
             case "WLFieldMedicine":
                 _skills.TryGrantActionPoint(
                     user,
@@ -1344,7 +1354,7 @@ public sealed partial class PersistentCraftingSystem : EntitySystem
             used: bench)
         {
             BreakOnMove = true,
-            BreakOnDamage = true,
+            BreakOnDamage = false,
             NeedHand = false,
             RequireCanInteract = true,
             BlockDuplicate = true,
@@ -1390,7 +1400,7 @@ public sealed partial class PersistentCraftingSystem : EntitySystem
             used: user)
         {
             BreakOnMove = true,
-            BreakOnDamage = true,
+            BreakOnDamage = false,
             NeedHand = false,
             RequireCanInteract = true,
             BlockDuplicate = true,

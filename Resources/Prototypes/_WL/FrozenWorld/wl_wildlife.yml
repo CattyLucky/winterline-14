@@ -94,15 +94,21 @@
         layer:
         - LowImpassable
   - type: WLSnareTrap
-    catchChance: 0.45
-    triggerDelay: 60
+    catchChance: 0.7
+    triggerDelay: 45
     catchPrototypes:
     - WLSnowSheep
     - WLSnowGoat
 
 - type: entity
+  id: WLFrozenWildlifeBase
+  abstract: true
+  components:
+  - type: WLFrozenWildlife
+
+- type: entity
   id: WLSnowSheep
-  parent: MobSheep
+  parent: [ MobSheep, WLFrozenWildlifeBase ]
   name: snow sheep
   suffix: WL, FrozenWorld
   description: A hardy sheep adapted to the frozen outskirts. Its wool and meat are valuable early survival resources.
@@ -127,7 +133,7 @@
 
 - type: entity
   id: WLSnowGoat
-  parent: [ BaseMobRuminant, SimpleMobBase ]
+  parent: [ BaseMobRuminant, SimpleMobBase, WLFrozenWildlifeBase ]
   name: snow goat
   suffix: WL, FrozenWorld
   description: A stubborn cold-field goat. It is useful for meat, milk and wool if settlers can keep it alive.
@@ -230,7 +236,7 @@
 
 - type: entity
   id: WLFrostStalker
-  parent: [ SimpleMobBase, StripableInventoryBase ]
+  parent: [ SimpleMobBase, StripableInventoryBase, WLFrozenWildlifeBase ]
   name: frost stalker
   suffix: WL, FrozenWorld
   description: A lean predator that follows warm tracks through the snow.
@@ -331,7 +337,7 @@
 
 - type: entity
   id: WLFrostElk
-  parent: [ SimpleMobBase, MobCombat ]
+  parent: [ SimpleMobBase, MobCombat, WLFrozenWildlifeBase ]
   name: frost elk
   suffix: WL, FrozenWorld
   description: A large territorial grazer. It is not a predator, but it can break bones when cornered.
@@ -399,7 +405,7 @@
 
 - type: entity
   id: WLFrostBear
-  parent: MobSpaceBasic
+  parent: [ MobSpaceBasic, WLFrozenWildlifeBase ]
   name: frost bear
   suffix: WL, FrozenWorld
   description: A massive predator from the deep snow. Settlers should avoid its den unless they are armed and prepared.
@@ -486,13 +492,15 @@
     sprite: Structures/Storage/orebox.rsi
     state: orebox
     color: "#c8c3b8"
-  - type: TimedSpawner
+  - type: WLWildlifeDen
     prototypes:
     - WLSnowSheep
-    chance: 0.45
+    chance: 0.75
     intervalSeconds: 540
     minimumEntitiesSpawned: 1
     maximumEntitiesSpawned: 1
+    maxAlivePopulation: 4
+    populationRadius: 12
 
 - type: entity
   id: WLSnowGoatDen
@@ -503,13 +511,15 @@
     sprite: Structures/Storage/orebox.rsi
     state: orebox
     color: "#a59b8d"
-  - type: TimedSpawner
+  - type: WLWildlifeDen
     prototypes:
     - WLSnowGoat
-    chance: 0.45
+    chance: 0.75
     intervalSeconds: 540
     minimumEntitiesSpawned: 1
     maximumEntitiesSpawned: 1
+    maxAlivePopulation: 4
+    populationRadius: 12
 
 - type: entity
   id: WLFrostStalkerDen
@@ -520,13 +530,15 @@
     sprite: Structures/Storage/orebox.rsi
     state: orebox
     color: "#6d7480"
-  - type: TimedSpawner
+  - type: WLWildlifeDen
     prototypes:
     - WLFrostStalker
-    chance: 0.50
+    chance: 0.65
     intervalSeconds: 660
     minimumEntitiesSpawned: 1
     maximumEntitiesSpawned: 2
+    maxAlivePopulation: 3
+    populationRadius: 14
 
 - type: entity
   id: WLFrostElkDen
@@ -537,13 +549,15 @@
     sprite: Structures/Storage/orebox.rsi
     state: orebox
     color: "#8a8175"
-  - type: TimedSpawner
+  - type: WLWildlifeDen
     prototypes:
     - WLFrostElk
-    chance: 0.40
+    chance: 0.6
     intervalSeconds: 720
     minimumEntitiesSpawned: 1
     maximumEntitiesSpawned: 1
+    maxAlivePopulation: 3
+    populationRadius: 14
 
 - type: entity
   id: WLFrostBearDen
@@ -554,10 +568,12 @@
     sprite: Structures/Storage/orebox.rsi
     state: orebox
     color: "#4f5966"
-  - type: TimedSpawner
+  - type: WLWildlifeDen
     prototypes:
     - WLFrostBear
-    chance: 0.30
+    chance: 0.45
     intervalSeconds: 900
     minimumEntitiesSpawned: 1
     maximumEntitiesSpawned: 1
+    maxAlivePopulation: 2
+    populationRadius: 16

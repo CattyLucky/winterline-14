@@ -9,8 +9,11 @@ using Content.Server.NPC;
 using Content.Server.NPC.HTN;
 using Content.Server.NPC.Systems;
 using Content.Server.Parallax;
+using Content.Shared.Clothing;
+using Content.Shared.Clothing.Components;
 using Content.Shared.GameTicking;
 using Content.Shared.GameTicking.Components;
+using Content.Shared.Inventory;
 using Content.Shared.Mind.Components;
 using Content.Shared.Parallax.Biomes;
 using Content.Shared.SSDIndicator;
@@ -29,6 +32,9 @@ public sealed partial class WLRaidRuleSystem : GameRuleSystem<WLRaidRuleComponen
     [Dependency] private NPCSystem _npc = default!;
     [Dependency] private HTNSystem _htn = default!;
     [Dependency] private BiomeSystem _biome = default!;
+    [Dependency] private InventorySystem _inventory = default!;
+    [Dependency] private LoadoutSystem _loadout = default!;
+    [Dependency] private SharedMapSystem _mapSystem = default!;
     [Dependency] private StatusEffectsSystem _statusEffects = default!;
 
     private static readonly Color WarningColor = Color.FromHex("#FFB35C");
@@ -95,11 +101,32 @@ public sealed partial class WLRaidRuleSystem : GameRuleSystem<WLRaidRuleComponen
             return false;
         }
 
+        if (component.RaiderPrototypes.Count == 0)
+        {
+            message = "Unable to spawn WL raid: no raider prototypes are configured.";
+            return false;
+        }
+
+        if (!TryGetFrozenWorld(out _, out var world) || world.WorldGrid == null)
+        {
+            message = "Unable to spawn WL raid: frozen world is not ready.";
+            return false;
+        }
+
         var wave = component.RaidCount + 1;
+        component.NextRaidAt = Timing.CurTime;
+
+        if (!component.RaidWarningAnnounced && !TryPrepareRaid(component))
+        {
+            message = "Unable to queue WL raid: frozen world is not ready.";
+            return false;
+        }
+
         if (!TrySpawnRaid(component))
         {
-            message = "Unable to spawn WL raid: frozen world is not ready or no raider prototypes are configured.";
-            return false;
+            component.NextRaidAt = Timing.CurTime + TimeSpan.FromSeconds(10);
+            message = $"Forced WL raid wave {wave} queued; waiting for terrain preload or a valid spawn tile.";
+            return true;
         }
 
         ScheduleNextRaid(component);
@@ -113,6 +140,7 @@ public sealed partial class WLRaidRuleSystem : GameRuleSystem<WLRaidRuleComponen
             return false;
 
         var position = PickRaidPosition(world.BaseBounds, component, out var directionLoc);
+        var preload = PinRaidPath(world.WorldGrid.Value, position, world.BaseBounds, component);
         component.PendingRaidPosition = position;
         component.PendingRaidDirection = directionLoc;
         component.RaidWarningAnnounced = true;
@@ -128,6 +156,7 @@ public sealed partial class WLRaidRuleSystem : GameRuleSystem<WLRaidRuleComponen
                 ("y", MathF.Round(position.Y))),
             WarningColor);
 
+        Log.Debug($"WL raid wave {component.RaidCount + 1} route pinned at warning: position={position}, pinnedChunks={preload.PinnedChunks}, loadedChunks={preload.LoadedChunks}/{preload.TotalChunks}.");
         return true;
     }
 
@@ -155,17 +184,41 @@ public sealed partial class WLRaidRuleSystem : GameRuleSystem<WLRaidRuleComponen
             component.MaxRaidersPerWave);
 
         var target = new EntityCoordinates(worldGrid, world.BaseBounds.Center);
-        var pinnedChunks = PinRaidPath(worldGrid, raidPosition.Value, world.BaseBounds, component);
+        var preload = PinRaidPath(worldGrid, raidPosition.Value, world.BaseBounds, component);
+        if (preload.LoadedChunks < preload.TotalChunks)
+        {
+            Log.Info($"Deferred WL raid wave {component.RaidCount + 1}: biome route preload is not complete yet at {raidPosition.Value}; loadedChunks={preload.LoadedChunks}/{preload.TotalChunks}, pinnedChunks={preload.PinnedChunks}.");
+            return false;
+        }
 
+        if (!TryComp<MapGridComponent>(worldGrid, out var worldMapGrid))
+            return false;
+
+        var spawnPositions = new List<Vector2>(raiderCount);
         for (var i = 0; i < raiderCount; i++)
         {
             var offset = new Vector2(
                 RobustRandom.NextFloat(-component.SpawnJitter, component.SpawnJitter),
                 RobustRandom.NextFloat(-component.SpawnJitter, component.SpawnJitter));
-            var position = SnapToTileCenter(raidPosition.Value + offset);
+
+            if (!TryGetLoadedRaidSpawnPosition(worldGrid, worldMapGrid, raidPosition.Value + offset, component.SpawnJitter, out var position))
+            {
+                Log.Info($"Deferred WL raid wave {component.RaidCount + 1}: no loaded spawn tile near {raidPosition.Value + offset} on world grid {ToPrettyString(worldGrid)}.");
+                component.PendingRaidPosition = null;
+                component.PendingRaidDirection = "wl-raid-direction-unknown";
+                component.RaidWarningAnnounced = false;
+                return false;
+            }
+
+            spawnPositions.Add(position);
+        }
+
+        foreach (var position in spawnPositions)
+        {
             var prototype = component.RaiderPrototypes[RobustRandom.Next(component.RaiderPrototypes.Count)];
             var raider = Spawn(prototype, new EntityCoordinates(worldGrid, position));
 
+            EquipRaider(raider);
             PrepareRaiderNpc(raider, target, component);
         }
 
@@ -186,11 +239,11 @@ public sealed partial class WLRaidRuleSystem : GameRuleSystem<WLRaidRuleComponen
                 ("x", MathF.Round(raidPosition.Value.X)),
                 ("y", MathF.Round(raidPosition.Value.Y))));
 
-        Log.Info($"WL raid wave {component.RaidCount + 1} spawned {raiderCount} raiders at {raidPosition.Value}; pinnedChunks={pinnedChunks}.");
+        Log.Info($"WL raid wave {component.RaidCount + 1} spawned {raiderCount} raiders at {raidPosition.Value}; pinnedChunks={preload.PinnedChunks}, loadedChunks={preload.LoadedChunks}/{preload.TotalChunks}.");
         return true;
     }
 
-    private int PinRaidPath(
+    private (int PinnedChunks, int LoadedChunks, int TotalChunks) PinRaidPath(
         EntityUid worldGrid,
         Vector2 raidPosition,
         Box2 baseBounds,
@@ -199,14 +252,76 @@ public sealed partial class WLRaidRuleSystem : GameRuleSystem<WLRaidRuleComponen
         if (!TryComp<BiomeComponent>(worldGrid, out var biome) ||
             !TryComp<MapGridComponent>(worldGrid, out var grid))
         {
-            return 0;
+            return (0, 0, 0);
         }
 
-        var min = Vector2.Min(raidPosition, baseBounds.BottomLeft);
-        var max = Vector2.Max(raidPosition, baseBounds.TopRight);
+        var targetPosition = baseBounds.Center;
+        var min = Vector2.Min(raidPosition, targetPosition);
+        var max = Vector2.Max(raidPosition, targetPosition);
         var area = new Box2(min, max).Enlarged(MathF.Max(component.RaidPathPreloadWidth, 0f));
+        var pinnedChunks = _biome.PinPreloadArea(worldGrid, biome, grid, area);
+        _biome.IsPreloadAreaLoaded(biome, area, out var loadedChunks, out var totalChunks);
 
-        return _biome.PinPreloadArea(worldGrid, biome, grid, area);
+        return (pinnedChunks, loadedChunks, totalChunks);
+    }
+
+    private bool TryGetLoadedRaidSpawnPosition(
+        EntityUid worldGrid,
+        MapGridComponent grid,
+        Vector2 preferredPosition,
+        float jitter,
+        out Vector2 position)
+    {
+        position = SnapToTileCenter(preferredPosition);
+        if (IsLoadedTile(worldGrid, grid, position))
+            return true;
+
+        var radius = Math.Max(2, (int) MathF.Ceiling(jitter) + 2);
+
+        for (var distance = 1; distance <= radius; distance++)
+        {
+            for (var x = -distance; x <= distance; x++)
+            {
+                for (var y = -distance; y <= distance; y++)
+                {
+                    if (Math.Abs(x) != distance && Math.Abs(y) != distance)
+                        continue;
+
+                    var candidate = SnapToTileCenter(preferredPosition + new Vector2(x, y));
+                    if (!IsLoadedTile(worldGrid, grid, candidate))
+                        continue;
+
+                    position = candidate;
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private bool IsLoadedTile(EntityUid worldGrid, MapGridComponent grid, Vector2 position)
+    {
+        var tile = new Vector2i((int) MathF.Floor(position.X), (int) MathF.Floor(position.Y));
+        return _mapSystem.TryGetTileRef(worldGrid, grid, tile, out var tileRef) && !tileRef.Tile.IsEmpty;
+    }
+
+    private void EquipRaider(EntityUid raider)
+    {
+        if (!TryComp<LoadoutComponent>(raider, out var loadout))
+            return;
+
+        if (HasCoreRaiderGear(raider))
+            return;
+
+        _loadout.Equip(raider, loadout.StartingGear, loadout.RoleLoadout);
+    }
+
+    private bool HasCoreRaiderGear(EntityUid raider)
+    {
+        return _inventory.TryGetSlotEntity(raider, "jumpsuit", out _) &&
+               _inventory.TryGetSlotEntity(raider, "outerClothing", out _) &&
+               _inventory.TryGetSlotEntity(raider, "shoes", out _);
     }
 
     private void PrepareRaiderNpc(
@@ -215,6 +330,7 @@ public sealed partial class WLRaidRuleSystem : GameRuleSystem<WLRaidRuleComponen
         WLRaidRuleComponent component)
     {
         SanitizeRaiderNpc(raider);
+        SetRaiderMarchTarget(raider, target, component);
         SetRaiderFollowBlackboard(raider, target, component.FollowCloseRange, component.FollowRange);
 
         if (!TryComp<HTNComponent>(raider, out var htn))
@@ -230,6 +346,20 @@ public sealed partial class WLRaidRuleSystem : GameRuleSystem<WLRaidRuleComponen
 
         Timer.Spawn(component.RaiderWakeDelay, () =>
             WakeRaiderNpc(raider, target, component.FollowCloseRange, component.FollowRange));
+    }
+
+    private void SetRaiderMarchTarget(
+        EntityUid raider,
+        EntityCoordinates target,
+        WLRaidRuleComponent component)
+    {
+        var march = EnsureComp<WLRaiderMarchComponent>(raider);
+        march.Target = target;
+        march.ArrivalRange = component.FollowCloseRange;
+        march.RepathRange = component.FollowRange;
+        march.NextUpdate = component.RaiderWakeDelay <= TimeSpan.Zero
+            ? Timing.CurTime
+            : Timing.CurTime + component.RaiderWakeDelay;
     }
 
     private void SanitizeRaiderNpc(EntityUid raider)

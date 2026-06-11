@@ -1,3 +1,5 @@
+# Map profiles. Production round uses FrostRimDefault + WLSettlement (see Balance/wl_survival_balance.yml).
+
 - type: frozenWorldProfile
   id: FrostRimDefault
   mapName: Frostland
@@ -9,6 +11,9 @@
   enableWeatherCycle: true
   weatherCyclePreset: WLFrostRimDefaultWeatherCycle
   zonePreset: FrostRimDefaultZones
+  terrainPreloadMinDistance: 96
+  terrainPreloadMaxDistance: 340
+  terrainPreloadPadding: 32
   poiStampBatchSize: 4
   gasMoles:
   - 21.0
@@ -25,6 +30,9 @@
   enableWeatherCycle: true
   weatherCyclePreset: WLFrostRimDefaultWeatherCycle
   zonePreset: FrostRimPoiHeavyZones
+  terrainPreloadMinDistance: 96
+  terrainPreloadMaxDistance: 340
+  terrainPreloadPadding: 32
   poiStampBatchSize: 4
   gasMoles:
   - 21.0
@@ -41,6 +49,9 @@
   enableWeatherCycle: true
   weatherCyclePreset: WLFrostRimDefaultWeatherCycle
   zonePreset: FrostRimPoiLightZones
+  terrainPreloadMinDistance: 96
+  terrainPreloadMaxDistance: 340
+  terrainPreloadPadding: 32
   poiStampBatchSize: 4
   gasMoles:
   - 21.0

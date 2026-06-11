@@ -187,9 +187,16 @@ public sealed partial class FrozenWorldSystem : EntitySystem
             }
             else
             {
-                Log.Error(
-                    $"Frozen world setup FAILED synchronously on RoundStartingEvent for {ToPrettyString(stationUid)}. " +
-                    "Players may spawn into a half-ready world. Falling back to the retry loop in Update().");
+                var stage = GetPendingSetupStage(stationUid, stationFrozen.Profile);
+                _pendingSetups[stationUid] = new FrozenWorldPendingSetup(
+                    0,
+                    _timing.CurTime + SetupRetryDelay,
+                    stage,
+                    ForceUnbatched: true);
+
+                Log.Info(
+                    $"Frozen world setup deferred on RoundStartingEvent for {ToPrettyString(stationUid)}. " +
+                    $"Continuing in retry loop at stage={stage}.");
             }
         }
     }
@@ -229,10 +236,10 @@ public sealed partial class FrozenWorldSystem : EntitySystem
 
         var profileId = station.Comp.Profile;
 
-        if (TryContinuePendingPoiStamping(station.Owner, mapUid.Value, worldGridUid, profileId, profile, out var handledPendingStamp))
+        if (TryContinuePendingFrozenWorldSetup(station.Owner, mapUid.Value, worldGridUid, profileId, profile, out var handledPendingSetup))
             return true;
 
-        if (handledPendingStamp)
+        if (handledPendingSetup)
             return false;
 
         var seed = station.Comp.Seed ?? _random.Next();
@@ -303,6 +310,21 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         var baseComp = EnsureComp<FrozenBaseComponent>(worldGridUid);
         baseComp.Profile = profileId;
 
+        if (!TryEnsureTerrainPreloadReady(
+                worldGridUid,
+                worldComp,
+                profile,
+                out var loadedChunks,
+                out var totalChunks,
+                out _,
+                out _))
+        {
+            Log.Debug(
+                $"Deferred frozen world setup for '{profileId}' while waiting for terrain preload before zone generation. " +
+                $"loadedChunks={loadedChunks}/{totalChunks}, preloadBounds={preloadBounds}.");
+            return false;
+        }
+
         _zones.GenerateZones(worldGridUid, (mapUid.Value, worldComp), profile);
 
         // On round-start first setup, stamp everything synchronously. PoiStampBatchSize=0 means unlimited.
@@ -320,11 +342,11 @@ public sealed partial class FrozenWorldSystem : EntitySystem
 
         FinalizeFrozenWorldSetup(station.Owner, mapUid.Value, worldGridUid, worldComp, profile);
 
-        Log.Info($"Configured frozen world '{profileId}' on main surface grid {ToPrettyString(worldGridUid)}. Map={mapId}, biome='{profile.Biome}', pinnedChunks={pinnedChunks}, seededAtmosTiles={seededTiles}, preloadBounds={preloadBounds}.");
+        Log.Info($"Configured frozen world '{profileId}' on main surface grid {ToPrettyString(worldGridUid)}. Map={mapId}, biome='{profile.Biome}', pinnedChunks={pinnedChunks}, loadedChunks={loadedChunks}/{totalChunks}, seededAtmosTiles={seededTiles}, preloadBounds={preloadBounds}.");
         return true;
     }
 
-    private bool TryContinuePendingPoiStamping(
+    private bool TryContinuePendingFrozenWorldSetup(
         EntityUid stationUid,
         EntityUid mapUid,
         EntityUid worldGridUid,
@@ -337,10 +359,7 @@ public sealed partial class FrozenWorldSystem : EntitySystem
         if (!TryComp<FrozenWorldComponent>(mapUid, out var worldComp))
             return false;
 
-        if (worldComp.PoisStamped)
-            return false;
-
-        if (!worldComp.BaseAreaCaptured || !worldComp.ZonesGenerated)
+        if (!worldComp.BaseAreaCaptured)
             return false;
 
         if (worldComp.WorldGrid != worldGridUid || worldComp.Profile != profileId)
@@ -348,21 +367,66 @@ public sealed partial class FrozenWorldSystem : EntitySystem
 
         handled = true;
 
-        var stampResult = _poiStamps.StampPlacedPois(worldGridUid, worldComp, profile.PoiStampBatchSize);
-        if (!stampResult.Complete)
+        if (!TryEnsureTerrainPreloadReady(
+                worldGridUid,
+                worldComp,
+                profile,
+                out var loadedChunks,
+                out var totalChunks,
+                out var preloadBounds,
+                out var newlyPinnedChunks))
         {
-            var remaining = worldComp.PoiPlacements.Count(placement => !placement.Stamped);
-            Log.Info(
-                $"Deferred frozen world setup for '{profileId}' while continuing batched POI stamping. " +
-                $"remaining={remaining}, batchSize={profile.PoiStampBatchSize}, stampedTiles={worldComp.PoiStampedTileCount}, stampedEntities={worldComp.PoiStampedEntityCount}, stampedDecals={worldComp.PoiStampedDecalCount}.");
+            Log.Debug(
+                $"Deferred frozen world setup for '{profileId}' while waiting for terrain preload. " +
+                $"loadedChunks={loadedChunks}/{totalChunks}, newlyPinnedChunks={newlyPinnedChunks}, preloadBounds={preloadBounds}.");
             return false;
+        }
+
+        if (!worldComp.ZonesGenerated)
+            _zones.GenerateZones(worldGridUid, (mapUid, worldComp), profile);
+
+        if (!worldComp.PoisStamped)
+        {
+            var stampResult = _poiStamps.StampPlacedPois(worldGridUid, worldComp, profile.PoiStampBatchSize);
+            if (!stampResult.Complete)
+            {
+                var remaining = worldComp.PoiPlacements.Count(placement => !placement.Stamped);
+                Log.Info(
+                    $"Deferred frozen world setup for '{profileId}' while continuing batched POI stamping. " +
+                    $"remaining={remaining}, batchSize={profile.PoiStampBatchSize}, stampedTiles={worldComp.PoiStampedTileCount}, stampedEntities={worldComp.PoiStampedEntityCount}, stampedDecals={worldComp.PoiStampedDecalCount}.");
+                return false;
+            }
         }
 
         FinalizeFrozenWorldSetup(stationUid, mapUid, worldGridUid, worldComp, profile);
         Log.Info(
-            $"Configured frozen world '{profileId}' on main surface grid {ToPrettyString(worldGridUid)} after batched POI stamping. " +
-            $"batches={worldComp.PoiStampBatches}, stampedTiles={worldComp.PoiStampedTileCount}, stampedEntities={worldComp.PoiStampedEntityCount}, stampedDecals={worldComp.PoiStampedDecalCount}.");
+            $"Configured frozen world '{profileId}' on main surface grid {ToPrettyString(worldGridUid)} after pending setup. " +
+            $"loadedChunks={loadedChunks}/{totalChunks}, batches={worldComp.PoiStampBatches}, stampedTiles={worldComp.PoiStampedTileCount}, stampedEntities={worldComp.PoiStampedEntityCount}, stampedDecals={worldComp.PoiStampedDecalCount}.");
         return true;
+    }
+
+    private bool TryEnsureTerrainPreloadReady(
+        EntityUid worldGridUid,
+        FrozenWorldComponent worldComp,
+        FrozenWorldProfilePrototype profile,
+        out int loadedChunks,
+        out int totalChunks,
+        out Box2 preloadBounds,
+        out int newlyPinnedChunks)
+    {
+        loadedChunks = 0;
+        totalChunks = 0;
+        preloadBounds = GetTerrainPreloadBounds(worldComp.BaseBounds, profile);
+        newlyPinnedChunks = 0;
+
+        if (!TryComp<BiomeComponent>(worldGridUid, out var biome) ||
+            !TryComp<MapGridComponent>(worldGridUid, out var worldGrid))
+        {
+            return false;
+        }
+
+        newlyPinnedChunks = _biome.PinPreloadArea(worldGridUid, biome, worldGrid, preloadBounds);
+        return _biome.IsPreloadAreaLoaded(biome, preloadBounds, out loadedChunks, out totalChunks);
     }
 
     private void FinalizeFrozenWorldSetup(
@@ -652,8 +716,14 @@ public sealed partial class FrozenWorldSystem : EntitySystem
             if (world.Profile != profileId)
                 continue;
 
+            if (world.BaseAreaCaptured && !world.ZonesGenerated)
+                return FrozenWorldSetupStage.WaitingBiome;
+
             if (world.BaseAreaCaptured && world.ZonesGenerated && !world.PoisStamped)
                 return FrozenWorldSetupStage.StampingPoi;
+
+            if (world.BaseAreaCaptured && world.ZonesGenerated && world.PoisStamped)
+                return FrozenWorldSetupStage.WaitingBiome;
         }
 
         return FrozenWorldSetupStage.ResolvingBase;
@@ -693,6 +763,7 @@ public sealed partial class FrozenWorldSystem : EntitySystem
     {
         ResolvingBase,
         StampingPoi,
+        WaitingBiome,
     }
 
     /// <summary>

@@ -5,6 +5,7 @@ stack-wl-dense-coal = плотный промёрзший уголь
 stack-wl-frozen-branches = промёрзшие ветки
 stack-wl-loose-scrap = металлолом
 stack-wl-rough-stone = грубый камень
+stack-wl-stone-blocks = подогнанные каменные блоки
 stack-wl-torn-cloth = рваная ткань
 stack-wl-wood-planks = подготовленные доски
 stack-wl-metal-parts = отсортированные детали

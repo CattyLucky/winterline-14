@@ -173,19 +173,79 @@
     multiplier: 0.9
 
 - type: wlSkillNode
-  id: WLSkillNodeMechanicClothing
-  name: wl-skill-node-mechanic-clothing
-  description: wl-skill-node-mechanic-clothing-desc
+  id: WLSkillNodeMechanicClothingT1
+  name: wl-skill-node-mechanic-clothing-t1
+  description: wl-skill-node-mechanic-clothing-t1-desc
   branch: WLSkillMechanic
-  cost: 2
+  cost: 1
   displayProto: ClothingOuterWinterCoatLightWL
   treeColumn: 2
-  treeRow: 1
+  treeRow: 3
   prerequisites:
   - WLSkillNodeMechanicTools
   effects:
   - modifier: CraftTimeMultiplier
+    multiplier: 0.95
+
+- type: wlSkillNode
+  id: WLSkillNodeMechanicClothingT2
+  name: wl-skill-node-mechanic-clothing-t2
+  description: wl-skill-node-mechanic-clothing-t2-desc
+  branch: WLSkillMechanic
+  cost: 2
+  displayProto: ClothingOuterWinterCoatWarmWL
+  treeColumn: 3
+  treeRow: 3
+  prerequisites:
+  - WLSkillNodeMechanicClothingT1
+  effects:
+  - modifier: CraftTimeMultiplier
+    multiplier: 0.92
+
+- type: wlSkillNode
+  id: WLSkillNodeMechanicClothingT3
+  name: wl-skill-node-mechanic-clothing-t3
+  description: wl-skill-node-mechanic-clothing-t3-desc
+  branch: WLSkillMechanic
+  cost: 2
+  displayProto: ClothingOuterWinterCoatWL
+  treeColumn: 4
+  treeRow: 3
+  prerequisites:
+  - WLSkillNodeMechanicClothingT2
+  effects:
+  - modifier: CraftTimeMultiplier
     multiplier: 0.9
+
+- type: wlSkillNode
+  id: WLSkillNodeMechanicClothingT4
+  name: wl-skill-node-mechanic-clothing-t4
+  description: wl-skill-node-mechanic-clothing-t4-desc
+  branch: WLSkillMechanic
+  cost: 3
+  displayProto: ClothingOuterWinterCoatArcticWL
+  treeColumn: 5
+  treeRow: 3
+  prerequisites:
+  - WLSkillNodeMechanicClothingT3
+  effects:
+  - modifier: CraftTimeMultiplier
+    multiplier: 0.88
+
+- type: wlSkillNode
+  id: WLSkillNodeMechanicClothingT5
+  name: wl-skill-node-mechanic-clothing-t5
+  description: wl-skill-node-mechanic-clothing-t5-desc
+  branch: WLSkillMechanic
+  cost: 3
+  displayProto: ClothingOuterWinterCoatExtremeWL
+  treeColumn: 6
+  treeRow: 3
+  prerequisites:
+  - WLSkillNodeMechanicClothingT4
+  effects:
+  - modifier: CraftTimeMultiplier
+    multiplier: 0.85
 
 - type: wlSkillNode
   id: WLSkillNodeMechanicConstruction

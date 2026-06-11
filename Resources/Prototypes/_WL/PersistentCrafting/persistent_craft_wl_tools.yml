@@ -544,6 +544,26 @@
 # --- Gatherer-Processor: Tier 2 ----------------------------------------------
 
 - type: persistentCraftRecipe
+  id: WLCraftRecipeShapeStoneBlocks
+  name: persistent-craft-wl-recipe-shape-stone-blocks-name
+  description: persistent-craft-wl-recipe-shape-stone-blocks-description
+  displayProto: WLStoneBlock1
+  branch: WLGathererProcessor
+  tier: 2
+  order: 5
+  requiredNode: WLCraftNodeGathererTilesT2
+  category: WLCraftCategoryGathererProcessor
+  subCategory: WLCraftSubCategoryGathererProcessing
+  craftTime: 1.8
+  allowResourceProcessingBonus: true
+  ingredients:
+  - stackType: WLRoughStoneStack
+    amount: 3
+  results:
+  - proto: WLStoneBlock1
+    amount: 2
+
+- type: persistentCraftRecipe
   id: WLCraftRecipeCharcoalFuel
   name: persistent-craft-wl-recipe-charcoal-fuel-name
   description: persistent-craft-wl-recipe-charcoal-fuel-description

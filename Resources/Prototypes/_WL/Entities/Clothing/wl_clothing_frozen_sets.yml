@@ -1,0 +1,319 @@
+# /// WL Change
+# FrozenWorld survival clothing (T1–T5).
+# Coats: no ToggleableClothing (hood is a separate craft). Hoods: wl_clothing_frozen_hoods.yml
+# Craft: persistent_craft_wl_clothing.yml | Research: WLCraftNodeMechanicClothingT1–T5
+
+# --- Tier 1: Light -----------------------------------------------------------
+
+- type: entity
+  parent: ClothingOuterWinterCoat
+  id: ClothingOuterWinterCoatLightWL
+  suffix: WL, T1, Outer
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Clothing/OuterClothing/WinterCoats/coat.rsi
+    layers:
+    - state: PARA-icon
+  - type: Item
+    inhandVisuals:
+      left:
+      - state: PARA-inhand-left
+      right:
+      - state: PARA-inhand-right
+  - type: Clothing
+    sprite: Clothing/OuterClothing/WinterCoats/coat.rsi
+    clothingVisuals:
+      outerClothing:
+      - state: PARA-equipped-OUTERCLOTHING
+  - type: FrozenInsulation
+    tier: Light
+    coverage: [ Torso, Arms, Legs ]
+
+- type: entity
+  parent: ClothingUniformJumpsuitLibrarian
+  id: ClothingUniformJumpsuitThermalLightWL
+  suffix: WL, T1, Inner
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: _WL/Clothing/FrozenWorld/InnerClothing/tier1_light.rsi
+    layers:
+    - state: icon
+  - type: Item
+    inhandVisuals:
+      left:
+      - state: inhand-left
+      right:
+      - state: inhand-right
+  - type: Clothing
+    sprite: _WL/Clothing/FrozenWorld/InnerClothing/tier1_light.rsi
+    clothingVisuals:
+      jumpsuit:
+      - state: equipped-INNERCLOTHING
+  - type: FrozenInsulation
+    tier: Light
+    coverage: [ Torso, Arms, Legs ]
+
+- type: entity
+  parent: ClothingHandsGlovesLeather
+  id: ClothingHandsGlovesWinterLightWL
+  suffix: WL, T1, Hands
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: FrozenInsulation
+    tier: Light
+    coverage: [ Hands ]
+
+- type: entity
+  parent: ClothingShoesBootsWinter
+  id: ClothingShoesBootsWinterLightWL
+  suffix: WL, T1, Feet
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: FrozenInsulation
+    tier: Light
+    coverage: [ Feet ]
+  - type: FrozenFootwear
+    surfaceColdPenaltyMultiplier: 0.85
+    surfaceSpeedPenaltyMultiplier: 0.95
+
+# --- Tier 2: Warm ------------------------------------------------------------
+
+- type: entity
+  parent: ClothingOuterWinterCoat
+  id: ClothingOuterWinterCoatWarmWL
+  suffix: WL, T2, Outer
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Clothing/OuterClothing/WinterCoats/coat.rsi
+    layers:
+    - state: CARGO-icon
+  - type: Item
+    inhandVisuals:
+      left:
+      - state: CARGO-inhand-left
+      right:
+      - state: CARGO-inhand-right
+  - type: Clothing
+    sprite: Clothing/OuterClothing/WinterCoats/coat.rsi
+    clothingVisuals:
+      outerClothing:
+      - state: CARGO-equipped-OUTERCLOTHING
+  - type: FrozenInsulation
+    tier: Warm
+    coverage: [ Torso, Arms, Legs ]
+
+- type: entity
+  parent: ClothingUniformJumpsuitCargo
+  id: ClothingUniformJumpsuitThermalWarmWL
+  suffix: WL, T2, Inner
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: FrozenInsulation
+    tier: Warm
+    coverage: [ Torso, Arms, Legs ]
+
+- type: entity
+  parent: ClothingHandsGlovesLeather
+  id: ClothingHandsGlovesWinterWarmWL
+  suffix: WL, T2, Hands
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: FrozenInsulation
+    tier: Warm
+    coverage: [ Hands ]
+
+- type: entity
+  parent: ClothingShoesBootsWinterCargo
+  id: ClothingShoesBootsWinterWarmWL
+  suffix: WL, T2, Feet
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: FrozenInsulation
+    tier: Warm
+    coverage: [ Feet ]
+  - type: FrozenFootwear
+    surfaceColdPenaltyMultiplier: 0.60
+    surfaceSpeedPenaltyMultiplier: 0.75
+
+# --- Tier 3: Winter ----------------------------------------------------------
+
+- type: entity
+  parent: ClothingOuterWinterCoat
+  id: ClothingOuterWinterCoatWL
+  suffix: WL, T3, Outer
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Clothing/OuterClothing/WinterCoats/coat.rsi
+    layers:
+    - state: MINER-icon
+  - type: Item
+    inhandVisuals:
+      left:
+      - state: MINER-inhand-left
+      right:
+      - state: MINER-inhand-right
+  - type: Clothing
+    sprite: Clothing/OuterClothing/WinterCoats/coat.rsi
+    clothingVisuals:
+      outerClothing:
+      - state: MINER-equipped-OUTERCLOTHING
+  - type: FrozenInsulation
+    tier: Winter
+    coverage: [ Torso, Arms, Legs ]
+
+- type: entity
+  parent: ClothingUniformJumpsuitSalvageSpecialist
+  id: ClothingUniformJumpsuitWinterWL
+  suffix: WL, T3, Inner
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: FrozenInsulation
+    tier: Winter
+    coverage: [ Torso, Arms, Legs ]
+
+- type: entity
+  parent: ClothingHandsGlovesLeather
+  id: ClothingHandsGlovesWinterWL
+  suffix: WL, T3, Hands
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: FrozenInsulation
+    tier: Winter
+    coverage: [ Hands ]
+
+- type: entity
+  parent: ClothingShoesBootsWinter
+  id: ClothingShoesBootsWinterWL
+  suffix: WL, T3, Feet
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: FrozenInsulation
+    tier: Winter
+    coverage: [ Feet ]
+  - type: FrozenFootwear
+    surfaceColdPenaltyMultiplier: 0.25
+    surfaceSpeedPenaltyMultiplier: 0.50
+
+# --- Tier 4: Arctic ----------------------------------------------------------
+
+- type: entity
+  parent: ClothingOuterWinterCoat
+  id: ClothingOuterWinterCoatArcticWL
+  suffix: WL, T4, Outer
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Clothing/OuterClothing/WinterCoats/coat.rsi
+    layers:
+    - state: CE-icon
+  - type: Item
+    inhandVisuals:
+      left:
+      - state: CE-inhand-left
+      right:
+      - state: CE-inhand-right
+  - type: Clothing
+    sprite: Clothing/OuterClothing/WinterCoats/coat.rsi
+    clothingVisuals:
+      outerClothing:
+      - state: CE-equipped-OUTERCLOTHING
+  - type: FrozenInsulation
+    tier: Arctic
+    coverage: [ Torso, Arms, Legs ]
+
+- type: entity
+  parent: ClothingUniformJumpsuitEngineeringHazard
+  id: ClothingUniformJumpsuitThermalArcticWL
+  suffix: WL, T4, Inner
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: FrozenInsulation
+    tier: Arctic
+    coverage: [ Torso, Arms, Legs ]
+
+- type: entity
+  parent: ClothingHandsGlovesLeather
+  id: ClothingHandsGlovesWinterArcticWL
+  suffix: WL, T4, Hands
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: FrozenInsulation
+    tier: Arctic
+    coverage: [ Hands ]
+
+- type: entity
+  parent: ClothingShoesBootsWinterEngi
+  id: ClothingShoesBootsWinterArcticWL
+  suffix: WL, T4, Feet
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: FrozenInsulation
+    tier: Arctic
+    coverage: [ Feet ]
+  - type: FrozenFootwear
+    surfaceColdPenaltyMultiplier: 0.15
+    surfaceSpeedPenaltyMultiplier: 0.35
+
+# --- Tier 5: Extreme ---------------------------------------------------------
+
+- type: entity
+  parent: ClothingOuterWinterCoat
+  id: ClothingOuterWinterCoatExtremeWL
+  suffix: WL, T5, Outer
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Clothing/OuterClothing/WinterCoats/coat.rsi
+    layers:
+    - state: WEB-icon
+  - type: Item
+    inhandVisuals:
+      left:
+      - state: WEB-inhand-left
+      right:
+      - state: WEB-inhand-right
+  - type: Clothing
+    sprite: Clothing/OuterClothing/WinterCoats/coat.rsi
+    clothingVisuals:
+      outerClothing:
+      - state: WEB-equipped-OUTERCLOTHING
+  - type: FrozenInsulation
+    tier: Extreme
+    coverage: [ Torso, Arms, Legs ]
+
+- type: entity
+  parent: ClothingUniformJumpsuitChiefEngineer
+  id: ClothingUniformJumpsuitThermalExtremeWL
+  suffix: WL, T5, Inner
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: FrozenInsulation
+    tier: Extreme
+    coverage: [ Torso, Arms, Legs ]
+
+- type: entity
+  parent: ClothingHandsGlovesLeather
+  id: ClothingHandsGlovesWinterExtremeWL
+  suffix: WL, T5, Hands
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: FrozenInsulation
+    tier: Extreme
+    coverage: [ Hands ]
+
+- type: entity
+  parent: ClothingShoesBootsWinterWeb
+  id: ClothingShoesBootsWinterExtremeWL
+  suffix: WL, T5, Feet
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: FrozenInsulation
+    tier: Extreme
+    coverage: [ Feet ]
+  - type: FrozenFootwear
+    surfaceColdPenaltyMultiplier: 0.05
+    surfaceSpeedPenaltyMultiplier: 0.20

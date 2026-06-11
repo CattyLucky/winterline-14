@@ -44,6 +44,104 @@
     state: closed
 
 - type: entity
+  id: WLInsulatedWoodWallBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: insulated wood wall blueprint
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Walls/wood.rsi
+    state: full
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Walls/wood.rsi
+    state: full
+
+- type: entity
+  id: WLStoneWallBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: stone shelter wall blueprint
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Walls/cobblebrick_snow.rsi
+    state: full
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Walls/cobblebrick_snow.rsi
+    state: full
+
+- type: entity
+  id: WLStoneDoorBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: stone shelter door blueprint
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Doors/MineralDoors/ironstone_door.rsi
+    state: closed
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Doors/MineralDoors/ironstone_door.rsi
+    state: closed
+
+- type: entity
+  id: WLStoneLoopholeWallBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: stone loophole wall blueprint
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Walls/cobblebrick_snow.rsi
+    state: full
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Walls/cobblebrick_snow.rsi
+    state: full
+
+- type: entity
+  id: WLScrapMetalWallBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: scrap metal wall blueprint
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Walls/riveted.rsi
+    state: full
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Walls/riveted.rsi
+    state: full
+
+- type: entity
+  id: WLSteelWallBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: steel shelter wall blueprint
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Walls/solid.rsi
+    state: full
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Walls/solid.rsi
+    state: full
+
+- type: entity
+  id: WLReinforcedStoneWallBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: reinforced stone wall blueprint
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Walls/cobblebrick_basalt.rsi
+    state: full
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Walls/cobblebrick_basalt.rsi
+    state: full
+
+- type: entity
   id: WLPrimitiveWorkbenchBlueprint
   parent: WLPersistentCraftBlueprint
   name: primitive workbench blueprint
@@ -334,6 +432,387 @@
       count: 3
     - proto: WLTornCloth
       count: 1
+
+- type: entity
+  id: WLInsulatedWoodWall
+  parent: BaseWall
+  name: insulated wood wall
+  description: A packed wood wall with cloth and hide-like padding. Warm enough for real living space, but still vulnerable to tools and fire.
+  components:
+  - type: Sprite
+    sprite: Structures/Walls/wood.rsi
+    color: "#d4d0bd"
+  - type: Icon
+    sprite: Structures/Walls/wood.rsi
+    color: "#d4d0bd"
+  - type: Damageable
+    damageModifierSet: Wood
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 240
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+      - !type:PlaySoundBehavior
+        sound:
+          collection: WoodDestroyHeavy
+    - trigger:
+        !type:DamageTrigger
+        damage: 100
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          collection: WoodDestroyHeavy
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          WLWoodPlank1:
+            min: 1
+            max: 2
+          WLPreparedCloth1:
+            min: 1
+            max: 1
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+  - type: IconSmooth
+    key: wlwoodinsulated
+    base: wood
+  - type: FrozenShelterBoundary
+    insulation: 0.93
+  - type: FrozenShelterDeconstructible
+    doAfter: 4
+    refunds:
+    - proto: WLWoodPlank1
+      count: 3
+    - proto: WLPreparedCloth1
+      count: 2
+
+- type: entity
+  id: WLStoneWall
+  parent: BaseWall
+  name: stone shelter wall
+  description: Fitted frozen masonry for proper shelters. It holds heat better than crude wood and takes more punishment.
+  components:
+  - type: Sprite
+    sprite: Structures/Walls/cobblebrick_snow.rsi
+  - type: Icon
+    sprite: Structures/Walls/cobblebrick_snow.rsi
+  - type: Damageable
+    damageModifierSet: Rock
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 360
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+      - !type:PlaySoundBehavior
+        sound:
+          path: /Audio/Effects/break_stone.ogg
+          params:
+            volume: -6
+    - trigger:
+        !type:DamageTrigger
+        damage: 150
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          path: /Audio/Effects/break_stone.ogg
+          params:
+            volume: -8
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          WLStoneBlock1:
+            min: 1
+            max: 2
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+  - type: IconSmooth
+    key: wlstoneshelter
+    base: cobblebrick
+  - type: FrozenShelterBoundary
+    insulation: 0.86
+  - type: FrozenShelterDeconstructible
+    doAfter: 4
+    refunds:
+    - proto: WLStoneBlock1
+      count: 3
+
+- type: entity
+  id: WLStoneDoor
+  parent: BaseMaterialDoorNavMap
+  name: stone shelter door
+  description: A heavy masonry door with scrap hinges and cloth seals. It leaks heat when open, but seals better than a crude wooden door.
+  components:
+  - type: Sprite
+    sprite: Structures/Doors/MineralDoors/ironstone_door.rsi
+  - type: Door
+    openSound:
+      path: /Audio/Effects/stonedoor_openclose.ogg
+    closeSound:
+      path: /Audio/Effects/stonedoor_openclose.ogg
+  - type: Damageable
+    damageModifierSet: Rock
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 260
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+      - !type:PlaySoundBehavior
+        sound:
+          path: /Audio/Effects/break_stone.ogg
+          params:
+            volume: -6
+    - trigger:
+        !type:DamageTrigger
+        damage: 115
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          path: /Audio/Effects/break_stone.ogg
+          params:
+            volume: -8
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          WLStoneBlock1:
+            min: 1
+            max: 2
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+  - type: FrozenShelterBoundary
+    insulation: 0.82
+    leakWhenOpen: true
+  - type: FrozenShelterDeconstructible
+    doAfter: 4
+    refunds:
+    - proto: WLStoneBlock1
+      count: 2
+    - proto: WLMetalParts1
+      count: 1
+    - proto: WLPreparedCloth1
+      count: 1
+
+- type: entity
+  id: WLStoneLoopholeWall
+  parent: BaseStructureWall
+  name: stone loophole wall
+  description: A stone wall section with a narrow sight slit. It keeps the weather out, but the opening bleeds heat.
+  components:
+  - type: Sprite
+    sprite: Structures/Walls/cobblebrick_snow.rsi
+    color: "#6f7378"
+  - type: Icon
+    sprite: Structures/Walls/cobblebrick_snow.rsi
+    color: "#6f7378"
+  - type: Damageable
+    damageModifierSet: Rock
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 300
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+      - !type:PlaySoundBehavior
+        sound:
+          path: /Audio/Effects/break_stone.ogg
+          params:
+            volume: -6
+    - trigger:
+        !type:DamageTrigger
+        damage: 120
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          path: /Audio/Effects/break_stone.ogg
+          params:
+            volume: -8
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          WLStoneBlock1:
+            min: 1
+            max: 2
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+  - type: IconSmooth
+    key: wlstoneloophole
+    base: cobblebrick
+  - type: FrozenShelterBoundary
+    insulation: 0.68
+  - type: FrozenShelterDeconstructible
+    doAfter: 4
+    refunds:
+    - proto: WLStoneBlock1
+      count: 2
+    - proto: WLMetalParts1
+      count: 1
+
+- type: entity
+  id: WLScrapMetalWall
+  parent: BaseWall
+  name: scrap metal wall
+  description: A cold patched wall of bolted scrap plates. It is strong against raids, but terrible at keeping warmth.
+  components:
+  - type: Sprite
+    sprite: Structures/Walls/riveted.rsi
+    color: "#9a8d7d"
+  - type: Icon
+    sprite: Structures/Walls/riveted.rsi
+    color: "#9a8d7d"
+  - type: Damageable
+    damageModifierSet: StructuralMetallic
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 330
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+      - !type:PlaySoundBehavior
+        sound:
+          collection: MetalSlam
+    - trigger:
+        !type:DamageTrigger
+        damage: 135
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          collection: MetalSlam
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          WLMetalParts1:
+            min: 2
+            max: 3
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+  - type: IconSmooth
+    key: wlscrapmetalwall
+    base: riveted
+  - type: FrozenShelterBoundary
+    insulation: 0.48
+  - type: FrozenShelterDeconstructible
+    doAfter: 4
+    refunds:
+    - proto: WLMetalParts1
+      count: 5
+    - proto: WLPreparedCloth1
+      count: 1
+
+- type: entity
+  id: WLSteelWall
+  parent: BaseWall
+  name: steel shelter wall
+  description: A fitted steel plate wall for defended settlement rooms. It takes raids better than scrap plating, but still bleeds heat through the metal.
+  components:
+  - type: Sprite
+    sprite: Structures/Walls/solid.rsi
+    color: "#a5abb2"
+  - type: Icon
+    sprite: Structures/Walls/solid.rsi
+    color: "#a5abb2"
+  - type: Damageable
+    damageModifierSet: StructuralMetallicStrong
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 460
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+      - !type:PlaySoundBehavior
+        sound:
+          collection: MetalSlam
+    - trigger:
+        !type:DamageTrigger
+        damage: 180
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          collection: MetalSlam
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          WLMetalParts1:
+            min: 3
+            max: 4
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+  - type: IconSmooth
+    key: wlsteelwall
+    base: solid
+  - type: FrozenShelterBoundary
+    insulation: 0.55
+  - type: FrozenShelterDeconstructible
+    doAfter: 5
+    refunds:
+    - proto: WLMetalParts1
+      count: 8
+    - proto: WLPreparedCloth1
+      count: 2
+
+- type: entity
+  id: WLReinforcedStoneWall
+  parent: BaseWall
+  name: reinforced stone wall
+  description: Thick stonework bound with scrap reinforcement. Expensive, heavy, and fit for a settlement perimeter.
+  components:
+  - type: Sprite
+    sprite: Structures/Walls/cobblebrick_basalt.rsi
+  - type: Icon
+    sprite: Structures/Walls/cobblebrick_basalt.rsi
+  - type: Damageable
+    damageModifierSet: Rock
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 560
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+      - !type:PlaySoundBehavior
+        sound:
+          path: /Audio/Effects/break_stone.ogg
+          params:
+            volume: -6
+    - trigger:
+        !type:DamageTrigger
+        damage: 230
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          path: /Audio/Effects/break_stone.ogg
+          params:
+            volume: -8
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          WLStoneBlock1:
+            min: 2
+            max: 3
+          WLMetalParts1:
+            min: 1
+            max: 2
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+  - type: IconSmooth
+    key: wlreinforcedstone
+    base: cobblebrick
+  - type: FrozenShelterBoundary
+    insulation: 0.90
+  - type: FrozenShelterDeconstructible
+    doAfter: 5
+    refunds:
+    - proto: WLStoneBlock1
+      count: 4
+    - proto: WLMetalParts1
+      count: 2
 
 - type: entity
   id: WLPrimitiveWorkbench

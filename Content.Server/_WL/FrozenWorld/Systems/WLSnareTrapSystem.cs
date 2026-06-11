@@ -41,17 +41,20 @@ public sealed partial class WLSnareTrapSystem : EntitySystem
 
             if (component.Placer is { } placer && Exists(placer))
             {
+                _popup.PopupEntity(Loc.GetString(component.SuccessPopup), placer, placer, PopupType.Medium);
                 _skills.TryGrantActionPoint(
                     placer,
                     "WLSkillHunter",
-                    "snare-catch",
-                    cooldownSeconds: 75,
+                    $"snare-catch:{spawn}",
+                    cooldownSeconds: 45,
                     showPopup: true);
             }
         }
         else
         {
             _popup.PopupEntity(Loc.GetString(component.FailurePopup), uid, PopupType.Medium);
+            if (component.Placer is { } placer && Exists(placer))
+                _popup.PopupEntity(Loc.GetString(component.FailurePopup), placer, placer, PopupType.Medium);
         }
 
         QueueDel(uid);

@@ -97,13 +97,25 @@
   description: A weathered strip of fabric. Weak as gear, useful as padding, wrapping or desperate tinder.
   components:
   - type: Sprite
-    sprite: _WL/Objects/Misc/materials.rsi
-    state: cloth
+    sprite: _WL/Objects/Materials/rags.rsi
+    state: rags-1
+    layers:
+    - state: rags-1
+      map: ["base"]
+  - type: Appearance
   - type: Item
     size: Small
   - type: Stack
     stackType: WLTornClothStack
+    baseLayer: base
+    layerStates:
+    - rags-1
+    - rags-2
+    - rags-3
+    layerFunction: Threshold
     count: 1
+  - type: StackLayerThreshold
+    thresholds: [10, 20]
   - type: Material
   - type: PhysicalComposition
     materialComposition:
@@ -120,6 +132,8 @@
   parent: WLTornCloth
   suffix: 30
   components:
+  - type: Sprite
+    state: rags-3
   - type: Stack
     count: 30
 
@@ -190,6 +204,38 @@
 - type: entity
   id: WLMetalParts1
   parent: WLMetalParts
+  suffix: Single
+  components:
+  - type: Stack
+    count: 1
+
+- type: entity
+  id: WLStoneBlock
+  parent: BaseItem
+  name: fitted stone blocks
+  description: Cut masonry blocks shaped from rough frozen stone. Heavy, stable, and suited for real shelter walls.
+  suffix: Full
+  components:
+  - type: Sprite
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: ceramic_3
+    color: "#7b7770"
+  - type: Item
+    size: Small
+  - type: Stack
+    stackType: WLStoneBlockStack
+
+- type: entity
+  id: WLStoneBlock10
+  parent: WLStoneBlock
+  suffix: 10
+  components:
+  - type: Stack
+    count: 10
+
+- type: entity
+  id: WLStoneBlock1
+  parent: WLStoneBlock
   suffix: Single
   components:
   - type: Stack

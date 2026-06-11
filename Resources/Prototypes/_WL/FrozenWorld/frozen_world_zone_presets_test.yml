@@ -1,0 +1,420 @@
+# /// WL Change
+# Non-production zone presets for POI/stamping stress tests (FrostRimPoiHeavy / FrostRimPoiLight profiles).
+
+- type: frozenWorldZonePreset
+  id: FrostRimPoiHeavyZones
+  zones:
+  - id: SpawnField
+    minDistance: 8
+    maxDistance: 35
+    ambientTemperatureOffset: 0
+    spawnAttempts: 140
+    spawns:
+    - prototype: WLResourceFrozenBranchPileT1
+      weight: 3
+      minCount: 10
+      maxCount: 16
+      minSeparation: 6
+      clearanceRadius: 1.0
+    - prototype: WLResourceLooseScrapPileT1
+      weight: 2
+      minCount: 8
+      maxCount: 14
+      minSeparation: 6
+      clearanceRadius: 1.0
+    - prototype: WLResourceTornSupplyBagT1
+      weight: 1
+      minCount: 5
+      maxCount: 9
+      minSeparation: 7
+      clearanceRadius: 1.0
+  - id: NearField
+    minDistance: 40
+    maxDistance: 100
+    ambientTemperatureOffset: -4
+    spawnAttempts: 160
+    spawns:
+    - prototype: WLResourceCharcoalPitT2
+      weight: 3
+      minCount: 9
+      maxCount: 16
+      minSeparation: 10
+      clearanceRadius: 1.5
+    - prototype: WLResourceFrozenDeadwoodT2
+      weight: 2
+      minCount: 9
+      maxCount: 16
+      minSeparation: 10
+      clearanceRadius: 1.5
+    - prototype: WLResourceSmallScrapPileT2
+      weight: 1
+      minCount: 8
+      maxCount: 14
+      minSeparation: 10
+      clearanceRadius: 1.5
+    - prototype: WLRoughStonePileT2
+      weight: 1
+      minCount: 8
+      maxCount: 14
+      minSeparation: 10
+      clearanceRadius: 1.5
+    - prototype: WLSnowSheepDen
+      weight: 1
+      minCount: 1
+      maxCount: 3
+      minSeparation: 24
+      clearanceRadius: 2.0
+    - prototype: WLSnowGoatDen
+      weight: 1
+      minCount: 1
+      maxCount: 3
+      minSeparation: 24
+      clearanceRadius: 2.0
+    - prototype: WLSnowSheep
+      weight: 1
+      minCount: 0
+      maxCount: 3
+      minSeparation: 14
+      clearanceRadius: 1.0
+    - prototype: WLSnowGoat
+      weight: 1
+      minCount: 0
+      maxCount: 3
+      minSeparation: 14
+      clearanceRadius: 1.0
+  - id: WorkField
+    minDistance: 100
+    maxDistance: 180
+    ambientTemperatureOffset: -9
+    spawnAttempts: 180
+    poiAttempts: 12
+    pois:
+    - poi: WLMeatballMagnetPoiHeavyRot
+      weight: 1
+      minCount: 3
+      maxCount: 4
+      minSeparation: 56
+    spawns:
+    - prototype: WLResourceCoalOutcropT3
+      weight: 3
+      minCount: 9
+      maxCount: 16
+      minSeparation: 16
+      clearanceRadius: 2.0
+    - prototype: WLResourceScrapWreckT3
+      weight: 2
+      minCount: 9
+      maxCount: 16
+      minSeparation: 16
+      clearanceRadius: 2.0
+    - prototype: WLResourceFrozenRubbleOutcropT3
+      weight: 2
+      minCount: 9
+      maxCount: 16
+      minSeparation: 16
+      clearanceRadius: 2.0
+    - prototype: WLResourceFrozenGroveT3
+      weight: 2
+      minCount: 9
+      maxCount: 16
+      minSeparation: 16
+      clearanceRadius: 2.0
+    - prototype: WLFrostStalkerDen
+      weight: 1
+      minCount: 1
+      maxCount: 3
+      minSeparation: 40
+      clearanceRadius: 2.0
+    - prototype: WLFrostElkDen
+      weight: 1
+      minCount: 1
+      maxCount: 3
+      minSeparation: 40
+      clearanceRadius: 2.0
+    - prototype: WLFrostElk
+      weight: 1
+      minCount: 0
+      maxCount: 3
+      minSeparation: 28
+      clearanceRadius: 1.5
+  - id: ExpeditionField
+    minDistance: 180
+    maxDistance: 300
+    ambientTemperatureOffset: -15
+    spawnAttempts: 180
+    poiAttempts: 14
+    pois:
+    - poi: WLMeatballMagnetPoiHeavyRot
+      weight: 1
+      minCount: 3
+      maxCount: 4
+      minSeparation: 64
+    - poi: WLVeganMeatballMagnetPoiHeavyRot
+      weight: 2
+      minCount: 3
+      maxCount: 4
+      minSeparation: 64
+    spawns:
+    - prototype: WLResourceLargeCoalVeinT4
+      weight: 3
+      minCount: 7
+      maxCount: 12
+      minSeparation: 28
+      clearanceRadius: 2.5
+    - prototype: WLResourceFrozenConvoyWreckT4
+      weight: 2
+      minCount: 6
+      maxCount: 11
+      minSeparation: 28
+      clearanceRadius: 2.5
+    - prototype: WLResourceOldMasonryRuinT4
+      weight: 2
+      minCount: 6
+      maxCount: 11
+      minSeparation: 28
+      clearanceRadius: 2.5
+    - prototype: WLResourceOldSupplyCacheT4
+      weight: 1
+      minCount: 4
+      maxCount: 7
+      minSeparation: 28
+      clearanceRadius: 2.5
+    - prototype: WLResourceDeepCoalSeamT5
+      weight: 1
+      minCount: 4
+      maxCount: 7
+      minSeparation: 32
+      clearanceRadius: 2.5
+    - prototype: WLResourceIndustrialRuinT5
+      weight: 1
+      minCount: 4
+      maxCount: 7
+      minSeparation: 32
+      clearanceRadius: 2.5
+    - prototype: WLResourceSealedExpeditionCacheT5
+      weight: 1
+      minCount: 3
+      maxCount: 5
+      minSeparation: 32
+      clearanceRadius: 2.5
+    - prototype: WLFrostBearDen
+      weight: 1
+      minCount: 1
+      maxCount: 2
+      minSeparation: 72
+      clearanceRadius: 3.0
+    - prototype: WLFrostStalkerDen
+      weight: 1
+      minCount: 1
+      maxCount: 3
+      minSeparation: 56
+      clearanceRadius: 2.0
+
+- type: frozenWorldZonePreset
+  id: FrostRimPoiLightZones
+  zones:
+  - id: SpawnField
+    minDistance: 8
+    maxDistance: 35
+    ambientTemperatureOffset: 0
+    spawnAttempts: 100
+    spawns:
+    - prototype: WLResourceFrozenBranchPileT1
+      weight: 3
+      minCount: 6
+      maxCount: 10
+      minSeparation: 7
+      clearanceRadius: 1.0
+    - prototype: WLResourceLooseScrapPileT1
+      weight: 2
+      minCount: 5
+      maxCount: 9
+      minSeparation: 7
+      clearanceRadius: 1.0
+    - prototype: WLResourceTornSupplyBagT1
+      weight: 1
+      minCount: 3
+      maxCount: 6
+      minSeparation: 8
+      clearanceRadius: 1.0
+  - id: NearField
+    minDistance: 40
+    maxDistance: 100
+    ambientTemperatureOffset: -4
+    spawnAttempts: 120
+    spawns:
+    - prototype: WLResourceCharcoalPitT2
+      weight: 3
+      minCount: 6
+      maxCount: 10
+      minSeparation: 12
+      clearanceRadius: 1.5
+    - prototype: WLResourceFrozenDeadwoodT2
+      weight: 2
+      minCount: 6
+      maxCount: 10
+      minSeparation: 12
+      clearanceRadius: 1.5
+    - prototype: WLResourceSmallScrapPileT2
+      weight: 1
+      minCount: 5
+      maxCount: 9
+      minSeparation: 12
+      clearanceRadius: 1.5
+    - prototype: WLRoughStonePileT2
+      weight: 1
+      minCount: 5
+      maxCount: 9
+      minSeparation: 12
+      clearanceRadius: 1.5
+    - prototype: WLSnowSheepDen
+      weight: 1
+      minCount: 0
+      maxCount: 1
+      minSeparation: 24
+      clearanceRadius: 2.0
+    - prototype: WLSnowGoatDen
+      weight: 1
+      minCount: 0
+      maxCount: 1
+      minSeparation: 24
+      clearanceRadius: 2.0
+    - prototype: WLSnowSheep
+      weight: 1
+      minCount: 0
+      maxCount: 1
+      minSeparation: 14
+      clearanceRadius: 1.0
+    - prototype: WLSnowGoat
+      weight: 1
+      minCount: 0
+      maxCount: 1
+      minSeparation: 14
+      clearanceRadius: 1.0
+  - id: WorkField
+    minDistance: 100
+    maxDistance: 180
+    ambientTemperatureOffset: -9
+    spawnAttempts: 140
+    poiAttempts: 4
+    pois:
+    - poi: WLMeatballMagnetPoi
+      weight: 1
+      minCount: 1
+      maxCount: 2
+      minSeparation: 56
+    spawns:
+    - prototype: WLResourceCoalOutcropT3
+      weight: 3
+      minCount: 6
+      maxCount: 10
+      minSeparation: 18
+      clearanceRadius: 2.0
+    - prototype: WLResourceScrapWreckT3
+      weight: 2
+      minCount: 6
+      maxCount: 10
+      minSeparation: 18
+      clearanceRadius: 2.0
+    - prototype: WLResourceFrozenRubbleOutcropT3
+      weight: 2
+      minCount: 6
+      maxCount: 10
+      minSeparation: 18
+      clearanceRadius: 2.0
+    - prototype: WLResourceFrozenGroveT3
+      weight: 2
+      minCount: 6
+      maxCount: 10
+      minSeparation: 18
+      clearanceRadius: 2.0
+    - prototype: WLFrostStalkerDen
+      weight: 1
+      minCount: 0
+      maxCount: 1
+      minSeparation: 40
+      clearanceRadius: 2.0
+    - prototype: WLFrostElkDen
+      weight: 1
+      minCount: 0
+      maxCount: 1
+      minSeparation: 40
+      clearanceRadius: 2.0
+    - prototype: WLFrostElk
+      weight: 1
+      minCount: 0
+      maxCount: 1
+      minSeparation: 28
+      clearanceRadius: 1.5
+  - id: ExpeditionField
+    minDistance: 180
+    maxDistance: 300
+    ambientTemperatureOffset: -15
+    spawnAttempts: 140
+    poiAttempts: 5
+    pois:
+    - poi: WLMeatballMagnetPoi
+      weight: 1
+      minCount: 1
+      maxCount: 2
+      minSeparation: 64
+    - poi: WLVeganMeatballMagnetPoi
+      weight: 2
+      minCount: 1
+      maxCount: 2
+      minSeparation: 64
+    spawns:
+    - prototype: WLResourceLargeCoalVeinT4
+      weight: 3
+      minCount: 4
+      maxCount: 8
+      minSeparation: 32
+      clearanceRadius: 2.5
+    - prototype: WLResourceFrozenConvoyWreckT4
+      weight: 2
+      minCount: 4
+      maxCount: 7
+      minSeparation: 32
+      clearanceRadius: 2.5
+    - prototype: WLResourceOldMasonryRuinT4
+      weight: 2
+      minCount: 4
+      maxCount: 7
+      minSeparation: 32
+      clearanceRadius: 2.5
+    - prototype: WLResourceOldSupplyCacheT4
+      weight: 1
+      minCount: 2
+      maxCount: 4
+      minSeparation: 32
+      clearanceRadius: 2.5
+    - prototype: WLResourceDeepCoalSeamT5
+      weight: 1
+      minCount: 2
+      maxCount: 4
+      minSeparation: 36
+      clearanceRadius: 2.5
+    - prototype: WLResourceIndustrialRuinT5
+      weight: 1
+      minCount: 2
+      maxCount: 4
+      minSeparation: 36
+      clearanceRadius: 2.5
+    - prototype: WLResourceSealedExpeditionCacheT5
+      weight: 1
+      minCount: 1
+      maxCount: 3
+      minSeparation: 36
+      clearanceRadius: 2.5
+    - prototype: WLFrostBearDen
+      weight: 1
+      minCount: 0
+      maxCount: 1
+      minSeparation: 72
+      clearanceRadius: 3.0
+    - prototype: WLFrostStalkerDen
+      weight: 1
+      minCount: 0
+      maxCount: 1
+      minSeparation: 56
+      clearanceRadius: 2.0

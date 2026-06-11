@@ -1,14 +1,20 @@
 # /// WL Change
 # FrozenWorld world resource points by tier.
 #
-# Distance/zone controls live in frozen_world_zone_presets.yml. These entities
-# only describe what the player sees, how long gathering takes and what drops.
+# Zone spawn counts: frozen_world_zone_presets.yml
+# Round timeline: Balance/wl_survival_balance.yml
+# World sprites for nodes (stacks in hand keep wl_frozen_stacks icons).
+# Gather time, charges, and loot only.
 
 - type: entity
   id: WLBaseResourcePoint
   parent: BaseStructure
   abstract: true
   categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    noRot: true
+    drawdepth: Overdoors
 
 # --- Tier 1: Spawn Field -----------------------------------------------------
 
@@ -20,8 +26,9 @@
   description: Dead branches frozen into the snow. Crude fuel and basic building material for the first hours.
   components:
   - type: Sprite
-    sprite: _WL/Objects/Misc/materials.rsi
-    state: scrap_wood
+    sprite: Objects/Decoration/Flora/flora_treessnow.rsi
+    state: treestump
+    offset: 0,0.35
   - type: WLResourcePoint
     charges: 6
     maxCharges: 6
@@ -39,8 +46,8 @@
   description: A small spill of metal scraps half-buried in ice. Barely enough to start building.
   components:
   - type: Sprite
-    sprite: _WL/Objects/Misc/materials.rsi
-    state: scrap_steel
+    sprite: Objects/Decoration/Flora/flora_rockssolid.rsi
+    state: rocksolid02
   - type: WLResourcePoint
     charges: 5
     maxCharges: 5
@@ -58,8 +65,8 @@
   description: A ripped emergency bag with a little cloth and salvage still inside.
   components:
   - type: Sprite
-    sprite: _WL/Objects/Materials/Scrap/generic.rsi
-    state: clothing_uniform_trash2
+    sprite: Structures/Storage/Crates/plastic.rsi
+    state: icon
   - type: WLResourcePoint
     charges: 3
     maxCharges: 3
@@ -82,8 +89,9 @@
   description: Dead wood locked in ice. It takes work to break loose, but it yields logs for boards and fuel.
   components:
   - type: Sprite
-    sprite: _WL/Objects/Misc/materials.rsi
-    state: log
+    sprite: Objects/Decoration/Flora/flora_treessnow.rsi
+    state: treesnow02
+    offset: 0,0.7
   - type: WLResourcePoint
     charges: 5
     maxCharges: 5
@@ -104,8 +112,8 @@
   description: A frozen old firepit with dry charcoal preserved under the snow.
   components:
   - type: Sprite
-    sprite: _WL/Objects/Misc/materials.rsi
-    state: coal
+    sprite: Objects/Decoration/Flora/flora_stalagmite.rsi
+    state: grey_stalagmite3
   - type: WLResourcePoint
     charges: 4
     maxCharges: 4
@@ -123,8 +131,8 @@
   description: Twisted metal and torn lining from a buried machine shell.
   components:
   - type: Sprite
-    sprite: _WL/Objects/Misc/materials.rsi
-    state: scrap_2
+    sprite: Structures/Walls/rock.rsi
+    state: ironrock
   - type: WLResourcePoint
     charges: 5
     maxCharges: 5
@@ -147,8 +155,8 @@
   description: A solid coal deposit breaking through the frozen ground. The first dependable industrial fuel.
   components:
   - type: Sprite
-    sprite: Objects/Materials/ore.rsi
-    state: coal
+    sprite: Structures/Walls/rock.rsi
+    state: rock_coal
   - type: WLResourcePoint
     charges: 6
     maxCharges: 6
@@ -166,8 +174,8 @@
   description: The remains of something large and mechanical. A richer source of metal and usable parts.
   components:
   - type: Sprite
-    sprite: _WL/Objects/Misc/materials.rsi
-    state: scrap_3
+    sprite: _WL/Objects/Materials/Scrap/generic.rsi
+    state: balka_trash
   - type: WLResourcePoint
     charges: 6
     maxCharges: 6
@@ -188,8 +196,9 @@
   description: A cluster of ancient frozen trees. Enough timber here to cut boards for regular shelter work.
   components:
   - type: Sprite
-    sprite: _WL/Objects/Misc/materials.rsi
-    state: log
+    sprite: Objects/Decoration/Flora/flora_treessnow.rsi
+    state: treesnow04
+    offset: 0,0.7
   - type: WLResourcePoint
     charges: 6
     maxCharges: 6
@@ -212,9 +221,9 @@
   description: A heavy exposed coal vein far from shelter. It can feed the settlement through long cold pushes.
   components:
   - type: Sprite
-    sprite: Objects/Materials/ore.rsi
-    state: coal
-    color: "#cfcfe0"
+    sprite: Structures/Walls/rock.rsi
+    state: rock_coal
+    color: "#b8c4d8"
   - type: WLResourcePoint
     charges: 7
     maxCharges: 7
@@ -235,8 +244,9 @@
   description: A supply convoy locked under snow. Heavy salvage, fabric and fuel remain in the wreckage.
   components:
   - type: Sprite
-    sprite: _WL/Objects/Materials/Scrap/generic.rsi
-    state: balka_trash
+    sprite: Structures/Storage/Crates/generic.rsi
+    state: closed
+    color: "#8a9aaa"
   - type: WLResourcePoint
     charges: 6
     maxCharges: 6
@@ -260,7 +270,7 @@
   description: A sealed pre-collapse cache. The contents are worn, but still valuable.
   components:
   - type: Sprite
-    sprite: _WL/Objects/Materials/Scrap/securedbox.rsi
+    sprite: Structures/Storage/Crates/freezer.rsi
     state: icon
   - type: WLResourcePoint
     charges: 5
@@ -287,9 +297,9 @@
   description: Dense black coal exposed in a dangerous distant seam. Premium fuel for late settlement heat.
   components:
   - type: Sprite
-    sprite: _WL/Objects/Misc/materials.rsi
-    state: coal
-    color: "#b8c2ff"
+    sprite: Structures/Walls/rock.rsi
+    state: rock_coal
+    color: "#9aa8e8"
   - type: WLResourcePoint
     charges: 8
     maxCharges: 8
@@ -310,8 +320,8 @@
   description: A collapsed industrial shell. Valuable metal, heavy insulation and dense fuel can be recovered here.
   components:
   - type: Sprite
-    sprite: _WL/Objects/Materials/Scrap/generic.rsi
-    state: hv_cabel_trash
+    sprite: Structures/Machines/ore_processor.rsi
+    state: icon
   - type: WLResourcePoint
     charges: 7
     maxCharges: 7
@@ -353,63 +363,70 @@
       minCount: 1
       maxCount: 2
 
-# --- Rough Stone Resource Points ---------------------------------------------
+# --- Stone (pickaxe) — tiered with zones --------------------------------------
 
 - type: entity
-  id: WLRoughStonePileDebug
+  id: WLRoughStonePileT2
   parent: WLBaseResourcePoint
   name: rough stone pile
-  suffix: WL, Resource, T2
+  suffix: WL, Resource, T2, Stone
   description: Broken frozen masonry and loose stone. Heavy, but useful for proper floors.
   components:
   - type: Sprite
-    sprite: Structures/Storage/orebox.rsi
-    state: orebox
-    color: "#77716a"
+    sprite: Structures/Walls/rock.rsi
+    state: rock_snow
   - type: WLResourcePoint
     charges: 4
     maxCharges: 4
     gatherTime: 3.2
+    toolWhitelist:
+      tags:
+      - Pickaxe
     loot:
     - prototype: WLRoughStone
       minCount: 3
       maxCount: 5
 
 - type: entity
-  id: WLFrozenRubbleOutcropDebug
+  id: WLResourceFrozenRubbleOutcropT3
   parent: WLBaseResourcePoint
   name: frozen rubble outcrop
-  suffix: WL, Resource, T3
+  suffix: WL, Resource, T3, Stone
   description: A compact pile of cracked stone locked into the ice. Good material for floors and heat-safe masonry.
   components:
   - type: Sprite
-    sprite: Structures/Storage/orebox.rsi
-    state: orebox
-    color: "#6f6962"
+    sprite: Structures/Walls/rock.rsi
+    state: rock_wall
+    color: "#7a746c"
   - type: WLResourcePoint
     charges: 6
     maxCharges: 6
     gatherTime: 4.6
+    toolWhitelist:
+      tags:
+      - Pickaxe
     loot:
     - prototype: WLRoughStone
       minCount: 4
       maxCount: 7
 
 - type: entity
-  id: WLOldMasonryRuinDebug
+  id: WLResourceOldMasonryRuinT4
   parent: WLBaseResourcePoint
   name: old masonry ruin
-  suffix: WL, Resource, T4
+  suffix: WL, Resource, T4, Stone
   description: A collapsed stone ruin buried under frost. Slow to break apart, but rich in heavy building material.
   components:
   - type: Sprite
-    sprite: Structures/Storage/orebox.rsi
-    state: orebox
-    color: "#5f5b55"
+    sprite: Objects/Decoration/Flora/flora_rockssolid.rsi
+    state: rocksolid03
   - type: WLResourcePoint
     charges: 7
     maxCharges: 7
     gatherTime: 5.4
+    toolWhitelist:
+      tags:
+      - Pickaxe
     loot:
     - prototype: WLRoughStone
       minCount: 5

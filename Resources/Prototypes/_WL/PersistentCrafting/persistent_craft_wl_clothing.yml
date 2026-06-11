@@ -1,5 +1,10 @@
 # /// WL Change
 # FrozenWorld survival clothing crafted through personal crafting only.
+# Entities: wl_clothing_frozen_sets.yml (coats, no hood toggle)
+# Hoods: wl_clothing_frozen_hoods.yml (tiered separate hoods)
+# Armored: wl_clothing_frozen_armored.yml
+# Research: WLCraftNodeMechanicClothingT1–T5 in persistent_craft_wl_core.yml
+# Per tier: thermal jumper → coat → armored coat (T2+) → hat → gloves → boots → storage
 
 - type: persistentCraftSubCategory
   id: WLCraftSubCategorySurvivalClothing
@@ -152,26 +157,6 @@
 # --- Tier 2: Warm ------------------------------------------------------------
 
 - type: persistentCraftRecipe
-  id: WLCraftRecipeBasicDuffel
-  name: persistent-craft-wl-recipe-basic-duffel-name
-  description: persistent-craft-wl-recipe-basic-duffel-description
-  displayProto: ClothingBackpackDuffel
-  branch: WLMechanic
-  tier: 2
-  requiredNode: WLCraftNodeMechanicClothingT2
-  category: WLCraftCategoryMechanic
-  subCategory: WLCraftSubCategorySurvivalStorage
-  craftTime: 2.4
-  ingredients:
-  - stackType: WLPreparedClothStack
-    amount: 8
-  - stackType: WLMetalPartsStack
-    amount: 2
-  results:
-  - proto: ClothingBackpackDuffel
-    amount: 1
-
-- type: persistentCraftRecipe
   id: WLCraftRecipeWarmThermalJumper
   name: persistent-craft-wl-recipe-warm-thermal-jumper-name
   description: persistent-craft-wl-recipe-warm-thermal-jumper-description
@@ -291,6 +276,26 @@
   - proto: ClothingShoesBootsWinterWarmWL
     amount: 1
 
+- type: persistentCraftRecipe
+  id: WLCraftRecipeBasicDuffel
+  name: persistent-craft-wl-recipe-basic-duffel-name
+  description: persistent-craft-wl-recipe-basic-duffel-description
+  displayProto: ClothingBackpackDuffel
+  branch: WLMechanic
+  tier: 2
+  requiredNode: WLCraftNodeMechanicClothingT2
+  category: WLCraftCategoryMechanic
+  subCategory: WLCraftSubCategorySurvivalStorage
+  craftTime: 2.4
+  ingredients:
+  - stackType: WLPreparedClothStack
+    amount: 8
+  - stackType: WLMetalPartsStack
+    amount: 2
+  results:
+  - proto: ClothingBackpackDuffel
+    amount: 1
+
 # --- Tier 3: Winter ----------------------------------------------------------
 
 - type: persistentCraftRecipe
@@ -359,7 +364,7 @@
   id: WLCraftRecipeWinterHat
   name: persistent-craft-wl-recipe-winter-hat-name
   description: persistent-craft-wl-recipe-winter-hat-description
-  displayProto: ClothingHeadHelmetWinterWL
+  displayProto: ClothingHeadHatWinterWL
   branch: WLMechanic
   tier: 3
   requiredNode: WLCraftNodeMechanicClothingT3
@@ -372,7 +377,7 @@
   - stackType: WLMetalPartsStack
     amount: 2
   results:
-  - proto: ClothingHeadHelmetWinterWL
+  - proto: ClothingHeadHatWinterWL
     amount: 1
 
 - type: persistentCraftRecipe

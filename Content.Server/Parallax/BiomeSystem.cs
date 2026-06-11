@@ -935,6 +935,25 @@ public sealed partial class BiomeSystem : SharedBiomeSystem
         return pinned;
     }
 
+    public bool IsPreloadAreaLoaded(BiomeComponent component, Box2 area, out int loadedChunks, out int totalChunks)
+    {
+        loadedChunks = 0;
+        totalChunks = 0;
+
+        var enumerator = new ChunkIndicesEnumerator(area, ChunkSize);
+
+        while (enumerator.MoveNext(out var chunkOrigin))
+        {
+            totalChunks++;
+
+            var chunk = chunkOrigin.Value * ChunkSize;
+            if (component.LoadedChunks.Contains(chunk))
+                loadedChunks++;
+        }
+
+        return loadedChunks == totalChunks;
+    }
+
     #endregion
 
     #region Unload

@@ -190,7 +190,7 @@ public sealed partial class FrozenHeatSourceFuelSystem : EntitySystem
             used: args.Used)
         {
             BreakOnMove = true,
-            BreakOnDamage = true,
+            BreakOnDamage = false,
             NeedHand = true,
         };
 

@@ -3,7 +3,7 @@
   abstract: true
   components:
   - type: StationFrozenWorld
-    profile: FrostRimPoiHeavy
+    profile: FrostRimDefault
     enabled: true
 
 # Use this station prototype only for Frostland-like game maps.

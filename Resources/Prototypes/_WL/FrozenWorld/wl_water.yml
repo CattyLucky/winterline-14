@@ -9,9 +9,8 @@
   description: Packed snow dug from frozen ground. Melt it near a fire before drinking.
   components:
   - type: Sprite
-    sprite: Objects/Materials/materials.rsi
-    state: ash
-    color: "#d8f4ff"
+    sprite: Tiles/Planet/Snow/snow.rsi
+    state: ice
   - type: Item
     size: Tiny
   - type: Stack

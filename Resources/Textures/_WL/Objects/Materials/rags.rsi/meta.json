@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "license": "WL (не для коммерческого пользования)",
+  "copyright": "Insurgent",
+  "size": {
+    "x": 32,
+    "y": 32
+  },
+  "states": [
+    {
+      "name": "rags-1"
+    },
+    {
+      "name": "rags-2"
+    },
+    {
+      "name": "rags-3"
+    }
+  ]
+}

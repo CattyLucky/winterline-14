@@ -149,7 +149,7 @@
   components:
   - type: Sprite
     sprite: _WL/Objects/Misc/materials.rsi
-    state: coal
+    state: dense_coal
   - type: Stack
     stackType: WLDenseCoalFuelStack
   - type: FrozenFuel
