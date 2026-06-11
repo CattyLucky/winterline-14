@@ -383,7 +383,7 @@
           collection: WoodDestroyHeavy
       - !type:SpawnEntitiesBehavior
         spawn:
-          WLFrozenBranch:
+          WLWoodPlank1:
             min: 1
             max: 2
       - !type:DoActsBehavior
@@ -396,7 +396,7 @@
   - type: FrozenShelterDeconstructible
     doAfter: 3
     refunds:
-    - proto: WLFrozenBranch
+    - proto: WLWoodPlank1
       count: 2
 
 - type: entity
@@ -431,7 +431,7 @@
           collection: WoodDestroy
       - !type:SpawnEntitiesBehavior
         spawn:
-          WLFrozenBranch:
+          WLWoodPlank1:
             min: 1
             max: 2
       - !type:DoActsBehavior
@@ -442,7 +442,7 @@
   - type: FrozenShelterDeconstructible
     doAfter: 3
     refunds:
-    - proto: WLFrozenBranch
+    - proto: WLWoodPlank1
       count: 3
     - proto: WLTornCloth
       count: 1
@@ -860,7 +860,7 @@
           collection: WoodDestroy
       - !type:SpawnEntitiesBehavior
         spawn:
-          WLFrozenBranch:
+          WLWoodPlank1:
             min: 1
             max: 2
       - !type:DoActsBehavior

@@ -9,24 +9,24 @@
 - type: entity
   id: WLMaterialWoodFuel
   parent: MaterialWoodPlank
-  name: frozen firewood
-  description: Split timber prepared for shelter heating. Better than raw branches and easy to store.
+  name: dry firewood
+  description: Dry split wood prepared from rough planks for shelter heating. It burns evenly and stores cleanly.
   suffix: Full
   components:
   - type: Sprite
-    sprite: _WL/Objects/Misc/materials.rsi
-    state: firewood_3
+    sprite: Objects/Materials/materials.rsi
+    state: wood_3
     layers:
-    - state: firewood_3
+    - state: wood_3
       map: ["base"]
   - type: Appearance
   - type: Stack
     stackType: WLWoodFuelStack
     baseLayer: base
     layerStates:
-    - firewood
-    - firewood_2
-    - firewood_3
+    - wood
+    - wood_2
+    - wood_3
   - type: FrozenFuel
     fuelSeconds: 70
     priority: 20
@@ -40,7 +40,7 @@
   suffix: 10
   components:
   - type: Sprite
-    state: firewood_2
+    state: wood_2
   - type: Stack
     count: 10
 
@@ -50,7 +50,7 @@
   suffix: Single
   components:
   - type: Sprite
-    state: firewood
+    state: wood
   - type: Stack
     count: 1
 

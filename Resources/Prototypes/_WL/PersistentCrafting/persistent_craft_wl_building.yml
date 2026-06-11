@@ -6,7 +6,8 @@
 # builds those plans with materials. This does not touch vanilla construction.
 #
 # Material roles:
-# - WLFrozenBranchStack: crude wood for first shelter construction.
+# - WLLog: heavy raw wood from frozen trees.
+# - WLWoodPlankStack: rough boards for first shelter construction.
 # - WLScrapMetalStack: crude metal fittings and early frames.
 # - WLIronIngotStack: smelted metal for machines and reinforced structures.
 # - WLRoughStoneStack: masonry, heavy floors, and outdoor paving.
@@ -176,8 +177,8 @@
   subCategory: WLCraftSubCategoryShelterGenerators
   craftTime: 1.6
   ingredients:
-  - stackType: WLFrozenBranchStack
-    amount: 4
+  - proto: WLLog
+    amount: 1
   results: []
   placement:
     proto: WLCampfireHeatSource
@@ -421,7 +422,7 @@
   subCategory: WLCraftSubCategoryShelterStructures
   craftTime: 2.2
   ingredients:
-  - stackType: WLFrozenBranchStack
+  - stackType: WLWoodPlankStack
     amount: 4
   - stackType: WLScrapMetalStack
     amount: 2

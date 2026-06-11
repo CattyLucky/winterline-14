@@ -151,8 +151,8 @@
   subCategory: WLCraftSubCategoryMechanicFieldSupplies
   craftTime: 1.2
   ingredients:
-  - stackType: WLFrozenBranchStack
-    amount: 2
+  - stackType: WLWoodPlankStack
+    amount: 1
   - stackType: WLScrapMetalStack
     amount: 1
   results:
@@ -424,9 +424,9 @@
 # --- Gatherer-Processor: Tier 1 ----------------------------------------------
 
 - type: persistentCraftRecipe
-  id: WLCraftRecipeCutBranchesToPlanks
-  name: persistent-craft-wl-recipe-cut-branches-to-planks-name
-  description: persistent-craft-wl-recipe-cut-branches-to-planks-description
+  id: WLCraftRecipeSplitLogToRoughPlanks
+  name: persistent-craft-wl-recipe-split-log-to-rough-planks-name
+  description: persistent-craft-wl-recipe-split-log-to-rough-planks-description
   displayProto: WLWoodPlank1
   branch: WLGathererProcessor
   tier: 1
@@ -436,8 +436,8 @@
   craftTime: 1.2
   allowResourceProcessingBonus: true
   ingredients:
-  - stackType: WLFrozenBranchStack
-    amount: 4
+  - proto: WLLog
+    amount: 1
   results:
   - proto: WLWoodPlank1
     amount: 2
@@ -455,8 +455,8 @@
   craftTime: 1.4
   allowResourceProcessingBonus: true
   ingredients:
-  - stackType: WLFrozenBranchStack
-    amount: 3
+  - stackType: WLWoodPlankStack
+    amount: 2
   results:
   - proto: WLMaterialWoodFuel1
     amount: 2

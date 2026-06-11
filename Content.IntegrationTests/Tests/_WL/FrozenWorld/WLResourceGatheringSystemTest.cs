@@ -64,7 +64,7 @@ public sealed class WLResourceGatheringSystemTest : GameTest
         await server.WaitPost(() =>
         {
             user = entManager.SpawnEntity(TestUser, map.GridCoords);
-            var resource = SpawnResourcePoint(entManager, map.GridCoords, "WLFrozenBranch", 5);
+            var resource = SpawnResourcePoint(entManager, map.GridCoords, "WLWoodPlank1", 5);
 
             CompleteGather(entManager, resource, user);
         });
@@ -74,12 +74,12 @@ public sealed class WLResourceGatheringSystemTest : GameTest
         await server.WaitPost(() =>
         {
             var heldStacks = hands.EnumerateHeld(user)
-                .Where(entity => IsStack(entManager, entity, "WLFrozenBranchStack"))
+                .Where(entity => IsStack(entManager, entity, "WLWoodPlankStack"))
                 .ToArray();
 
             Assert.That(heldStacks, Has.Length.EqualTo(1));
             Assert.That(entManager.GetComponent<StackComponent>(heldStacks[0]).Count, Is.EqualTo(5));
-            Assert.That(FindStacks(entManager, "WLFrozenBranchStack"), Has.Count.EqualTo(1));
+            Assert.That(FindStacks(entManager, "WLWoodPlankStack"), Has.Count.EqualTo(1));
         });
 
         await server.WaitPost(() => mapSystem.DeleteMap(map.MapId));

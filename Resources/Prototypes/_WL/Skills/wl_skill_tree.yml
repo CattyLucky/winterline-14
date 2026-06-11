@@ -34,7 +34,7 @@
   description: wl-skill-node-gatherer-starter-desc
   branch: WLSkillGatherer
   cost: 0
-  displayProto: WLFrozenBranch
+  displayProto: WLLog
   treeColumn: 0
   treeRow: 0
   prerequisites: []

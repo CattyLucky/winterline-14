@@ -2,19 +2,12 @@
 # Keeps balancing isolated from vanilla stack definitions.
 #
 # Final material pipeline:
-# - Raw: branches, scrap metal, iron ore, lead ore, rough stone, torn cloth, snow.
-# - Processed: planks, iron ingots, lead ingots, stone blocks, prepared cloth.
+# - Raw: logs, scrap metal, iron ore, lead ore, rough stone, torn cloth, snow.
+# - Processed: rough planks, iron ingots, lead ingots, stone blocks, prepared cloth.
 # - Fuel: firewood, charcoal, coal, dense coal.
 # - Wildlife: hide and fat; meat/bones stay on vanilla prototypes.
 
 # --- Raw Craft Materials -----------------------------------------------------
-
-- type: stack
-  parent: BaseMediumStack
-  id: WLFrozenBranchStack
-  name: stack-wl-frozen-branches
-  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: firewood_3 }
-  spawn: WLFrozenBranch
 
 - type: stack
   parent: BaseMediumStack
@@ -55,7 +48,7 @@
   parent: BaseMediumStack
   id: WLTornClothStack
   name: stack-wl-torn-cloth
-  icon: { sprite: /Textures/_WL/Objects/Materials/rags.rsi, state: rags-3 }
+  icon: { sprite: /Textures/Objects/Materials/materials.rsi, state: cloth_3 }
   spawn: WLTornCloth
 
 # --- Processed Craft Materials ----------------------------------------------
@@ -63,7 +56,7 @@
 - type: stack
   parent: BaseMediumStack
   id: WLWoodPlankStack
-  name: stack-wl-wood-planks
+  name: stack-wl-rough-planks
   icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: plank_3 }
   spawn: WLWoodPlank1
 
@@ -99,7 +92,7 @@
   parent: BaseMediumStack
   id: WLPreparedClothStack
   name: stack-wl-prepared-cloth
-  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: militaryfiber }
+  icon: { sprite: /Textures/Objects/Materials/materials.rsi, state: cloth_3 }
   spawn: WLPreparedCloth1
 
 # --- Animal Processing Materials --------------------------------------------
@@ -123,8 +116,8 @@
 - type: stack
   parent: BaseMediumStack
   id: WLWoodFuelStack
-  name: stack-wl-frozen-firewood
-  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: firewood_3 }
+  name: stack-wl-dry-firewood
+  icon: { sprite: /Textures/Objects/Materials/materials.rsi, state: wood_3 }
   spawn: WLMaterialWoodFuel1
 
 - type: stack

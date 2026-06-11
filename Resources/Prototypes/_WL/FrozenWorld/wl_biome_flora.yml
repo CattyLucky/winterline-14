@@ -33,11 +33,8 @@
       - !type:SpawnEntitiesBehavior
         spawn:
           WLLog:
-            min: 2
-            max: 8
-          WLFrozenBranch:
-            min: 4
-            max: 8
+            min: 3
+            max: 10
 
 - type: entity
   id: WLFloraTreeSnow
@@ -69,11 +66,8 @@
       - !type:SpawnEntitiesBehavior
         spawn:
           WLLog:
-            min: 2
-            max: 8
-          WLFrozenBranch:
-            min: 4
-            max: 8
+            min: 3
+            max: 10
 
 - type: entity
   id: WLFloraTreeStump
@@ -105,11 +99,8 @@
       - !type:SpawnEntitiesBehavior
         spawn:
           WLLog:
-            min: 2
-            max: 8
-          WLFrozenBranch:
-            min: 4
-            max: 8
+            min: 3
+            max: 10
 
 - type: entity
   id: WLFloraTreeStumpConifer
@@ -141,8 +132,5 @@
       - !type:SpawnEntitiesBehavior
         spawn:
           WLLog:
-            min: 2
-            max: 8
-          WLFrozenBranch:
-            min: 4
-            max: 8
+            min: 3
+            max: 10

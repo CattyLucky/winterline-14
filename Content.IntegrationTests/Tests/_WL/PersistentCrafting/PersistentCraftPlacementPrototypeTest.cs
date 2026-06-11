@@ -27,7 +27,6 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
 {
     private static readonly Dictionary<string, string> StackableResourcePrototypes = new()
     {
-        ["WLFrozenBranch"] = "WLFrozenBranchStack",
         ["WLScrapMetal"] = "WLScrapMetalStack",
         ["WLScrapMetal30"] = "WLScrapMetalStack",
         ["WLLooseScrap"] = "WLScrapMetalStack",
@@ -77,7 +76,6 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
 
     private static readonly Dictionary<string, string> MaterialStackVisualPrototypes = new()
     {
-        ["WLFrozenBranch"] = "WLFrozenBranchStack",
         ["WLScrapMetal"] = "WLScrapMetalStack",
         ["WLRoughStone"] = "WLRoughStoneStack",
         ["WLTornCloth"] = "WLTornClothStack",
@@ -173,6 +171,7 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
 
                 AssertRecipeUsesNode(proto, "WLCraftRecipeFieldRoast", "WLCraftNodeCookingStarter", tier: 1);
                 AssertRecipeUsesNode(proto, "WLCraftRecipeButcherStation", "WLCraftNodeCookingStarter", tier: 1);
+                AssertRecipeUsesNode(proto, "WLCraftRecipeSplitLogToRoughPlanks", "WLCraftNodeGathererProcessingT1", tier: 1);
                 AssertRecipeUsesNode(proto, "WLCraftRecipePreparedWoodFuel", "WLCraftNodeGathererProcessingT1", tier: 1);
                 AssertRecipeUsesNode(proto, "WLCraftRecipeHunterSnare", "WLCraftNodeHunterSnareT1", tier: 1);
                 AssertRecipeUsesNode(proto, "WLCraftRecipeSurvivalKnife", "WLCraftNodeHunterMeleeT1", tier: 1);
@@ -180,7 +179,8 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
                 AssertRecipeUsesNode(proto, "WLCraftRecipeHunterSpear", "WLCraftNodeHunterMeleeT1", tier: 1);
                 AssertRecipeUsesNode(proto, "WLCraftRecipeHunterMachete", "WLCraftNodeHunterMeleeT1", tier: 1);
 
-                AssertRecipeHasStackIngredient(proto, "WLCraftRecipePreparedWoodFuel", "WLFrozenBranchStack", 3);
+                AssertRecipeHasProtoIngredient(proto, "WLCraftRecipeSplitLogToRoughPlanks", "WLLog", 1);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipePreparedWoodFuel", "WLWoodPlankStack", 2);
                 AssertRecipeHasStackIngredient(proto, "WLCraftRecipeHunterSnare", "WLPreparedClothStack", 1);
                 AssertRecipeHasStackIngredient(proto, "WLCraftRecipeHunterSnare", "WLWoodPlankStack", 1);
                 AssertRecipeHasStackIngredient(proto, "WLCraftRecipeSurvivalKnife", "WLScrapMetalStack", 2);
@@ -218,7 +218,7 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
                 AssertRecipeHasStackIngredient(proto, "WLCraftRecipeBoneStew", "WLCharcoalFuelStack", 1);
                 AssertRecipeHasStackIngredient(proto, "WLCraftRecipeWildernessStew", "WLCharcoalFuelStack", 1);
 
-                AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "SpawnField", "WLResourceFrozenBranchPileT1", minCount: 6);
+                AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "SpawnField", "WLResourceFrozenLogPileT1", minCount: 6);
                 AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "SpawnField", "WLResourceLooseScrapPileT1", minCount: 5);
                 AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "SpawnField", "WLResourceTornSupplyBagT1", minCount: 3);
                 AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "NearField", "WLSnowSheepDen", minCount: 1);
@@ -284,7 +284,7 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
         {
             Assert.Multiple(() =>
             {
-                AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "SpawnField", "WLResourceFrozenBranchPileT1", minCount: 6);
+                AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "SpawnField", "WLResourceFrozenLogPileT1", minCount: 6);
                 AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "SpawnField", "WLResourceLooseScrapPileT1", minCount: 5);
                 AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "SpawnField", "WLResourceTornSupplyBagT1", minCount: 3);
                 AssertZoneDoesNotContainSpawn(proto, "FrostRimDefaultZones", "SpawnField", "WLSnowSheepDen");
@@ -530,7 +530,6 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
         {
             Assert.Multiple(() =>
             {
-                AssertStackEntity(proto, componentFactory, "WLFrozenBranch30", "WLFrozenBranchStack", 30);
                 AssertStackEntity(proto, componentFactory, "WLScrapMetal30", "WLScrapMetalStack", 30);
                 AssertStackEntity(proto, componentFactory, "WLIronOre30", "WLIronOreStack", 30);
                 AssertStackEntity(proto, componentFactory, "WLLeadOre30", "WLLeadOreStack", 30);
@@ -580,9 +579,9 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
         {
             Assert.Multiple(() =>
             {
-                AssertDeconstructible(proto, componentFactory, "WLPrimitiveWoodWall", ("WLFrozenBranch", 2));
-                AssertDeconstructible(proto, componentFactory, "WLPrimitiveWoodDoor", ("WLFrozenBranch", 3), ("WLTornCloth", 1));
-                AssertDeconstructible(proto, componentFactory, "WLCampfireHeatSource", ("WLFrozenBranch", 3));
+                AssertDeconstructible(proto, componentFactory, "WLPrimitiveWoodWall", ("WLWoodPlank1", 2));
+                AssertDeconstructible(proto, componentFactory, "WLPrimitiveWoodDoor", ("WLWoodPlank1", 3), ("WLTornCloth", 1));
+                AssertDeconstructible(proto, componentFactory, "WLCampfireHeatSource", ("WLLog", 1));
                 AssertDeconstructible(proto, componentFactory, "WLFireplaceHeatSource", ("WLRoughStone", 3), ("WLScrapMetal", 1));
                 AssertDeconstructible(proto, componentFactory, "WLFiretubeGenerator", ("WLIronIngot1", 7), ("WLRoughStone", 3), ("WLTornCloth", 2));
             });

@@ -19,11 +19,11 @@
 # --- Tier 1: Spawn Field -----------------------------------------------------
 
 - type: entity
-  id: WLResourceFrozenBranchPileT1
+  id: WLResourceFrozenLogPileT1
   parent: WLBaseResourcePoint
-  name: frozen branch pile
+  name: frozen log pile
   suffix: WL, Resource, T1
-  description: Dead branches frozen into the snow. Crude fuel and basic building material for the first hours.
+  description: Frozen logs half-buried in the snow. Heavy, crude wood for the first hours.
   components:
   - type: Sprite
     sprite: Objects/Decoration/Flora/flora_treessnow.rsi
@@ -34,9 +34,9 @@
     maxCharges: 6
     gatherTime: 2.2
     loot:
-    - prototype: WLFrozenBranch
-      minCount: 3
-      maxCount: 5
+    - prototype: WLLog
+      minCount: 1
+      maxCount: 2
 
 - type: entity
   id: WLResourceLooseScrapPileT1
@@ -98,9 +98,6 @@
     gatherTime: 3.4
     loot:
     - prototype: WLLog
-      minCount: 2
-      maxCount: 3
-    - prototype: WLFrozenBranch
       minCount: 2
       maxCount: 3
 
@@ -230,9 +227,6 @@
     - prototype: WLLog
       minCount: 3
       maxCount: 5
-    - prototype: WLFrozenBranch
-      minCount: 3
-      maxCount: 4
 
 # --- Tier 4: Expedition Field ------------------------------------------------
 
