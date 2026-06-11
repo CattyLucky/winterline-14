@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "license": "CC-BY-SA-3.0",
+  "copyright": "Derived from Resources/Textures/Tiles/Planet/Snow.",
+  "size": {
+    "x": 32,
+    "y": 32
+  },
+  "states": [
+    {
+      "name": "snow_chunk"
+    },
+    {
+      "name": "snow_chunk_2"
+    },
+    {
+      "name": "snow_chunk_3"
+    }
+  ]
+}

@@ -272,10 +272,10 @@
     amount: 1
 
 - type: persistentCraftRecipe
-  id: WLCraftRecipeButcherSpike
-  name: persistent-craft-wl-recipe-butcher-spike-name
-  description: persistent-craft-wl-recipe-butcher-spike-description
-  displayProto: WLButcherSpike
+  id: WLCraftRecipeButcherStation
+  name: persistent-craft-wl-recipe-butcher-station-name
+  description: persistent-craft-wl-recipe-butcher-station-description
+  displayProto: WLButcherStation
   branch: WLCooking
   tier: 2
   order: 10
@@ -286,11 +286,11 @@
   ingredients:
   - stackType: WLWoodPlankStack
     amount: 3
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 2
   results: []
   placement:
-    proto: WLButcherSpike
+    proto: WLButcherStation
     floorRequirement: Furniture
 
 - type: persistentCraftRecipe

@@ -28,7 +28,7 @@
   ingredients:
   - stackType: WLWoodPlankStack
     amount: 5
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 4
   - stackType: WLPreparedClothStack
     amount: 5

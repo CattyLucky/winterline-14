@@ -7,7 +7,8 @@
 #
 # Material roles:
 # - WLFrozenBranchStack: crude wood for first shelter construction.
-# - WLLooseScrapStack: metal fittings, frames, and machinery.
+# - WLScrapMetalStack: crude metal fittings and early frames.
+# - WLIronIngotStack: smelted metal for machines and reinforced structures.
 # - WLRoughStoneStack: masonry, heavy floors, and outdoor paving.
 # - WLStoneBlockStack: shaped masonry blocks for proper walls and doors.
 # - WLTornClothStack: clothing, seals, and insulation.
@@ -55,7 +56,7 @@
   ingredients:
   - stackType: WLWoodPlankStack
     amount: 2
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 1
   results:
   - proto: WLSnowFoundationTileItem
@@ -133,7 +134,7 @@
   subCategory: WLCraftSubCategoryShelterFloors
   craftTime: 2.4
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 3
   - stackType: WLPreparedClothStack
     amount: 3
@@ -273,7 +274,7 @@
   ingredients:
   - stackType: WLStoneBlockStack
     amount: 4
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 1
   results: []
   placement:
@@ -297,7 +298,7 @@
   ingredients:
   - stackType: WLStoneBlockStack
     amount: 3
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 2
   - stackType: WLPreparedClothStack
     amount: 1
@@ -324,7 +325,7 @@
   ingredients:
   - stackType: WLStoneBlockStack
     amount: 3
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 1
   results: []
   placement:
@@ -346,7 +347,7 @@
   subCategory: WLCraftSubCategoryMechanicShelterStructures
   craftTime: 2.4
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 6
   - stackType: WLPreparedClothStack
     amount: 1
@@ -370,7 +371,7 @@
   subCategory: WLCraftSubCategoryMechanicShelterStructures
   craftTime: 3.0
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 9
   - stackType: WLPreparedClothStack
     amount: 2
@@ -396,7 +397,7 @@
   ingredients:
   - stackType: WLStoneBlockStack
     amount: 6
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 3
   results: []
   placement:
@@ -422,7 +423,7 @@
   ingredients:
   - stackType: WLFrozenBranchStack
     amount: 4
-  - stackType: WLLooseScrapStack
+  - stackType: WLScrapMetalStack
     amount: 2
   - stackType: WLTornClothStack
     amount: 1
@@ -448,12 +449,38 @@
   ingredients:
   - stackType: WLWoodPlankStack
     amount: 4
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 1
   results: []
   placement:
     proto: WLPrimitiveWorkbench
     blueprintProto: WLPrimitiveWorkbenchBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Furniture
+    requireRoom: true
+    minFloorTier: Wood
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeSmelter
+  name: persistent-craft-wl-recipe-smelter-name
+  description: persistent-craft-wl-recipe-smelter-description
+  displayProto: WLSmelter
+  branch: WLSettlementHead
+  tier: 2
+  order: 20
+  requiredNode: WLCraftNodeSettlementHeadHeatT2
+  category: WLCraftCategorySettlementHead
+  subCategory: WLCraftSubCategoryShelterGenerators
+  craftTime: 3.2
+  ingredients:
+  - stackType: WLRoughStoneStack
+    amount: 6
+  - stackType: WLScrapMetalStack
+    amount: 4
+  results: []
+  placement:
+    proto: WLSmelter
+    blueprintProto: WLSmelterBlueprint
     placementMode: SnapgridCenter
     floorRequirement: Furniture
     requireRoom: true
@@ -474,7 +501,7 @@
   ingredients:
   - stackType: WLRoughStoneStack
     amount: 4
-  - stackType: WLLooseScrapStack
+  - stackType: WLScrapMetalStack
     amount: 2
   results: []
   placement:
@@ -500,7 +527,7 @@
   subCategory: WLCraftSubCategoryShelterGenerators
   craftTime: 5.5
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 10
   - stackType: WLPreparedClothStack
     amount: 3

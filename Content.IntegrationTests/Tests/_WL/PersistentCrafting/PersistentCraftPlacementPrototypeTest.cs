@@ -23,12 +23,75 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
     private static readonly Dictionary<string, string> StackableResourcePrototypes = new()
     {
         ["WLFrozenBranch"] = "WLFrozenBranchStack",
-        ["WLLooseScrap"] = "WLLooseScrapStack",
+        ["WLScrapMetal"] = "WLScrapMetalStack",
+        ["WLScrapMetal30"] = "WLScrapMetalStack",
+        ["WLLooseScrap"] = "WLScrapMetalStack",
         ["WLRoughStone"] = "WLRoughStoneStack",
         ["WLTornCloth"] = "WLTornClothStack",
         ["WLWoodPlank"] = "WLWoodPlankStack",
-        ["WLMetalParts"] = "WLMetalPartsStack",
+        ["WLWoodPlank1"] = "WLWoodPlankStack",
+        ["WLWoodPlank10"] = "WLWoodPlankStack",
+        ["WLIronOre"] = "WLIronOreStack",
+        ["WLIronOre1"] = "WLIronOreStack",
+        ["WLIronOre30"] = "WLIronOreStack",
+        ["WLIronIngot"] = "WLIronIngotStack",
+        ["WLIronIngot1"] = "WLIronIngotStack",
+        ["WLIronIngot10"] = "WLIronIngotStack",
+        ["WLLeadOre"] = "WLLeadOreStack",
+        ["WLLeadOre1"] = "WLLeadOreStack",
+        ["WLLeadOre30"] = "WLLeadOreStack",
+        ["WLLeadIngot"] = "WLLeadIngotStack",
+        ["WLLeadIngot1"] = "WLLeadIngotStack",
+        ["WLLeadIngot10"] = "WLLeadIngotStack",
+        ["WLMetalParts"] = "WLIronIngotStack",
+        ["WLMetalParts1"] = "WLIronIngotStack",
+        ["WLMetalParts10"] = "WLIronIngotStack",
+        ["WLStoneBlock"] = "WLStoneBlockStack",
+        ["WLStoneBlock1"] = "WLStoneBlockStack",
+        ["WLStoneBlock10"] = "WLStoneBlockStack",
         ["WLPreparedCloth"] = "WLPreparedClothStack",
+        ["WLPreparedCloth1"] = "WLPreparedClothStack",
+        ["WLPreparedCloth10"] = "WLPreparedClothStack",
+        ["WLAnimalHide"] = "WLAnimalHideStack",
+        ["WLAnimalHide1"] = "WLAnimalHideStack",
+        ["WLAnimalFat"] = "WLAnimalFatStack",
+        ["WLAnimalFat1"] = "WLAnimalFatStack",
+        ["WLSnowChunk"] = "WLSnowChunkStack",
+        ["WLSnowChunk1"] = "WLSnowChunkStack",
+        ["WLMaterialWoodFuel"] = "WLWoodFuelStack",
+        ["WLMaterialWoodFuel1"] = "WLWoodFuelStack",
+        ["WLMaterialWoodFuel10"] = "WLWoodFuelStack",
+        ["WLCharcoalFuel"] = "WLCharcoalFuelStack",
+        ["WLCharcoalFuel1"] = "WLCharcoalFuelStack",
+        ["WLCharcoalFuel10"] = "WLCharcoalFuelStack",
+        ["WLCoalFuel"] = "WLCoalFuelStack",
+        ["WLCoalFuel1"] = "WLCoalFuelStack",
+        ["WLCoalFuel10"] = "WLCoalFuelStack",
+        ["WLDenseCoalFuel"] = "WLDenseCoalFuelStack",
+        ["WLDenseCoalFuel1"] = "WLDenseCoalFuelStack",
+        ["WLDenseCoalFuel10"] = "WLDenseCoalFuelStack",
+    };
+
+    private static readonly Dictionary<string, string> MaterialStackVisualPrototypes = new()
+    {
+        ["WLFrozenBranch"] = "WLFrozenBranchStack",
+        ["WLScrapMetal"] = "WLScrapMetalStack",
+        ["WLRoughStone"] = "WLRoughStoneStack",
+        ["WLTornCloth"] = "WLTornClothStack",
+        ["WLWoodPlank"] = "WLWoodPlankStack",
+        ["WLIronOre"] = "WLIronOreStack",
+        ["WLIronIngot"] = "WLIronIngotStack",
+        ["WLLeadOre"] = "WLLeadOreStack",
+        ["WLLeadIngot"] = "WLLeadIngotStack",
+        ["WLStoneBlock"] = "WLStoneBlockStack",
+        ["WLPreparedCloth"] = "WLPreparedClothStack",
+        ["WLAnimalHide"] = "WLAnimalHideStack",
+        ["WLAnimalFat"] = "WLAnimalFatStack",
+        ["WLSnowChunk"] = "WLSnowChunkStack",
+        ["WLMaterialWoodFuel"] = "WLWoodFuelStack",
+        ["WLCharcoalFuel"] = "WLCharcoalFuelStack",
+        ["WLCoalFuel"] = "WLCoalFuelStack",
+        ["WLDenseCoalFuel"] = "WLDenseCoalFuelStack",
     };
 
     [Test]
@@ -242,7 +305,7 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
             Assert.Multiple(() =>
             {
                 AssertRecipeHasStackIngredient(proto, "WLCraftRecipeSnowFoundation", "WLWoodPlankStack", 2);
-                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeSnowFoundation", "WLMetalPartsStack", 1);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeSnowFoundation", "WLScrapMetalStack", 1);
                 AssertRecipeHasStackIngredient(proto, "WLCraftRecipePrimitiveWoodFloor", "WLWoodPlankStack", 3);
                 AssertRecipeHasStackIngredient(proto, "WLCraftRecipeWoodFloor", "WLWoodPlankStack", 5);
                 AssertRecipeHasStackIngredient(proto, "WLCraftRecipeWoodFloor", "WLPreparedClothStack", 1);
@@ -294,7 +357,9 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
             Assert.Multiple(() =>
             {
                 AssertStackEntity(proto, componentFactory, "WLFrozenBranch30", "WLFrozenBranchStack", 30);
-                AssertStackEntity(proto, componentFactory, "WLLooseScrap30", "WLLooseScrapStack", 30);
+                AssertStackEntity(proto, componentFactory, "WLScrapMetal30", "WLScrapMetalStack", 30);
+                AssertStackEntity(proto, componentFactory, "WLIronOre30", "WLIronOreStack", 30);
+                AssertStackEntity(proto, componentFactory, "WLLeadOre30", "WLLeadOreStack", 30);
                 AssertStackEntity(proto, componentFactory, "WLRoughStone30", "WLRoughStoneStack", 30);
                 AssertStackEntity(proto, componentFactory, "WLTornCloth30", "WLTornClothStack", 30);
                 AssertStackEntity(proto, componentFactory, "WLSnowFoundationTileItem30", "WLSnowFoundationTile", 30);
@@ -303,6 +368,29 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
                 AssertStackEntity(proto, componentFactory, "WLStoneFloorTileItem30", "WLStoneFloorTile", 30);
                 AssertStackEntity(proto, componentFactory, "WLInsulatedFloorTileItem30", "WLInsulatedFloorTile", 30);
                 AssertStackEntity(proto, componentFactory, "WLRoadFloorTileItem30", "WLRoadFloorTile", 30);
+            });
+        });
+    }
+
+    [Test]
+    public async Task WlMaterialStacksHaveCountVisuals()
+    {
+        var server = Pair.Server;
+        var proto = server.ResolveDependency<IPrototypeManager>();
+        var componentFactory = server.ResolveDependency<IComponentFactory>();
+
+        await server.WaitAssertion(() =>
+        {
+            Assert.Multiple(() =>
+            {
+                foreach (var (entityId, stackType) in MaterialStackVisualPrototypes)
+                {
+                    Assert.That(proto.TryIndex<EntityPrototype>(entityId, out var entity), Is.True);
+                    Assert.That(entity!.TryGetComponent<StackComponent>(out var stack, componentFactory), Is.True);
+                    Assert.That(stack!.StackTypeId.Id, Is.EqualTo(stackType));
+                    Assert.That(stack.BaseLayer, Is.EqualTo("base"), $"{entityId} must expose a mapped Sprite layer for StackSystem visuals.");
+                    Assert.That(stack.LayerStates, Is.Not.Empty, $"{entityId} must define layerStates so stack count changes update the sprite.");
+                }
             });
         });
     }
@@ -321,8 +409,8 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
                 AssertDeconstructible(proto, componentFactory, "WLPrimitiveWoodWall", ("WLFrozenBranch", 2));
                 AssertDeconstructible(proto, componentFactory, "WLPrimitiveWoodDoor", ("WLFrozenBranch", 3), ("WLTornCloth", 1));
                 AssertDeconstructible(proto, componentFactory, "WLCampfireHeatSource", ("WLFrozenBranch", 3));
-                AssertDeconstructible(proto, componentFactory, "WLFireplaceHeatSource", ("WLRoughStone", 3), ("WLLooseScrap", 1));
-                AssertDeconstructible(proto, componentFactory, "WLFiretubeGenerator", ("WLLooseScrap", 7), ("WLRoughStone", 3), ("WLTornCloth", 2));
+                AssertDeconstructible(proto, componentFactory, "WLFireplaceHeatSource", ("WLRoughStone", 3), ("WLScrapMetal", 1));
+                AssertDeconstructible(proto, componentFactory, "WLFiretubeGenerator", ("WLIronIngot1", 7), ("WLRoughStone", 3), ("WLTornCloth", 2));
             });
         });
     }

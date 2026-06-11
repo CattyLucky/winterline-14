@@ -99,7 +99,7 @@
   description: persistent-craft-wl-node-description-starter
   branch: WLMechanic
   cost: 0
-  displayProto: WLLooseScrap
+  displayProto: WLScrapMetal
   treeColumn: 0
   treeRow: 0
   prerequisites: []

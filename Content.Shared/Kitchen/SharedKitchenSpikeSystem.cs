@@ -1,5 +1,3 @@
-using Content.Shared._WL.FrozenWorld.Components;
-using Content.Shared._WL.Roles;
 using Content.Shared.Administration.Logs;
 using Content.Shared.Damage.Systems;
 using Content.Shared.Database;
@@ -24,7 +22,6 @@ using Content.Shared.Throwing;
 using Content.Shared.Verbs;
 using Robust.Shared.Audio.Systems;
 using Robust.Shared.Containers;
-using Robust.Shared.Network;
 using Robust.Shared.Serialization;
 using Robust.Shared.Timing;
 using Content.Shared.Tools.Systems;
@@ -51,7 +48,6 @@ public sealed partial class SharedKitchenSpikeSystem : EntitySystem
     [Dependency] private SharedInteractionSystem _interaction = default!;
     [Dependency] private SharedPopupSystem _popupSystem = default!;
     [Dependency] private SharedToolSystem _toolSystem = default!;
-    [Dependency] private INetManager _net = default!;
 
     public override void Initialize()
     {
@@ -159,20 +155,6 @@ public sealed partial class SharedKitchenSpikeSystem : EntitySystem
                     ent,
                     args.User,
                     PopupType.Medium);
-
-            return;
-        }
-
-        if (!CanUseWlButcherSpike(args.User, ent.Owner))
-        {
-            if (TryComp(ent.Owner, out WLButcherSpikeRoleRestrictedComponent? wlButcher))
-            {
-                _popupSystem.PopupClient(
-                    Loc.GetString(wlButcher.RoleBlockPopup),
-                    ent,
-                    args.User,
-                    PopupType.MediumCaution);
-            }
 
             return;
         }
@@ -301,21 +283,6 @@ public sealed partial class SharedKitchenSpikeSystem : EntitySystem
         if (args.Handled || args.Cancelled || !args.Target.HasValue || !args.Used.HasValue || !TryComp<ButcherableComponent>(args.Target, out var butcherable))
             return;
 
-        if (!CanUseWlButcherSpike(args.User, ent.Owner))
-        {
-            if (TryComp(ent.Owner, out WLButcherSpikeRoleRestrictedComponent? wlButcher))
-            {
-                _popupSystem.PopupClient(
-                    Loc.GetString(wlButcher.RoleBlockPopup),
-                    ent,
-                    args.User,
-                    PopupType.MediumCaution);
-            }
-
-            args.Handled = true;
-            return;
-        }
-
         var victimIdentity = Identity.Entity(args.Target.Value, EntityManager);
 
         _popupSystem.PopupPredicted(Loc.GetString("comp-kitchen-spike-butcher-self", ("victim", victimIdentity)),
@@ -379,22 +346,6 @@ public sealed partial class SharedKitchenSpikeSystem : EntitySystem
             PopupType.Medium);
 
         args.Handled = true;
-    }
-
-    private bool CanUseWlButcherSpike(EntityUid user, EntityUid spike)
-    {
-        if (_net.IsClient)
-            return true;
-
-        if (!TryComp(spike, out WLButcherSpikeRoleRestrictedComponent? wlButcher) ||
-            wlButcher.AllowedJobIds.Count == 0)
-        {
-            return true;
-        }
-
-        return TryComp(user, out WLRoleSkillsComponent? roleSkills) &&
-               !string.IsNullOrWhiteSpace(roleSkills.JobId) &&
-               wlButcher.AllowedJobIds.Contains(roleSkills.JobId);
     }
 
     private void OnSpikeExamined(Entity<KitchenSpikeComponent> ent, ref ExaminedEvent args)

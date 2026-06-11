@@ -41,9 +41,9 @@
 - type: entity
   id: WLResourceLooseScrapPileT1
   parent: WLBaseResourcePoint
-  name: loose scrap pile
+  name: scrap metal spill
   suffix: WL, Resource, T1
-  description: A small spill of metal scraps half-buried in ice. Barely enough to start building.
+  description: A small spill of scrap metal half-buried in ice. Barely enough to start building.
   components:
   - type: Sprite
     sprite: Objects/Decoration/Flora/flora_rockssolid.rsi
@@ -53,7 +53,7 @@
     maxCharges: 5
     gatherTime: 2.4
     loot:
-    - prototype: WLLooseScrap
+    - prototype: WLScrapMetal
       minCount: 3
       maxCount: 5
 
@@ -75,7 +75,7 @@
     - prototype: WLTornCloth
       minCount: 3
       maxCount: 5
-    - prototype: WLLooseScrap
+    - prototype: WLScrapMetal
       minCount: 2
       maxCount: 3
 
@@ -138,7 +138,7 @@
     maxCharges: 5
     gatherTime: 3.5
     loot:
-    - prototype: WLLooseScrap
+    - prototype: WLScrapMetal
       minCount: 3
       maxCount: 5
     - prototype: WLTornCloth
@@ -167,6 +167,29 @@
       maxCount: 5
 
 - type: entity
+  id: WLResourceIronOreVeinT3
+  parent: WLBaseResourcePoint
+  name: iron ore vein
+  suffix: WL, Resource, T3, Ore
+  description: A frozen iron-bearing vein exposed through cracked stone. It needs a pickaxe and a smelter before it becomes useful metal.
+  components:
+  - type: Sprite
+    sprite: Structures/Walls/rock.rsi
+    state: rock_wall
+    color: "#8e9094"
+  - type: WLResourcePoint
+    charges: 6
+    maxCharges: 6
+    gatherTime: 4.8
+    toolWhitelist:
+      tags:
+      - Pickaxe
+    loot:
+    - prototype: WLIronOre1
+      minCount: 3
+      maxCount: 5
+
+- type: entity
   id: WLResourceScrapWreckT3
   parent: WLBaseResourcePoint
   name: scrap wreck
@@ -181,7 +204,7 @@
     maxCharges: 6
     gatherTime: 4.4
     loot:
-    - prototype: WLLooseScrap
+    - prototype: WLScrapMetal
       minCount: 4
       maxCount: 7
     - prototype: WLTornCloth
@@ -237,6 +260,29 @@
       maxCount: 3
 
 - type: entity
+  id: WLResourceLeadOreVeinT4
+  parent: WLBaseResourcePoint
+  name: lead ore vein
+  suffix: WL, Resource, T4, Ore
+  description: A dark lead-rich vein in the outer ruins. It is not a starter material; it feeds ammunition and heavy fittings after smelting.
+  components:
+  - type: Sprite
+    sprite: Structures/Walls/rock.rsi
+    state: rock_wall
+    color: "#606876"
+  - type: WLResourcePoint
+    charges: 5
+    maxCharges: 5
+    gatherTime: 5.2
+    toolWhitelist:
+      tags:
+      - Pickaxe
+    loot:
+    - prototype: WLLeadOre1
+      minCount: 2
+      maxCount: 4
+
+- type: entity
   id: WLResourceFrozenConvoyWreckT4
   parent: WLBaseResourcePoint
   name: frozen convoy wreck
@@ -252,7 +298,7 @@
     maxCharges: 6
     gatherTime: 5.2
     loot:
-    - prototype: WLLooseScrap
+    - prototype: WLScrapMetal
       minCount: 5
       maxCount: 8
     - prototype: WLTornCloth
@@ -280,7 +326,7 @@
     - prototype: WLTornCloth
       minCount: 4
       maxCount: 6
-    - prototype: WLLooseScrap
+    - prototype: WLScrapMetal
       minCount: 3
       maxCount: 5
     - prototype: WLLog
@@ -327,7 +373,7 @@
     maxCharges: 7
     gatherTime: 5.8
     loot:
-    - prototype: WLLooseScrap
+    - prototype: WLScrapMetal
       minCount: 7
       maxCount: 10
     - prototype: WLTornCloth
@@ -356,7 +402,7 @@
     - prototype: WLTornCloth
       minCount: 6
       maxCount: 9
-    - prototype: WLLooseScrap
+    - prototype: WLScrapMetal
       minCount: 5
       maxCount: 8
     - prototype: WLDenseCoalFuel1
@@ -431,6 +477,6 @@
     - prototype: WLRoughStone
       minCount: 5
       maxCount: 8
-    - prototype: WLLooseScrap
+    - prototype: WLScrapMetal
       minCount: 2
       maxCount: 3

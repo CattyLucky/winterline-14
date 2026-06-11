@@ -54,7 +54,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 4
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 1
   results:
   - proto: ClothingBackpackSatchel
@@ -148,7 +148,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 2
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 1
   results:
   - proto: ClothingShoesBootsWinterLightWL
@@ -170,7 +170,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 5
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 1
   results:
   - proto: ClothingUniformJumpsuitThermalWarmWL
@@ -190,7 +190,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 7
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 1
   results:
   - proto: ClothingOuterWinterCoatWarmWL
@@ -210,7 +210,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 9
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 4
   results:
   - proto: ClothingOuterArmoredWinterCoatWarmWL
@@ -230,7 +230,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 3
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 1
   results:
   - proto: ClothingHeadHatWinterWarmWL
@@ -250,7 +250,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 3
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 1
   results:
   - proto: ClothingHandsGlovesWinterWarmWL
@@ -270,7 +270,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 4
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 2
   results:
   - proto: ClothingShoesBootsWinterWarmWL
@@ -290,7 +290,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 8
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 2
   results:
   - proto: ClothingBackpackDuffel
@@ -312,7 +312,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 7
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 2
   results:
   - proto: ClothingUniformJumpsuitWinterWL
@@ -332,7 +332,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 9
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 3
   results:
   - proto: ClothingOuterWinterCoatWL
@@ -352,7 +352,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 12
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 6
   - stackType: WLAnimalHideStack
     amount: 2
@@ -374,7 +374,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 4
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 2
   results:
   - proto: ClothingHeadHatWinterWL
@@ -394,7 +394,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 4
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 2
   results:
   - proto: ClothingHandsGlovesWinterWL
@@ -414,7 +414,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 5
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 3
   results:
   - proto: ClothingShoesBootsWinterWL
@@ -436,7 +436,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 10
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 4
   results:
   - proto: ClothingUniformJumpsuitThermalArcticWL
@@ -456,7 +456,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 12
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 5
   results:
   - proto: ClothingOuterWinterCoatArcticWL
@@ -476,7 +476,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 15
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 8
   - stackType: WLAnimalHideStack
     amount: 4
@@ -498,7 +498,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 6
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 3
   results:
   - proto: ClothingHeadHatWinterArcticWL
@@ -518,7 +518,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 6
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 3
   results:
   - proto: ClothingHandsGlovesWinterArcticWL
@@ -538,7 +538,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 7
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 4
   results:
   - proto: ClothingShoesBootsWinterArcticWL
@@ -560,7 +560,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 14
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 6
   results:
   - proto: ClothingUniformJumpsuitThermalExtremeWL
@@ -580,7 +580,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 16
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 7
   results:
   - proto: ClothingOuterWinterCoatExtremeWL
@@ -600,7 +600,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 20
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 12
   - stackType: WLAnimalHideStack
     amount: 6
@@ -622,7 +622,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 8
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 5
   results:
   - proto: ClothingHeadHatWinterExtremeWL
@@ -642,7 +642,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 8
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 5
   results:
   - proto: ClothingHandsGlovesWinterExtremeWL
@@ -662,7 +662,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 10
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 6
   results:
   - proto: ClothingShoesBootsWinterExtremeWL

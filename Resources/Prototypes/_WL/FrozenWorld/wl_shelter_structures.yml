@@ -170,6 +170,20 @@
     state: full
 
 - type: entity
+  id: WLSmelterBlueprint
+  parent: WLPersistentCraftBlueprint
+  name: smelter blueprint
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Structures/Machines/ore_processor.rsi
+    state: icon
+    color: '#3F38'
+  - type: Icon
+    sprite: Structures/Machines/ore_processor.rsi
+    state: icon
+
+- type: entity
   id: WLFiretubeGeneratorBlueprint
   parent: WLPersistentCraftBlueprint
   name: firetube generator blueprint
@@ -592,7 +606,7 @@
     refunds:
     - proto: WLStoneBlock1
       count: 2
-    - proto: WLMetalParts1
+    - proto: WLIronIngot1
       count: 1
     - proto: WLPreparedCloth1
       count: 1
@@ -650,7 +664,7 @@
     refunds:
     - proto: WLStoneBlock1
       count: 2
-    - proto: WLMetalParts1
+    - proto: WLIronIngot1
       count: 1
 
 - type: entity
@@ -687,7 +701,7 @@
           collection: MetalSlam
       - !type:SpawnEntitiesBehavior
         spawn:
-          WLMetalParts1:
+          WLIronIngot1:
             min: 2
             max: 3
       - !type:DoActsBehavior
@@ -700,7 +714,7 @@
   - type: FrozenShelterDeconstructible
     doAfter: 4
     refunds:
-    - proto: WLMetalParts1
+    - proto: WLIronIngot1
       count: 5
     - proto: WLPreparedCloth1
       count: 1
@@ -739,7 +753,7 @@
           collection: MetalSlam
       - !type:SpawnEntitiesBehavior
         spawn:
-          WLMetalParts1:
+          WLIronIngot1:
             min: 3
             max: 4
       - !type:DoActsBehavior
@@ -752,7 +766,7 @@
   - type: FrozenShelterDeconstructible
     doAfter: 5
     refunds:
-    - proto: WLMetalParts1
+    - proto: WLIronIngot1
       count: 8
     - proto: WLPreparedCloth1
       count: 2
@@ -796,7 +810,7 @@
           WLStoneBlock1:
             min: 2
             max: 3
-          WLMetalParts1:
+          WLIronIngot1:
             min: 1
             max: 2
       - !type:DoActsBehavior
@@ -811,7 +825,7 @@
     refunds:
     - proto: WLStoneBlock1
       count: 4
-    - proto: WLMetalParts1
+    - proto: WLIronIngot1
       count: 2
 
 - type: entity
@@ -900,3 +914,57 @@
   - type: PersistentCraftResearchBench
     doAfter: 24
     pointReward: 1
+
+- type: entity
+  id: WLSmelter
+  parent: BaseStructure
+  name: smelter
+  description: A rough ore furnace assembled from stone and salvaged metal. It is used to smelt scrap and ore into ingots.
+  components:
+  - type: Transform
+    anchored: true
+  - type: Sprite
+    sprite: Structures/Machines/ore_processor.rsi
+    state: icon
+  - type: Icon
+    sprite: Structures/Machines/ore_processor.rsi
+    state: icon
+  - type: Clickable
+  - type: InteractionOutline
+  - type: Damageable
+    damageModifierSet: Metallic
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 180
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+      - !type:PlaySoundBehavior
+        sound:
+          collection: MetalBreak
+    - trigger:
+        !type:DamageTrigger
+        damage: 60
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          collection: MetalBreak
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          WLScrapMetal:
+            min: 1
+            max: 2
+          WLRoughStone:
+            min: 1
+            max: 2
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+  - type: FrozenShelterDeconstructible
+    doAfter: 4
+    refunds:
+    - proto: WLScrapMetal
+      count: 3
+    - proto: WLRoughStone
+      count: 4

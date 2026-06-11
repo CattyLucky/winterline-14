@@ -168,7 +168,7 @@
       behaviors:
       - !type:SpawnEntitiesBehavior
         spawn:
-          WLLooseScrap:
+          WLScrapMetal:
             min: 1
             max: 2
       - !type:DoActsBehavior
@@ -213,7 +213,7 @@
     refunds:
     - proto: WLRoughStone
       count: 3
-    - proto: WLLooseScrap
+    - proto: WLScrapMetal
       count: 1
 
 # --- Heavy Heat Machinery ----------------------------------------------------
@@ -298,7 +298,7 @@
   - type: FrozenShelterDeconstructible
     doAfter: 5
     refunds:
-    - proto: WLLooseScrap
+    - proto: WLIronIngot1
       count: 7
     - proto: WLRoughStone
       count: 3

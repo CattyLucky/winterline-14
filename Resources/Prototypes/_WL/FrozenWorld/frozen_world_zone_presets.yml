@@ -105,6 +105,12 @@
       maxCount: 10
       minSeparation: 17
       clearanceRadius: 2.0
+    - prototype: WLResourceIronOreVeinT3
+      weight: 2
+      minCount: 4
+      maxCount: 8
+      minSeparation: 18
+      clearanceRadius: 2.0
     - prototype: WLResourceScrapWreckT3
       weight: 2
       minCount: 6
@@ -165,6 +171,12 @@
       minCount: 5
       maxCount: 8
       minSeparation: 30
+      clearanceRadius: 2.5
+    - prototype: WLResourceLeadOreVeinT4
+      weight: 1
+      minCount: 2
+      maxCount: 5
+      minSeparation: 32
       clearanceRadius: 2.5
     - prototype: WLResourceFrozenConvoyWreckT4
       weight: 2

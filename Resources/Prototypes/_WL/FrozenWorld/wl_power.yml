@@ -120,7 +120,7 @@
   - type: FrozenShelterDeconstructible
     doAfter: 2.5
     refunds:
-    - proto: WLMetalParts1
+    - proto: WLIronIngot1
       count: 2
 
 - type: entity
@@ -139,7 +139,7 @@
   - type: FrozenShelterDeconstructible
     doAfter: 4
     refunds:
-    - proto: WLMetalParts1
+    - proto: WLIronIngot1
       count: 6
     - proto: WLPreparedCloth1
       count: 1
@@ -213,7 +213,7 @@
   - type: FrozenShelterDeconstructible
     doAfter: 5
     refunds:
-    - proto: WLMetalParts1
+    - proto: WLIronIngot1
       count: 8
     - proto: WLWoodPlank1
       count: 3
@@ -287,7 +287,7 @@
   - type: FrozenShelterDeconstructible
     doAfter: 6
     refunds:
-    - proto: WLMetalParts1
+    - proto: WLIronIngot1
       count: 12
     - proto: WLRoughStone
       count: 3

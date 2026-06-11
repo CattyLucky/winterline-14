@@ -9,18 +9,29 @@
   description: Packed snow dug from frozen ground. Melt it near a fire before drinking.
   components:
   - type: Sprite
-    sprite: Tiles/Planet/Snow/snow.rsi
-    state: ice
+    sprite: _WL/Objects/Misc/snow_chunks.rsi
+    state: snow_chunk_3
+    layers:
+    - state: snow_chunk_3
+      map: ["base"]
+  - type: Appearance
   - type: Item
     size: Tiny
   - type: Stack
     stackType: WLSnowChunkStack
+    baseLayer: base
+    layerStates:
+    - snow_chunk
+    - snow_chunk_2
+    - snow_chunk_3
 
 - type: entity
   id: WLSnowChunk1
   parent: WLSnowChunk
   suffix: Single, WL
   components:
+  - type: Sprite
+    state: snow_chunk
   - type: Stack
     count: 1
 

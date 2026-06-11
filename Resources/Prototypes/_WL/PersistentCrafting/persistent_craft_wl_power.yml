@@ -26,7 +26,7 @@
   subCategory: WLCraftSubCategoryMechanicLighting
   craftTime: 1.4
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 1
   - stackType: WLRoughStoneStack
     amount: 1
@@ -47,7 +47,7 @@
   subCategory: WLCraftSubCategoryMechanicLighting
   craftTime: 1.8
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 2
   - stackType: WLRoughStoneStack
     amount: 1
@@ -70,7 +70,7 @@
   subCategory: WLCraftSubCategoryMechanicLighting
   craftTime: 2.0
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 4
   - stackType: WLPreparedClothStack
     amount: 2
@@ -93,7 +93,7 @@
   subCategory: WLCraftSubCategoryMechanicLighting
   craftTime: 2.8
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 5
   - proto: CableApcStack10
     amount: 1
@@ -120,7 +120,7 @@
   subCategory: WLCraftSubCategoryMechanicPower
   craftTime: 4.0
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 8
   - stackType: WLPreparedClothStack
     amount: 2
@@ -148,7 +148,7 @@
   subCategory: WLCraftSubCategoryMechanicPower
   craftTime: 4.8
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 10
   - stackType: WLWoodPlankStack
     amount: 6
@@ -179,7 +179,7 @@
   subCategory: WLCraftSubCategoryMechanicPower
   craftTime: 6.2
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 18
   - stackType: WLRoughStoneStack
     amount: 6
@@ -208,7 +208,7 @@
   subCategory: WLCraftSubCategoryMechanicPower
   craftTime: 6.0
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 18
   - stackType: WLPreparedClothStack
     amount: 4
@@ -238,7 +238,7 @@
   subCategory: WLCraftSubCategoryMechanicPower
   craftTime: 4.6
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 12
   - stackType: WLPreparedClothStack
     amount: 3

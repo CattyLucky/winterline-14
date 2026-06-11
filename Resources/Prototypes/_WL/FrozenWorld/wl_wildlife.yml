@@ -9,12 +9,21 @@
   description: A rough hide taken from frozen-world wildlife. It can be cleaned and worked into insulation, leather or padding.
   components:
   - type: Sprite
-    sprite: Objects/Materials/materials.rsi
-    state: hide
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: leather_3
+    layers:
+    - state: leather_3
+      map: ["base"]
+  - type: Appearance
   - type: Item
     size: Small
   - type: Stack
     stackType: WLAnimalHideStack
+    baseLayer: base
+    layerStates:
+    - raw_leather_1
+    - raw_leather_2
+    - leather_3
   - type: Material
   - type: PhysicalComposition
     materialComposition:
@@ -25,6 +34,8 @@
   parent: WLAnimalHide
   suffix: Single, WL
   components:
+  - type: Sprite
+    state: raw_leather_1
   - type: Stack
     count: 1
 
@@ -36,11 +47,19 @@
   description: Dense cold-preserved fat. Useful for field cooking, soap, bait and emergency fuel recipes.
   components:
   - type: Sprite
-    sprite: Objects/Consumable/Food/meat.rsi
-    state: bacon
-    color: "#f2dfb5"
+    sprite: _WL/Objects/Misc/animal_fat.rsi
+    state: fat_3
+    layers:
+    - state: fat_3
+      map: ["base"]
+  - type: Appearance
   - type: Stack
     stackType: WLAnimalFatStack
+    baseLayer: base
+    layerStates:
+    - fat
+    - fat_2
+    - fat_3
   - type: Solution
     solution:
       reagents:
@@ -58,17 +77,29 @@
   parent: WLAnimalFat
   suffix: Single, WL
   components:
+  - type: Sprite
+    state: fat
   - type: Stack
     count: 1
 
 - type: entity
-  id: WLButcherSpike
-  parent: KitchenSpike
-  name: butcher spike
+  id: WLButcherStation
+  parent: BaseStructure
+  name: butcher station
   suffix: WL, Gatherer
-  description: A field butcher spike for processing frozen-world wildlife.
+  description: A field dressing table for processing frozen-world wildlife carcasses.
   components:
-  - type: WLButcherSpikeRoleRestricted
+  - type: InteractionOutline
+  - type: Sprite
+    sprite: Structures/Furniture/Tables/wood.rsi
+    state: full
+  - type: Transform
+    noRot: true
+  - type: Anchorable
+  - type: Pullable
+  - type: Damageable
+    damageModifierSet: Wood
+  - type: WLButcherStation
 
 - type: entity
   id: WLHunterSnare
@@ -120,6 +151,8 @@
     offspring:
     - id: WLSnowSheep
   - type: Butcherable
+    spawned: []
+  - type: WLCarcassButcherable
     butcherDelay: 7
     spawned:
     - id: FoodMeat
@@ -223,6 +256,8 @@
     rootTask:
       task: RuminantHostileCompound
   - type: Butcherable
+    spawned: []
+  - type: WLCarcassButcherable
     butcherDelay: 7
     spawned:
     - id: FoodMeat
@@ -318,6 +353,8 @@
       35: Critical
       55: Dead
   - type: Butcherable
+    spawned: []
+  - type: WLCarcassButcherable
     butcherDelay: 6
     spawned:
     - id: FoodMeat
@@ -392,6 +429,8 @@
     baseWalkSpeed: 2.2
     baseSprintSpeed: 4.0
   - type: Butcherable
+    spawned: []
+  - type: WLCarcassButcherable
     butcherDelay: 9
     spawned:
     - id: FoodMeat
@@ -443,6 +482,8 @@
     baseWalkSpeed: 2.1
     baseSprintSpeed: 3.7
   - type: Butcherable
+    spawned: []
+  - type: WLCarcassButcherable
     butcherDelay: 12
     spawned:
     - id: FoodMeatBear

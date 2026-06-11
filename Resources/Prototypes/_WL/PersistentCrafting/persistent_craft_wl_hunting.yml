@@ -77,7 +77,7 @@
   ingredients:
   - stackType: WLWoodPlankStack
     amount: 2
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 1
   - stackType: WLPreparedClothStack
     amount: 1
@@ -121,7 +121,7 @@
   subCategory: WLCraftSubCategoryHunterMelee
   craftTime: 2
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 4
   - stackType: WLPreparedClothStack
     amount: 1
@@ -144,7 +144,7 @@
   ingredients:
   - stackType: WLWoodPlankStack
     amount: 2
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 3
   - stackType: WLPreparedClothStack
     amount: 1
@@ -165,7 +165,7 @@
   subCategory: WLCraftSubCategoryHunterThrowing
   craftTime: 2.0
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 4
   - stackType: WLPreparedClothStack
     amount: 1
@@ -186,7 +186,7 @@
   subCategory: WLCraftSubCategoryHunterMelee
   craftTime: 2.6
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 6
   - stackType: WLPreparedClothStack
     amount: 2
@@ -234,7 +234,7 @@
   ingredients:
   - stackType: WLWoodPlankStack
     amount: 1
-  - stackType: WLMetalPartsStack
+  - stackType: WLLeadIngotStack
     amount: 1
   - stackType: WLPreparedClothStack
     amount: 1
@@ -257,7 +257,7 @@
   ingredients:
   - stackType: WLWoodPlankStack
     amount: 2
-  - stackType: WLMetalPartsStack
+  - stackType: WLLeadIngotStack
     amount: 2
   - stackType: WLPreparedClothStack
     amount: 1
@@ -280,7 +280,7 @@
   subCategory: WLCraftSubCategoryHunterFirearms
   craftTime: 4
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 10
   - stackType: WLWoodPlankStack
     amount: 4
@@ -305,7 +305,7 @@
   subCategory: WLCraftSubCategoryHunterFirearms
   craftTime: 4.2
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 8
   - stackType: WLWoodPlankStack
     amount: 2
@@ -328,7 +328,7 @@
   subCategory: WLCraftSubCategoryHunterFirearms
   craftTime: 4.8
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 12
   - stackType: WLWoodPlankStack
     amount: 6
@@ -353,7 +353,7 @@
   subCategory: WLCraftSubCategoryHunterAmmunition
   craftTime: 2
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLLeadIngotStack
     amount: 4
   - stackType: WLCharcoalFuelStack
     amount: 3
@@ -376,7 +376,7 @@
   subCategory: WLCraftSubCategoryHunterAmmunition
   craftTime: 2
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLLeadIngotStack
     amount: 4
   - stackType: WLCharcoalFuelStack
     amount: 3
@@ -397,7 +397,7 @@
   subCategory: WLCraftSubCategoryHunterAmmunition
   craftTime: 2.2
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLLeadIngotStack
     amount: 5
   - stackType: WLCharcoalFuelStack
     amount: 4
@@ -420,7 +420,7 @@
   subCategory: WLCraftSubCategoryHunterFirearms
   craftTime: 4
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 9
   - stackType: WLPreparedClothStack
     amount: 2
@@ -443,7 +443,7 @@
   subCategory: WLCraftSubCategoryHunterFirearms
   craftTime: 4.2
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 10
   - stackType: WLWoodPlankStack
     amount: 1
@@ -466,7 +466,7 @@
   subCategory: WLCraftSubCategoryHunterAmmunition
   craftTime: 1.8
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLLeadIngotStack
     amount: 3
   - stackType: WLCharcoalFuelStack
     amount: 1
@@ -487,7 +487,7 @@
   subCategory: WLCraftSubCategoryHunterAmmunition
   craftTime: 2
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLLeadIngotStack
     amount: 5
   - stackType: WLCharcoalFuelStack
     amount: 4
@@ -510,7 +510,7 @@
   subCategory: WLCraftSubCategoryHunterFirearms
   craftTime: 5.2
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 18
   - stackType: WLWoodPlankStack
     amount: 6
@@ -535,7 +535,7 @@
   subCategory: WLCraftSubCategoryHunterFirearms
   craftTime: 5.4
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 20
   - stackType: WLPreparedClothStack
     amount: 3
@@ -558,7 +558,7 @@
   subCategory: WLCraftSubCategoryHunterAmmunition
   craftTime: 1.8
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLLeadIngotStack
     amount: 4
   - stackType: WLCharcoalFuelStack
     amount: 2
@@ -579,7 +579,7 @@
   subCategory: WLCraftSubCategoryHunterAmmunition
   craftTime: 2.3
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLLeadIngotStack
     amount: 6
   - stackType: WLCharcoalFuelStack
     amount: 5
@@ -600,7 +600,7 @@
   subCategory: WLCraftSubCategoryHunterFirearms
   craftTime: 5.8
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 24
   - stackType: WLWoodPlankStack
     amount: 8
@@ -625,7 +625,7 @@
   subCategory: WLCraftSubCategoryHunterAmmunition
   craftTime: 2.8
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLLeadIngotStack
     amount: 8
   - stackType: WLDenseCoalFuelStack
     amount: 5

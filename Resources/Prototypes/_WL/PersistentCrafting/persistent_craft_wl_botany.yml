@@ -22,7 +22,7 @@
   ingredients:
   - stackType: WLWoodPlankStack
     amount: 4
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 4
   - stackType: WLRoughStoneStack
     amount: 2
@@ -50,7 +50,7 @@
   ingredients:
   - stackType: WLWoodPlankStack
     amount: 3
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 3
   results:
   - proto: HydroponicsToolMiniHoe
@@ -121,7 +121,7 @@
   subCategory: WLCraftSubCategoryGathererBotany
   craftTime: 4.0
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 8
   - stackType: WLWoodPlankStack
     amount: 2
