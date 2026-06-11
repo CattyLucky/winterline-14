@@ -138,23 +138,11 @@ entities:
     - type: Transform
       pos: 1.5,-0.5
       parent: 1
-- proto: DefaultStationBeacon
+- proto: WLFrostlandWarpPoint
   entities:
   - uid: 10
     components:
     - type: Transform
       pos: 1.5,-0.5
       parent: 1
-    - type: NavMapBeacon
-      defaultText: Frostland
-      color: "#9FD8FFFF"
-    - type: WarpPoint
-      location: Frostland
-    - type: Sprite
-      sprite: Objects/Devices/station_beacon.rsi
-      drawdepth: BelowFloor
-      layers:
-      - state: blink
-        visible: false
-        map: ["base"]
 ...

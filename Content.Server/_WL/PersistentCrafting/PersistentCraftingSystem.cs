@@ -1,9 +1,12 @@
 using System.Linq;
+using Content.Server._WL.FrozenWorld.Components;
+using Content.Server._WL.Skills;
 using Content.Server.Atmos.Components;
 using Content.Server._WL.FrozenWorld.Systems;
 using Content.Shared._WL.FrozenWorld;
 using Content.Shared._WL.FrozenWorld.Components;
 using Content.Shared._WL.PersistentCrafting;
+using Content.Shared._WL.Roles;
 using Content.Shared.Actions;
 using Content.Shared.DoAfter;
 using Content.Shared.Eye;
@@ -28,7 +31,7 @@ using Robust.Shared.Timing;
 
 namespace Content.Server._WL.PersistentCrafting;
 
-public sealed class PersistentCraftingSystem : EntitySystem
+public sealed partial class PersistentCraftingSystem : EntitySystem
 {
     private static readonly Vector2i[] CardinalDirections =
     {
@@ -38,24 +41,28 @@ public sealed class PersistentCraftingSystem : EntitySystem
         new(0, -1),
     };
 
-    [Dependency] private readonly SharedActionsSystem _actions = default!;
-    [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
-    [Dependency] private readonly SharedHandsSystem _hands = default!;
-    [Dependency] private readonly SharedInteractionSystem _interaction = default!;
-    [Dependency] private readonly SharedMapSystem _map = default!;
-    [Dependency] private readonly IPrototypeManager _proto = default!;
-    [Dependency] private readonly SharedPopupSystem _popup = default!;
-    [Dependency] private readonly PvsOverrideSystem _pvs = default!;
-    [Dependency] private readonly FrozenShelterRoomSystem _rooms = default!;
-    [Dependency] private readonly SharedStackSystem _stacks = default!;
-    [Dependency] private readonly TagSystem _tag = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly SharedTransformSystem _transform = default!;
-    [Dependency] private readonly TurfSystem _turf = default!;
-    [Dependency] private readonly VisibilitySystem _visibility = default!;
+    [Dependency] private SharedActionsSystem _actions = default!;
+    [Dependency] private SharedDoAfterSystem _doAfter = default!;
+    [Dependency] private SharedHandsSystem _hands = default!;
+    [Dependency] private SharedInteractionSystem _interaction = default!;
+    [Dependency] private EntityLookupSystem _lookup = default!;
+    [Dependency] private SharedMapSystem _map = default!;
+    [Dependency] private IPrototypeManager _proto = default!;
+    [Dependency] private SharedPopupSystem _popup = default!;
+    [Dependency] private PvsOverrideSystem _pvs = default!;
+    [Dependency] private FrozenShelterRoomSystem _rooms = default!;
+    [Dependency] private SharedStackSystem _stacks = default!;
+    [Dependency] private TagSystem _tag = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private SharedTransformSystem _transform = default!;
+    [Dependency] private TurfSystem _turf = default!;
+    [Dependency] private VisibilitySystem _visibility = default!;
+    [Dependency] private WLSkillSystem _skills = default!;
 
     private const double CraftRateLimitSeconds = 0.5;
     private const double UnlockRateLimitSeconds = 0.3;
+    private const double CraftSkillPointCooldownSeconds = 75.0;
+    private const double ResearchSkillPointCooldownSeconds = 120.0;
     private const double RateLimitCleanupIntervalSeconds = 60.0;
     private const int MaxNetworkStringLength = 128;
     private readonly Dictionary<NetUserId, TimeSpan> _lastCraftRequestTime = new();
@@ -70,6 +77,7 @@ public sealed class PersistentCraftingSystem : EntitySystem
     private List<PersistentCraftNodePrototype> _nodeCache = new();
     private Dictionary<string, PersistentCraftBranchProfile> _researchBranchProgress = new();
     private HashSet<string> _researchUnlockedNodes = new();
+    private readonly HashSet<EntityUid> _nearbyRequirementBuffer = new();
 
     public override void Initialize()
     {
@@ -95,6 +103,7 @@ public sealed class PersistentCraftingSystem : EntitySystem
         SubscribeLocalEvent<PersistentCraftAccessComponent, PlayerAttachedEvent>(OnAccessPlayerAttached);
         SubscribeLocalEvent<PersistentCraftAccessComponent, PlayerDetachedEvent>(OnAccessPlayerDetached);
         SubscribeLocalEvent<PersistentCraftAccessComponent, OpenPersistentCraftMenuActionEvent>(OnOpenCraftMenu);
+        SubscribeLocalEvent<PersistentCraftAccessComponent, OpenPersistentCraftPlacementMenuActionEvent>(OnOpenPlacementMenu);
         SubscribeLocalEvent<PersistentCraftAccessComponent, PersistentCraftDoAfterEvent>(OnCraftDoAfter);
         SubscribeLocalEvent<PersistentCraftResearchBenchComponent, InteractHandEvent>(OnResearchBenchInteract);
         SubscribeLocalEvent<PersistentCraftResearchBenchComponent, GetVerbsEvent<InteractionVerb>>(OnResearchBenchGetVerbs);
@@ -306,6 +315,22 @@ public sealed class PersistentCraftingSystem : EntitySystem
                 }
             }
 
+            if (recipe.NearbyRequirement is { } nearbyRequirement)
+            {
+                if (nearbyRequirement.Range <= 0f)
+                    Log.Warning($"[PersistentCraft] Recipe '{recipe.ID}' nearbyRequirement has non-positive range '{nearbyRequirement.Range}'.");
+
+                for (var i = 0; i < nearbyRequirement.Prototypes.Count; i++)
+                {
+                    var prototypeId = nearbyRequirement.Prototypes[i];
+                    if (string.IsNullOrWhiteSpace(prototypeId) ||
+                        !_proto.TryIndex<EntityPrototype>(prototypeId, out _))
+                    {
+                        Log.Warning($"[PersistentCraft] Recipe '{recipe.ID}' nearbyRequirement prototype #{i} references missing proto '{prototypeId}'.");
+                    }
+                }
+            }
+
             if (recipe.Results.Count == 0 && recipe.Placement == null)
                 Log.Warning($"[PersistentCraft] Recipe '{recipe.ID}' has no results.");
 
@@ -454,12 +479,15 @@ public sealed class PersistentCraftingSystem : EntitySystem
     private void OnAccessStartup(EntityUid uid, PersistentCraftAccessComponent component, ComponentStartup args)
     {
         _actions.AddAction(uid, ref component.ActionEntity, component.Action, uid);
+        _actions.AddAction(uid, ref component.PlacementActionEntity, component.PlacementAction, uid);
     }
 
     private void OnAccessShutdown(EntityUid uid, PersistentCraftAccessComponent component, ComponentShutdown args)
     {
         _actions.RemoveAction(uid, component.ActionEntity);
+        _actions.RemoveAction(uid, component.PlacementActionEntity);
         component.ActionEntity = null;
+        component.PlacementActionEntity = null;
     }
 
     private void OnAccessPlayerAttached(EntityUid uid, PersistentCraftAccessComponent component, PlayerAttachedEvent args)
@@ -551,6 +579,17 @@ public sealed class PersistentCraftingSystem : EntitySystem
             OpenCraftMenu(args.Performer, actor.PlayerSession);
     }
 
+    private void OnOpenPlacementMenu(EntityUid uid, PersistentCraftAccessComponent component, OpenPersistentCraftPlacementMenuActionEvent args)
+    {
+        if (args.Handled)
+            return;
+
+        args.Handled = true;
+
+        if (TryComp(args.Performer, out ActorComponent? actor))
+            OpenPlacementMenu(args.Performer, actor.PlayerSession);
+    }
+
     private void OnRequestOpenCraftMenu(RequestOpenPersistentCraftMenuEvent ev, EntitySessionEventArgs args)
     {
         if (args.SenderSession.AttachedEntity is not { Valid: true } user)
@@ -601,6 +640,12 @@ public sealed class PersistentCraftingSystem : EntitySystem
             return;
         }
 
+        if (!TryValidateNearbyRequirement(user, recipe, true))
+        {
+            SendState(args.SenderSession, user);
+            return;
+        }
+
         if (!_craftExecutionService.TryPlanIngredientConsumption(user, recipe, out _))
         {
             PopupUser(user, "persistent-craft-station-popup-missing-items");
@@ -612,10 +657,10 @@ public sealed class PersistentCraftingSystem : EntitySystem
             return;
 
         RaiseNetworkEvent(
-            new PersistentCraftRecipeStartedEvent(
-                recipe.ID,
-                _craftExecutionService.GetEffectiveCraftTime(recipe)),
-            args.SenderSession);
+                new PersistentCraftRecipeStartedEvent(
+                    recipe.ID,
+                    _craftExecutionService.GetEffectiveCraftTime(user, recipe)),
+                args.SenderSession);
 
         _popup.PopupEntity(
             Loc.GetString("persistent-craft-station-popup-started", ("recipe", ResolveRecipeName(recipe))),
@@ -771,6 +816,13 @@ public sealed class PersistentCraftingSystem : EntitySystem
             return;
         }
 
+        if (!TryValidateNearbyRequirement(args.User, recipe, true))
+        {
+            SendCraftRecipeExecutionToAttachedActor(args.User, recipe.ID, PersistentCraftRecipeExecutionResult.Cancelled);
+            SendStateToAttachedActor(args.User);
+            return;
+        }
+
         if (!_craftExecutionService.TryPlanIngredientConsumption(args.User, recipe, out var plan))
         {
             PopupUser(args.User, "persistent-craft-station-popup-missing-items");
@@ -781,6 +833,7 @@ public sealed class PersistentCraftingSystem : EntitySystem
 
         _craftExecutionService.ConsumeIngredientPlan(plan);
         _craftExecutionService.SpawnResults(args.User, recipe);
+        GrantSkillPointForCraft(args.User, recipe);
 
         _popup.PopupEntity(
             Loc.GetString("persistent-craft-station-popup-crafted", ("recipe", ResolveRecipeName(recipe))),
@@ -822,10 +875,16 @@ public sealed class PersistentCraftingSystem : EntitySystem
         if (args.Handled)
             return;
 
+        args.Handled = true;
+
+        if (component.ActiveResearcher == args.User ||
+            component.ActiveResearcher is { } activeResearcher && !Exists(activeResearcher))
+        {
+            component.ActiveResearcher = null;
+        }
+
         if (!Exists(args.User))
             return;
-
-        args.Handled = true;
 
         if (args.Cancelled)
         {
@@ -859,6 +918,13 @@ public sealed class PersistentCraftingSystem : EntitySystem
             Loc.GetString("persistent-craft-research-popup-points-gained", ("points", reward)),
             args.User,
             args.User);
+
+        _skills.TryGrantActionPoint(
+            args.User,
+            "WLSkillLeadership",
+            "research-table",
+            cooldownSeconds: ResearchSkillPointCooldownSeconds,
+            showPopup: true);
 
         SendStateToCraftUsers();
         TryStartResearchDoAfter(uid, component, args.User, false);
@@ -1015,7 +1081,7 @@ public sealed class PersistentCraftingSystem : EntitySystem
             RaiseNetworkEvent(
                 new PersistentCraftRecipeStartedEvent(
                     recipe.ID,
-                    _craftExecutionService.GetEffectiveCraftTime(recipe)),
+                    _craftExecutionService.GetEffectiveCraftTime(user, recipe)),
                 actor.PlayerSession);
         }
 
@@ -1096,7 +1162,7 @@ public sealed class PersistentCraftingSystem : EntitySystem
             return;
         }
 
-        if (!TrySpawnPlacement(recipe, location, angle, out _))
+        if (!TrySpawnPlacement(recipe, location, angle, args.User, out _))
         {
             PopupUser(args.User, "persistent-craft-placement-popup-invalid");
             SendCraftRecipeExecutionToAttachedActor(args.User, recipe.ID, PersistentCraftRecipeExecutionResult.Cancelled);
@@ -1106,6 +1172,7 @@ public sealed class PersistentCraftingSystem : EntitySystem
 
         _craftExecutionService.ConsumeIngredientPlan(plan);
         QueueDel(uid);
+        GrantSkillPointForCraft(args.User, recipe);
 
         _popup.PopupEntity(
             Loc.GetString("persistent-craft-placement-popup-placed", ("recipe", ResolveRecipeName(recipe))),
@@ -1118,7 +1185,7 @@ public sealed class PersistentCraftingSystem : EntitySystem
 
     private bool TryStartCraftDoAfter(EntityUid user, PersistentCraftRecipePrototype recipe)
     {
-        var craftTime = _craftExecutionService.GetEffectiveCraftTime(recipe);
+        var craftTime = _craftExecutionService.GetEffectiveCraftTime(user, recipe);
         var doAfter = new DoAfterArgs(
             EntityManager,
             user,
@@ -1129,13 +1196,130 @@ public sealed class PersistentCraftingSystem : EntitySystem
             used: user)
         {
             BreakOnMove = true,
-            BreakOnDamage = true,
+            BreakOnDamage = false,
             NeedHand = false,
             RequireCanInteract = true,
             BlockDuplicate = true,
         };
 
         return _doAfter.TryStartDoAfter(doAfter);
+    }
+
+    private bool TryValidateNearbyRequirement(EntityUid user, PersistentCraftRecipePrototype recipe, bool showPopup)
+    {
+        if (recipe.NearbyRequirement is not { } requirement)
+            return true;
+
+        var coords = Transform(user).Coordinates;
+        if (!coords.IsValid(EntityManager))
+        {
+            PopupNearbyRequirementFailure(user, requirement, showPopup);
+            return false;
+        }
+
+        _nearbyRequirementBuffer.Clear();
+        _lookup.GetEntitiesInRange(
+            coords,
+            MathF.Max(0.1f, requirement.Range),
+            _nearbyRequirementBuffer,
+            LookupFlags.Static | LookupFlags.Dynamic | LookupFlags.Sundries);
+
+        foreach (var entity in _nearbyRequirementBuffer)
+        {
+            if (MatchesNearbyRequirement(entity, requirement))
+            {
+                _nearbyRequirementBuffer.Clear();
+                return true;
+            }
+        }
+
+        _nearbyRequirementBuffer.Clear();
+        PopupNearbyRequirementFailure(user, requirement, showPopup);
+        return false;
+    }
+
+    private bool MatchesNearbyRequirement(EntityUid entity, PersistentCraftNearbyRequirement requirement)
+    {
+        if (requirement.Prototypes.Count > 0)
+        {
+            var prototypeId = MetaData(entity).EntityPrototype?.ID;
+            if (prototypeId == null ||
+                !requirement.Prototypes.Contains(prototypeId, StringComparer.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        return !requirement.RequireEnabledHeat ||
+               TryComp(entity, out FrozenHeatSourceComponent? heatSource) && heatSource.Enabled;
+    }
+
+    private void PopupNearbyRequirementFailure(EntityUid user, PersistentCraftNearbyRequirement requirement, bool showPopup)
+    {
+        if (showPopup)
+            PopupUser(user, requirement.FailurePopup);
+    }
+
+    private void GrantSkillPointForCraft(EntityUid user, PersistentCraftRecipePrototype recipe)
+    {
+        var source = BuildCraftSkillSource(recipe);
+        if (recipe.Branch == "WLCooking")
+        {
+            _skills.TryGrantActionPoint(
+                user,
+                "WLSkillGatherer",
+                $"craft:WLCooking:{recipe.ID}",
+                cooldownSeconds: 45,
+                showPopup: true);
+            return;
+        }
+
+        switch (recipe.Branch)
+        {
+            case "WLGathererProcessor":
+            case "WLFieldMedicine":
+                _skills.TryGrantActionPoint(
+                    user,
+                    "WLSkillGatherer",
+                    source,
+                    cooldownSeconds: CraftSkillPointCooldownSeconds,
+                    showPopup: true);
+                break;
+            case "WLMechanic":
+                _skills.TryGrantActionPoint(
+                    user,
+                    "WLSkillMechanic",
+                    source,
+                    cooldownSeconds: CraftSkillPointCooldownSeconds,
+                    showPopup: true);
+                break;
+            case "WLHunter":
+                _skills.TryGrantActionPoint(
+                    user,
+                    "WLSkillHunter",
+                    source,
+                    cooldownSeconds: CraftSkillPointCooldownSeconds,
+                    showPopup: true);
+                break;
+            case "WLSettlementHead":
+                _skills.TryGrantActionPoint(
+                    user,
+                    "WLSkillLeadership",
+                    source,
+                    cooldownSeconds: CraftSkillPointCooldownSeconds,
+                    showPopup: true);
+                break;
+        }
+    }
+
+    private static string BuildCraftSkillSource(PersistentCraftRecipePrototype recipe)
+    {
+        if (!string.IsNullOrWhiteSpace(recipe.SubCategory))
+            return $"craft:{recipe.Branch}:{recipe.SubCategory}";
+
+        return recipe.Placement == null
+            ? $"craft:{recipe.Branch}:item"
+            : $"craft:{recipe.Branch}:placement";
     }
 
     private bool TryStartResearchDoAfter(
@@ -1147,17 +1331,30 @@ public sealed class PersistentCraftingSystem : EntitySystem
         if (!CanResearch(user, showPopup))
             return false;
 
+        if (component.ActiveResearcher is { } activeResearcher)
+        {
+            if (Exists(activeResearcher))
+            {
+                if (showPopup)
+                    PopupUser(user, "persistent-craft-research-popup-busy");
+
+                return false;
+            }
+
+            component.ActiveResearcher = null;
+        }
+
         var doAfter = new DoAfterArgs(
             EntityManager,
             user,
-            MathF.Max(1f, component.DoAfter),
+            GetEffectiveResearchTime(user, component),
             new PersistentCraftResearchDoAfterEvent(),
             bench,
             target: bench,
             used: bench)
         {
             BreakOnMove = true,
-            BreakOnDamage = true,
+            BreakOnDamage = false,
             NeedHand = false,
             RequireCanInteract = true,
             BlockDuplicate = true,
@@ -1166,15 +1363,29 @@ public sealed class PersistentCraftingSystem : EntitySystem
         if (!_doAfter.TryStartDoAfter(doAfter))
             return false;
 
+        component.ActiveResearcher = user;
+
         if (showPopup)
             PopupUser(user, "persistent-craft-research-popup-started");
 
         return true;
     }
 
+    private float GetEffectiveResearchTime(EntityUid user, PersistentCraftResearchBenchComponent component)
+    {
+        var researchTime = MathF.Max(1f, component.DoAfter);
+        if (!TryComp(user, out WLRoleSkillsComponent? skills) ||
+            MathHelper.CloseToPercent(skills.ResearchTimeMultiplier, 1f))
+        {
+            return researchTime;
+        }
+
+        return MathF.Max(1f, researchTime * skills.ResearchTimeMultiplier);
+    }
+
     private bool TryStartPlacementDoAfter(EntityUid blueprint, EntityUid user, PersistentCraftRecipePrototype recipe)
     {
-        var craftTime = _craftExecutionService.GetEffectiveCraftTime(recipe);
+        var craftTime = _craftExecutionService.GetEffectiveCraftTime(user, recipe);
         var transform = Transform(blueprint);
         var doAfter = new DoAfterArgs(
             EntityManager,
@@ -1189,7 +1400,7 @@ public sealed class PersistentCraftingSystem : EntitySystem
             used: user)
         {
             BreakOnMove = true,
-            BreakOnDamage = true,
+            BreakOnDamage = false,
             NeedHand = false,
             RequireCanInteract = true,
             BlockDuplicate = true,
@@ -1220,7 +1431,7 @@ public sealed class PersistentCraftingSystem : EntitySystem
             tileRefNullable.Value.Tile.IsEmpty ||
             !TryComp<MapGridComponent>(tileRefNullable.Value.GridUid, out var grid))
         {
-            PopupPlacementFailure(user, showPopup, "persistent-craft-placement-popup-invalid-floor");
+            PopupPlacementFailure(user, showPopup, GetInvalidFloorPopupKey(placement));
             return false;
         }
 
@@ -1229,7 +1440,7 @@ public sealed class PersistentCraftingSystem : EntitySystem
         if (!tileDef.WLHasFrozenConstructionMetadata ||
             !AllowsPlacementOnFloor(tileDef, placement.FloorRequirement))
         {
-            PopupPlacementFailure(user, showPopup, "persistent-craft-placement-popup-invalid-floor");
+            PopupPlacementFailure(user, showPopup, GetInvalidFloorPopupKey(placement));
             return false;
         }
 
@@ -1316,7 +1527,12 @@ public sealed class PersistentCraftingSystem : EntitySystem
         return true;
     }
 
-    private bool TrySpawnPlacement(PersistentCraftRecipePrototype recipe, EntityCoordinates location, Angle angle, out EntityUid placed)
+    private bool TrySpawnPlacement(
+        PersistentCraftRecipePrototype recipe,
+        EntityCoordinates location,
+        Angle angle,
+        EntityUid builder,
+        out EntityUid placed)
     {
         placed = default;
 
@@ -1331,6 +1547,9 @@ public sealed class PersistentCraftingSystem : EntitySystem
         var tileRef = tileRefNullable.Value;
         var snappedLocation = _map.GridTileToLocal(tileRef.GridUid, grid, tileRef.GridIndices);
         placed = Spawn(placement.Proto, snappedLocation);
+
+        if (TryComp(placed, out WLSnareTrapComponent? snare))
+            snare.Placer = builder;
 
         if (placement.CanRotate && TryComp(placed, out TransformComponent? xform))
             _transform.SetLocalRotation(placed, angle, xform);
@@ -1347,9 +1566,17 @@ public sealed class PersistentCraftingSystem : EntitySystem
             FrozenBuildableFloorRequirement.Furniture => tileDef.WLAllowsFurnitureConstruction,
             FrozenBuildableFloorRequirement.OutdoorHeatSource =>
                 tileDef.WLAllowsFurnitureConstruction ||
+                tileDef.WLTerrainTags.Contains("Snow", StringComparer.Ordinal) ||
                 tileDef.WLTerrainTags.Contains("PackedSnow", StringComparer.Ordinal),
             _ => false,
         };
+    }
+
+    private static string GetInvalidFloorPopupKey(PersistentCraftPlacement placement)
+    {
+        return placement.FloorRequirement == FrozenBuildableFloorRequirement.OutdoorHeatSource
+            ? "persistent-craft-placement-popup-invalid-outdoor-surface"
+            : "persistent-craft-placement-popup-invalid-floor";
     }
 
     private bool HasBlueprintAt(EntityUid gridUid, MapGridComponent grid, Vector2i origin, EntityUid? ignoredBlueprint)
@@ -1457,6 +1684,17 @@ public sealed class PersistentCraftingSystem : EntitySystem
         EnsurePersistentCraftProfileReady(uid);
 
         RaiseNetworkEvent(new OpenPersistentCraftMenuEvent(), session);
+        SendState(session, uid);
+    }
+
+    private void OpenPlacementMenu(EntityUid uid, ICommonSession session)
+    {
+        if (!HasComp<PersistentCraftAccessComponent>(uid))
+            return;
+
+        EnsurePersistentCraftProfileReady(uid);
+
+        RaiseNetworkEvent(new OpenPersistentCraftPlacementMenuEvent(), session);
         SendState(session, uid);
     }
 

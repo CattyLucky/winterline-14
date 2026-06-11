@@ -53,7 +53,7 @@
   subCategory: WLCraftSubCategoryMechanicTools
   craftTime: 1.4
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 4
   results:
   - proto: Crowbar
@@ -71,7 +71,7 @@
   subCategory: WLCraftSubCategoryMechanicTools
   craftTime: 1.2
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 2
   - stackType: WLWoodPlankStack
     amount: 1
@@ -93,7 +93,7 @@
   ingredients:
   - stackType: WLWoodPlankStack
     amount: 2
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 3
   results:
   - proto: Shovel
@@ -111,7 +111,7 @@
   subCategory: WLCraftSubCategoryMechanicTools
   craftTime: 1.5
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 3
   - stackType: WLPreparedClothStack
     amount: 2
@@ -131,7 +131,7 @@
   subCategory: WLCraftSubCategoryMechanicTools
   craftTime: 1.5
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 4
   - stackType: WLWoodPlankStack
     amount: 1
@@ -152,8 +152,8 @@
   craftTime: 1.2
   ingredients:
   - stackType: WLWoodPlankStack
-    amount: 2
-  - stackType: WLMetalPartsStack
+    amount: 1
+  - stackType: WLScrapMetalStack
     amount: 1
   results:
   - proto: WLFirestarterStone
@@ -171,7 +171,7 @@
   subCategory: WLCraftSubCategoryMechanicTools
   craftTime: 1.8
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 3
   - stackType: WLPreparedClothStack
     amount: 2
@@ -193,7 +193,7 @@
   subCategory: WLCraftSubCategoryMechanicTools
   craftTime: 2.2
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 6
   - stackType: WLPreparedClothStack
     amount: 2
@@ -217,7 +217,7 @@
   ingredients:
   - stackType: WLWoodPlankStack
     amount: 2
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 6
   results:
   - proto: Pickaxe
@@ -235,7 +235,7 @@
   subCategory: WLCraftSubCategoryMechanicWiring
   craftTime: 1.6
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 3
   - stackType: WLPreparedClothStack
     amount: 3
@@ -255,7 +255,7 @@
   subCategory: WLCraftSubCategoryMechanicTools
   craftTime: 1.8
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 4
   - stackType: WLCharcoalFuelStack
     amount: 1
@@ -297,7 +297,7 @@
   subCategory: WLCraftSubCategoryMechanicTools
   craftTime: 3.0
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 9
   - stackType: WLPreparedClothStack
     amount: 3
@@ -305,28 +305,6 @@
     amount: 2
   results:
   - proto: Multitool
-    amount: 1
-
-- type: persistentCraftRecipe
-  id: WLCraftRecipeFieldSpear
-  name: persistent-craft-wl-recipe-field-spear-name
-  description: persistent-craft-wl-recipe-field-spear-description
-  displayProto: Spear
-  branch: WLMechanic
-  tier: 3
-  requiredNode: WLCraftNodeMechanicAdvancedToolsT3
-  category: WLCraftCategoryMechanic
-  subCategory: WLCraftSubCategoryMechanicTools
-  craftTime: 2.8
-  ingredients:
-  - stackType: WLWoodPlankStack
-    amount: 3
-  - stackType: WLMetalPartsStack
-    amount: 5
-  - stackType: WLPreparedClothStack
-    amount: 2
-  results:
-  - proto: Spear
     amount: 1
 
 - type: persistentCraftRecipe
@@ -341,7 +319,7 @@
   subCategory: WLCraftSubCategoryMechanicWiring
   craftTime: 2.0
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 5
   - stackType: WLPreparedClothStack
     amount: 4
@@ -363,7 +341,7 @@
   subCategory: WLCraftSubCategoryMechanicTools
   craftTime: 2.8
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 10
   - stackType: WLPreparedClothStack
     amount: 2
@@ -371,26 +349,6 @@
     amount: 2
   results:
   - proto: Welder
-    amount: 1
-
-- type: persistentCraftRecipe
-  id: WLCraftRecipeSurvivalKnife
-  name: persistent-craft-wl-recipe-survival-knife-name
-  description: persistent-craft-wl-recipe-survival-knife-description
-  displayProto: SurvivalKnife
-  branch: WLMechanic
-  tier: 3
-  requiredNode: WLCraftNodeMechanicAdvancedToolsT3
-  category: WLCraftCategoryMechanic
-  subCategory: WLCraftSubCategoryMechanicTools
-  craftTime: 2.2
-  ingredients:
-  - stackType: WLMetalPartsStack
-    amount: 6
-  - stackType: WLPreparedClothStack
-    amount: 2
-  results:
-  - proto: SurvivalKnife
     amount: 1
 
 # --- Mechanic: Tier 4 --------------------------------------------------------
@@ -407,7 +365,7 @@
   subCategory: WLCraftSubCategoryMechanicWiring
   craftTime: 2.6
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 8
   - stackType: WLPreparedClothStack
     amount: 5
@@ -429,7 +387,7 @@
   subCategory: WLCraftSubCategoryMechanicTools
   craftTime: 3.6
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 14
   - stackType: WLPreparedClothStack
     amount: 4
@@ -453,7 +411,7 @@
   subCategory: WLCraftSubCategoryMechanicTools
   craftTime: 4.4
   ingredients:
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 18
   - stackType: WLPreparedClothStack
     amount: 6
@@ -466,9 +424,9 @@
 # --- Gatherer-Processor: Tier 1 ----------------------------------------------
 
 - type: persistentCraftRecipe
-  id: WLCraftRecipeCutBranchesToPlanks
-  name: persistent-craft-wl-recipe-cut-branches-to-planks-name
-  description: persistent-craft-wl-recipe-cut-branches-to-planks-description
+  id: WLCraftRecipeSplitLogToRoughPlanks
+  name: persistent-craft-wl-recipe-split-log-to-rough-planks-name
+  description: persistent-craft-wl-recipe-split-log-to-rough-planks-description
   displayProto: WLWoodPlank1
   branch: WLGathererProcessor
   tier: 1
@@ -478,8 +436,8 @@
   craftTime: 1.2
   allowResourceProcessingBonus: true
   ingredients:
-  - stackType: WLFrozenBranchStack
-    amount: 4
+  - proto: WLLog
+    amount: 1
   results:
   - proto: WLWoodPlank1
     amount: 2
@@ -498,7 +456,7 @@
   allowResourceProcessingBonus: true
   ingredients:
   - stackType: WLWoodPlankStack
-    amount: 4
+    amount: 2
   results:
   - proto: WLMaterialWoodFuel1
     amount: 2
@@ -523,25 +481,53 @@
     amount: 2
 
 - type: persistentCraftRecipe
-  id: WLCraftRecipeSortLooseScrap
-  name: persistent-craft-wl-recipe-sort-loose-scrap-name
-  description: persistent-craft-wl-recipe-sort-loose-scrap-description
-  displayProto: WLMetalParts1
+  id: WLCraftRecipeSmeltScrapMetal
+  name: persistent-craft-wl-recipe-smelt-scrap-metal-name
+  description: persistent-craft-wl-recipe-smelt-scrap-metal-description
+  displayProto: WLIronIngot1
   branch: WLGathererProcessor
-  tier: 1
-  requiredNode: WLCraftNodeGathererProcessingT1
+  tier: 2
+  requiredNode: WLCraftNodeGathererFuelT2
   category: WLCraftCategoryGathererProcessor
   subCategory: WLCraftSubCategoryGathererProcessing
-  craftTime: 1.4
+  craftTime: 2.4
   allowResourceProcessingBonus: true
+  nearbyRequirement:
+    prototypes:
+    - WLSmelter
+    range: 2.8
+    description: persistent-craft-wl-requirement-smelter
+    failurePopup: persistent-craft-station-popup-requires-smelter
   ingredients:
-  - stackType: WLLooseScrapStack
-    amount: 3
+  - stackType: WLScrapMetalStack
+    amount: 4
+  - stackType: WLCharcoalFuelStack
+    amount: 1
   results:
-  - proto: WLMetalParts1
+  - proto: WLIronIngot1
     amount: 2
 
 # --- Gatherer-Processor: Tier 2 ----------------------------------------------
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeShapeStoneBlocks
+  name: persistent-craft-wl-recipe-shape-stone-blocks-name
+  description: persistent-craft-wl-recipe-shape-stone-blocks-description
+  displayProto: WLStoneBlock1
+  branch: WLGathererProcessor
+  tier: 2
+  order: 5
+  requiredNode: WLCraftNodeGathererTilesT2
+  category: WLCraftCategoryGathererProcessor
+  subCategory: WLCraftSubCategoryGathererProcessing
+  craftTime: 1.8
+  allowResourceProcessingBonus: true
+  ingredients:
+  - stackType: WLRoughStoneStack
+    amount: 3
+  results:
+  - proto: WLStoneBlock1
+    amount: 2
 
 - type: persistentCraftRecipe
   id: WLCraftRecipeCharcoalFuel
@@ -581,6 +567,33 @@
   - proto: WLWoodPlank1
     amount: 4
 
+- type: persistentCraftRecipe
+  id: WLCraftRecipeSmeltIronOre
+  name: persistent-craft-wl-recipe-smelt-iron-ore-name
+  description: persistent-craft-wl-recipe-smelt-iron-ore-description
+  displayProto: WLIronIngot1
+  branch: WLGathererProcessor
+  tier: 3
+  requiredNode: WLCraftNodeGathererFuelT3
+  category: WLCraftCategoryGathererProcessor
+  subCategory: WLCraftSubCategoryGathererProcessing
+  craftTime: 3.0
+  allowResourceProcessingBonus: true
+  nearbyRequirement:
+    prototypes:
+    - WLSmelter
+    range: 2.8
+    description: persistent-craft-wl-requirement-smelter
+    failurePopup: persistent-craft-station-popup-requires-smelter
+  ingredients:
+  - stackType: WLIronOreStack
+    amount: 3
+  - stackType: WLCoalFuelStack
+    amount: 1
+  results:
+  - proto: WLIronIngot1
+    amount: 2
+
 # --- Gatherer-Processor: Tier 3 ----------------------------------------------
 
 - type: persistentCraftRecipe
@@ -598,13 +611,40 @@
   ingredients:
   - stackType: WLCharcoalFuelStack
     amount: 3
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 1
   results:
   - proto: WLCoalFuel1
     amount: 2
 
 # --- Gatherer-Processor: Tier 4 ----------------------------------------------
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeSmeltLeadOre
+  name: persistent-craft-wl-recipe-smelt-lead-ore-name
+  description: persistent-craft-wl-recipe-smelt-lead-ore-description
+  displayProto: WLLeadIngot1
+  branch: WLGathererProcessor
+  tier: 4
+  requiredNode: WLCraftNodeGathererFuelT4
+  category: WLCraftCategoryGathererProcessor
+  subCategory: WLCraftSubCategoryGathererProcessing
+  craftTime: 3.2
+  allowResourceProcessingBonus: true
+  nearbyRequirement:
+    prototypes:
+    - WLSmelter
+    range: 2.8
+    description: persistent-craft-wl-requirement-smelter
+    failurePopup: persistent-craft-station-popup-requires-smelter
+  ingredients:
+  - stackType: WLLeadOreStack
+    amount: 3
+  - stackType: WLCoalFuelStack
+    amount: 1
+  results:
+  - proto: WLLeadIngot1
+    amount: 2
 
 - type: persistentCraftRecipe
   id: WLCraftRecipeDenseCoalBriquette
@@ -621,7 +661,7 @@
   ingredients:
   - stackType: WLCoalFuelStack
     amount: 3
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 2
   results:
   - proto: WLDenseCoalFuel1
@@ -644,7 +684,7 @@
   ingredients:
   - stackType: WLCoalFuelStack
     amount: 7
-  - stackType: WLMetalPartsStack
+  - stackType: WLIronIngotStack
     amount: 3
   - stackType: WLPreparedClothStack
     amount: 2
@@ -712,7 +752,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 4
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 1
   results:
   - proto: Brutepack1
@@ -734,7 +774,7 @@
   ingredients:
   - stackType: WLPreparedClothStack
     amount: 10
-  - stackType: WLMetalPartsStack
+  - stackType: WLScrapMetalStack
     amount: 3
   results:
   - proto: Brutepack1

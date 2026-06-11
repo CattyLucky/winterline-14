@@ -1,0 +1,14 @@
+- type: entity
+  parent: BaseMentalAction
+  id: ActionOpenWLSkillMenu
+  name: wl-skill-action-name
+  description: wl-skill-action-description
+  components:
+  - type: Action
+    itemIconStyle: NoItem
+    raiseOnUser: true
+    icon:
+      sprite: Objects/Misc/books.rsi
+      state: book_icon
+  - type: InstantAction
+    event: !type:OpenWLSkillMenuActionEvent

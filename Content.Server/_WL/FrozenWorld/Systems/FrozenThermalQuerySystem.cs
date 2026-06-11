@@ -34,14 +34,14 @@ public readonly record struct FrozenEnvironmentalTemperatureResult(
 /// </summary>
 public sealed partial class FrozenThermalQuerySystem : EntitySystem
 {
-    [Dependency] private readonly FrozenHeatFieldSystem _heatField = default!;
-    [Dependency] private readonly FrozenDynamicHeatSourceSystem _dynamicHeat = default!;
-    [Dependency] private readonly FrozenRoomHeatSystem _roomHeat = default!;
-    [Dependency] private readonly FrozenSurfaceProtectionSystem _protection = default!;
-    [Dependency] private readonly FrozenShelterSystem _shelter = default!;
-    [Dependency] private readonly FrozenShelterRoomSystem _rooms = default!;
-    [Dependency] private readonly InventorySystem _inventory = default!;
-    [Dependency] private readonly SharedTransformSystem _xform = default!;
+    [Dependency] private FrozenHeatFieldSystem _heatField = default!;
+    [Dependency] private FrozenDynamicHeatSourceSystem _dynamicHeat = default!;
+    [Dependency] private FrozenRoomHeatSystem _roomHeat = default!;
+    [Dependency] private FrozenSurfaceProtectionSystem _protection = default!;
+    [Dependency] private FrozenShelterSystem _shelter = default!;
+    [Dependency] private FrozenShelterRoomSystem _rooms = default!;
+    [Dependency] private InventorySystem _inventory = default!;
+    [Dependency] private SharedTransformSystem _xform = default!;
 
     /// <summary>
     /// Required 0..1 severity gap between the coldest body part and the second-coldest body part
@@ -85,6 +85,13 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
 
         if (!TryComp<FrozenWorldComponent>(mapUid, out var world))
             return false;
+
+        if (xform.GridUid is { } gridUid &&
+            TryComp<FrozenWeatherProtectedGridComponent>(gridUid, out var protectedGrid))
+        {
+            snapshot = GetProtectedGridSnapshot(uid, exposure, world, protectedGrid);
+            return true;
+        }
 
         TryComp<FrozenTemperatureReceiverComponent>(uid, out var receiver);
         var worldPos = _xform.GetWorldPosition(xform);
@@ -162,6 +169,73 @@ public sealed partial class FrozenThermalQuerySystem : EntitySystem
             zoneTemperatureOffset);
 
         return true;
+    }
+
+    private FrozenThermalSnapshot GetProtectedGridSnapshot(
+        EntityUid uid,
+        FrozenColdExposureComponent exposure,
+        FrozenWorldComponent world,
+        FrozenWeatherProtectedGridComponent protectedGrid)
+    {
+        TryComp<FrozenTemperatureReceiverComponent>(uid, out var receiver);
+
+        var ambientTemperature = MathF.Max(0f, protectedGrid.AmbientTemperature);
+        var environmentalTemperature = MathF.Max(0f, protectedGrid.EnvironmentalTemperature);
+        var unclampedEnvironmentalTemperatureCelsius = KelvinToCelsius(environmentalTemperature);
+        var minEffectiveTemperatureCelsius = KelvinToCelsius(world.MinEffectiveTemperature);
+        var maxEffectiveTemperatureCelsius = KelvinToCelsius(world.MaxEffectiveTemperature);
+        var isEnvironmentalTemperatureClamped =
+            environmentalTemperature < world.MinEffectiveTemperature ||
+            environmentalTemperature > world.MaxEffectiveTemperature;
+        environmentalTemperature = Math.Clamp(environmentalTemperature, world.MinEffectiveTemperature, world.MaxEffectiveTemperature);
+        var environmentalTemperatureCelsius = KelvinToCelsius(environmentalTemperature);
+
+        var partRatings = GetBodyPartRatings(uid, exposure);
+        var footContactPenaltyCelsius = GetFootContactPenaltyCelsius(uid);
+
+        var totalColdSeverity = GetTotalColdSeverity(
+            partRatings,
+            environmentalTemperatureCelsius,
+            footContactPenaltyCelsius,
+            exposure.FullDeficitTemperatureCelsius,
+            out var partSeverities,
+            out var weakestPart,
+            out var weakestSeverity,
+            out var hasClearWeakestBodyPart);
+
+        return new FrozenThermalSnapshot(
+            ambientTemperature,
+            0f,
+            0f,
+            0f,
+            environmentalTemperature,
+            environmentalTemperatureCelsius,
+            unclampedEnvironmentalTemperatureCelsius,
+            isEnvironmentalTemperatureClamped,
+            minEffectiveTemperatureCelsius,
+            maxEffectiveTemperatureCelsius,
+            totalColdSeverity,
+            footContactPenaltyCelsius,
+            weakestPart,
+            weakestSeverity,
+            hasClearWeakestBodyPart,
+            partRatings,
+            partSeverities,
+            GetExposureGainMultiplier(receiver),
+            GetRecoveryMultiplier(receiver) * MathF.Max(0f, protectedGrid.RecoveryMultiplier),
+            0f,
+            0f,
+            false,
+            null,
+            0f,
+            0f,
+            protectedGrid.ShelterName,
+            FrozenShelterSource.ExplicitArea,
+            FrozenShelterRoomThermalInfo.None,
+            world.BaseAmbientTemperature,
+            world.DayNightTemperatureOffset,
+            world.DayNightPhase,
+            0f);
     }
 
     public FrozenEnvironmentalTemperatureResult GetEnvironmentalTemperatureAt(

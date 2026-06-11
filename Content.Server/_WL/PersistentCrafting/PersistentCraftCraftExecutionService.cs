@@ -97,9 +97,16 @@ public sealed class PersistentCraftCraftExecutionService
         }
     }
 
-    public float GetEffectiveCraftTime(PersistentCraftRecipePrototype recipe)
+    public float GetEffectiveCraftTime(EntityUid user, PersistentCraftRecipePrototype recipe)
     {
-        return PersistentCraftRecipeRules.GetEffectiveCraftTime(recipe);
+        var craftTime = PersistentCraftRecipeRules.GetEffectiveCraftTime(recipe);
+        if (!_entityManager.TryGetComponent(user, out WLRoleSkillsComponent? skills) ||
+            MathHelper.CloseToPercent(skills.CraftTimeMultiplier, 1f))
+        {
+            return craftTime;
+        }
+
+        return MathF.Max(0.25f, craftTime * skills.CraftTimeMultiplier);
     }
 
     public int GetEffectiveIngredientAmount(

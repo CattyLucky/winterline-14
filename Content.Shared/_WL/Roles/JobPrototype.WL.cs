@@ -24,6 +24,12 @@ public sealed partial class JobPrototype
     [DataField("persistentCraftResearchBranches")]
     public List<string> PersistentCraftResearchBranches { get; private set; } = new();
 
+    [DataField("wlSkillAllBranches")]
+    public bool WlSkillAllBranches { get; private set; } = false;
+
+    [DataField("wlSkillBranches")]
+    public List<string> WlSkillBranches { get; private set; } = new();
+
     [DataField("wlSkillGatherTimeMultiplier")]
     public float WlSkillGatherTimeMultiplier { get; private set; } = 1f;
 

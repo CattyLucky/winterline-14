@@ -6,15 +6,15 @@ using Robust.Shared.Prototypes;
 
 namespace Content.Client._WL.PersistentCrafting;
 
-public sealed class PersistentCraftingSystem : EntitySystem
+public sealed partial class PersistentCraftingSystem : EntitySystem
 {
-    [Dependency] private readonly IPlacementManager _placement = default!;
-    [Dependency] private readonly IPrototypeManager _prototype = default!;
+    [Dependency] private IPlacementManager _placement = default!;
+    [Dependency] private IPrototypeManager _prototype = default!;
     private const float InventoryRefreshInterval = 0.5f;
 
     private PersistentCraftClientPrototypeCache _prototypeCache = default!;
     private UI.PersistentCraftStationWindow? _craftWindow;
-    private UI.PersistentCraftingWindow? _skillsWindow;
+    private UI.PersistentCraftingWindow? _researchWindow;
     private UI.PersistentCraftPlacementWindow? _placementWindow;
     private PersistentCraftState? _latestState;
     private float _inventoryRefreshAccumulator;
@@ -25,6 +25,7 @@ public sealed class PersistentCraftingSystem : EntitySystem
         _prototypeCache = PersistentCraftClientPrototypeCache.Create(_prototype);
 
         SubscribeNetworkEvent<OpenPersistentCraftMenuEvent>(OnOpenMenuEvent);
+        SubscribeNetworkEvent<OpenPersistentCraftPlacementMenuEvent>(OnOpenPlacementMenuEvent);
         SubscribeNetworkEvent<PersistentCraftStateEvent>(OnStateEvent);
         SubscribeNetworkEvent<PersistentCraftRecipeStartedEvent>(OnRecipeStartedEvent);
         SubscribeNetworkEvent<PersistentCraftRecipeFinishedEvent>(OnRecipeFinishedEvent);
@@ -50,47 +51,60 @@ public sealed class PersistentCraftingSystem : EntitySystem
         RaiseNetworkEvent(new RequestPersistentCraftPlacementEvent(recipeId, GetNetCoordinates(coordinates), angle));
     }
 
-    public void OpenSkillsWindow()
+    public void OpenResearchWindow()
     {
         if (_latestState?.CanResearch != true)
             return;
 
-        EnsureSkillsWindow();
-        _skillsWindow!.ResetInitialTabSelection();
-        _skillsWindow.ApplyFullscreenLayout();
+        EnsureResearchWindow();
+        _researchWindow!.ResetInitialTabSelection();
+        _researchWindow.ApplyFullscreenLayout();
 
-        if (!_skillsWindow!.IsOpen)
-            _skillsWindow.OpenCentered();
+        if (!_researchWindow!.IsOpen)
+            _researchWindow.OpenCentered();
         else
-            _skillsWindow.MoveToFront();
+            _researchWindow.MoveToFront();
 
-        RefreshSkillWindow();
+        RefreshResearchWindow();
     }
 
-    private void ToggleSkillsWindowFromCraft()
+    private void ToggleResearchWindowFromCraft()
     {
         if (_latestState?.CanResearch != true)
             return;
 
-        EnsureSkillsWindow();
+        EnsureResearchWindow();
 
-        if (_skillsWindow!.IsOpen)
+        if (_researchWindow!.IsOpen)
         {
-            _skillsWindow.Close();
+            _researchWindow.Close();
             return;
         }
 
-        OpenSkillsWindow();
+        OpenResearchWindow();
+    }
+
+    private void OpenPlacementWindowFromCraft()
+    {
+        EnsurePlacementWindow();
+
+        if (!_placementWindow!.IsOpen)
+            _placementWindow.OpenCentered();
+        else
+            _placementWindow.MoveToFront();
+
+        RefreshPlacementWindow();
+        RequestState();
     }
 
     public override void Update(float frameTime)
     {
         base.Update(frameTime);
 
-        if (_craftWindow == null ||
-            _craftWindow.Disposed ||
-            !_craftWindow.IsOpen ||
-            _latestState == null)
+        var shouldRefreshCraft = _craftWindow is { Disposed: false, IsOpen: true } && _latestState != null;
+        var shouldRefreshPlacement = _placementWindow is { Disposed: false, IsOpen: true } && _latestState != null;
+
+        if (!shouldRefreshCraft && !shouldRefreshPlacement)
         {
             _inventoryRefreshAccumulator = 0f;
             return;
@@ -101,7 +115,11 @@ public sealed class PersistentCraftingSystem : EntitySystem
             return;
 
         _inventoryRefreshAccumulator = 0f;
-        _craftWindow.RefreshLocalInventory();
+        if (shouldRefreshCraft)
+            _craftWindow!.RefreshLocalInventory();
+
+        if (shouldRefreshPlacement)
+            RefreshPlacementWindow();
     }
 
     private void OnOpenMenuEvent(OpenPersistentCraftMenuEvent ev, EntitySessionEventArgs args)
@@ -111,11 +129,8 @@ public sealed class PersistentCraftingSystem : EntitySystem
         {
             _craftWindow.Close();
 
-            if (_skillsWindow is { IsOpen: true })
-                _skillsWindow.Close();
-
-            if (_placementWindow is { IsOpen: true })
-                _placementWindow.Close();
+            if (_researchWindow is { IsOpen: true })
+                _researchWindow.Close();
 
             return;
         }
@@ -127,14 +142,28 @@ public sealed class PersistentCraftingSystem : EntitySystem
         RequestState();
     }
 
+    private void OnOpenPlacementMenuEvent(OpenPersistentCraftPlacementMenuEvent ev, EntitySessionEventArgs args)
+    {
+        EnsurePlacementWindow();
+        if (_placementWindow!.IsOpen)
+        {
+            _placementWindow.Close();
+            return;
+        }
+
+        _placementWindow.OpenCentered();
+        RefreshPlacementWindow();
+        RequestState();
+    }
+
     private void OnStateEvent(PersistentCraftStateEvent ev, EntitySessionEventArgs args)
     {
         _latestState = ev.State;
-        if (!ev.State.CanResearch && _skillsWindow is { IsOpen: true })
-            _skillsWindow.Close();
+        if (!ev.State.CanResearch && _researchWindow is { IsOpen: true })
+            _researchWindow.Close();
 
         RefreshCraftWindow();
-        RefreshSkillWindow();
+        RefreshResearchWindow();
         RefreshPlacementWindow();
     }
 
@@ -156,36 +185,15 @@ public sealed class PersistentCraftingSystem : EntitySystem
 
         _craftWindow.OnCraftPressed -= OnCraftRequestedFromWindow;
         _craftWindow.OnCraftPressed += OnCraftRequestedFromWindow;
-        _craftWindow.OnOpenSkillsPressed -= ToggleSkillsWindowFromCraft;
-        _craftWindow.OnOpenSkillsPressed += ToggleSkillsWindowFromCraft;
-        _craftWindow.OnOpenPlacementPressed -= TogglePlacementWindowFromCraft;
-        _craftWindow.OnOpenPlacementPressed += TogglePlacementWindowFromCraft;
+        _craftWindow.OnOpenPlacementPressed -= OpenPlacementWindowFromCraft;
+        _craftWindow.OnOpenPlacementPressed += OpenPlacementWindowFromCraft;
+        _craftWindow.OnOpenResearchPressed -= ToggleResearchWindowFromCraft;
+        _craftWindow.OnOpenResearchPressed += ToggleResearchWindowFromCraft;
     }
 
     private void OnCraftRequestedFromWindow(string recipeId)
     {
-        if (_prototype.TryIndex<PersistentCraftRecipePrototype>(recipeId, out var recipe) &&
-            recipe.Placement != null)
-        {
-            StartPlacement(recipe);
-            return;
-        }
-
         RequestCraft(recipeId);
-    }
-
-    private void TogglePlacementWindowFromCraft()
-    {
-        EnsurePlacementWindow();
-
-        if (_placementWindow!.IsOpen)
-        {
-            _placementWindow.Close();
-            return;
-        }
-
-        _placementWindow.OpenCentered();
-        RefreshPlacementWindow();
     }
 
     private void OnPlacementRequestedFromWindow(string recipeId)
@@ -215,11 +223,11 @@ public sealed class PersistentCraftingSystem : EntitySystem
             new PersistentCraftPlacementHijack(this, recipe));
     }
 
-    private void EnsureSkillsWindow()
+    private void EnsureResearchWindow()
     {
-        _skillsWindow ??= new UI.PersistentCraftingWindow(_prototypeCache);
-        if (_skillsWindow.Disposed)
-            _skillsWindow = new UI.PersistentCraftingWindow(_prototypeCache);
+        _researchWindow ??= new UI.PersistentCraftingWindow(_prototypeCache);
+        if (_researchWindow.Disposed)
+            _researchWindow = new UI.PersistentCraftingWindow(_prototypeCache);
     }
 
     private void EnsurePlacementWindow()
@@ -240,12 +248,12 @@ public sealed class PersistentCraftingSystem : EntitySystem
         _craftWindow.UpdateState(_latestState, _prototypeCache);
     }
 
-    private void RefreshSkillWindow()
+    private void RefreshResearchWindow()
     {
-        if (_skillsWindow == null || _skillsWindow.Disposed || !_skillsWindow.IsOpen || _latestState == null)
+        if (_researchWindow == null || _researchWindow.Disposed || !_researchWindow.IsOpen || _latestState == null)
             return;
 
-        _skillsWindow.UpdateState(
+        _researchWindow.UpdateState(
             _latestState,
             _prototypeCache,
             RequestUnlock);

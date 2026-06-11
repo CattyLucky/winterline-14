@@ -9,23 +9,24 @@
 - type: entity
   id: WLMaterialWoodFuel
   parent: MaterialWoodPlank
-  name: frozen firewood
-  description: Split timber prepared for shelter heating. Better than raw branches and easy to store.
+  name: dry firewood
+  description: Dry split wood prepared from rough planks for shelter heating. It burns evenly and stores cleanly.
   suffix: Full
   components:
   - type: Sprite
-    sprite: _WL/Objects/Misc/materials.rsi
-    state: firewood_3
+    sprite: Objects/Materials/materials.rsi
+    state: wood_3
     layers:
-    - state: firewood_3
+    - state: wood_3
       map: ["base"]
+  - type: Appearance
   - type: Stack
     stackType: WLWoodFuelStack
     baseLayer: base
     layerStates:
-    - firewood
-    - firewood_2
-    - firewood_3
+    - wood
+    - wood_2
+    - wood_3
   - type: FrozenFuel
     fuelSeconds: 70
     priority: 20
@@ -38,6 +39,8 @@
   parent: WLMaterialWoodFuel
   suffix: 10
   components:
+  - type: Sprite
+    state: wood_2
   - type: Stack
     count: 10
 
@@ -46,6 +49,8 @@
   parent: WLMaterialWoodFuel
   suffix: Single
   components:
+  - type: Sprite
+    state: wood
   - type: Stack
     count: 1
 
@@ -58,9 +63,11 @@
   - type: Sprite
     sprite: _WL/Objects/Misc/materials.rsi
     state: log
-  - type: Log
-    spawnedPrototype: WLWoodPlank1
-    spawnCount: 4
+  - type: ToolRefinable
+    qualityNeeded: Sawing
+    refineResult:
+    - id: WLWoodPlank1
+      amount: 4
 
 # --- Tier 3: Charcoal --------------------------------------------------------
 
@@ -73,9 +80,18 @@
   components:
   - type: Sprite
     sprite: _WL/Objects/Misc/materials.rsi
-    state: coal
+    state: coal_3
+    layers:
+    - state: coal_3
+      map: ["base"]
+  - type: Appearance
   - type: Stack
     stackType: WLCharcoalFuelStack
+    baseLayer: base
+    layerStates:
+    - coal
+    - coal_2
+    - coal_3
   - type: FrozenFuel
     fuelSeconds: 100
     priority: 30
@@ -88,6 +104,8 @@
   parent: WLCharcoalFuel
   suffix: 10
   components:
+  - type: Sprite
+    state: coal_2
   - type: Stack
     count: 10
 
@@ -96,6 +114,8 @@
   parent: WLCharcoalFuel
   suffix: Single
   components:
+  - type: Sprite
+    state: coal
   - type: Stack
     count: 1
 
@@ -109,10 +129,19 @@
   suffix: Full
   components:
   - type: Sprite
-    sprite: Objects/Materials/ore.rsi
-    state: coal
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: frozen_coal_3
+    layers:
+    - state: frozen_coal_3
+      map: ["base"]
+  - type: Appearance
   - type: Stack
     stackType: WLCoalFuelStack
+    baseLayer: base
+    layerStates:
+    - frozen_coal
+    - frozen_coal_2
+    - frozen_coal_3
   - type: FrozenFuel
     fuelSeconds: 140
     priority: 40
@@ -125,6 +154,8 @@
   parent: WLCoalFuel
   suffix: 10
   components:
+  - type: Sprite
+    state: frozen_coal_2
   - type: Stack
     count: 10
 
@@ -133,6 +164,8 @@
   parent: WLCoalFuel
   suffix: Single
   components:
+  - type: Sprite
+    state: frozen_coal
   - type: Stack
     count: 1
 
@@ -147,9 +180,18 @@
   components:
   - type: Sprite
     sprite: _WL/Objects/Misc/materials.rsi
-    state: coal
+    state: dense_coal_3
+    layers:
+    - state: dense_coal_3
+      map: ["base"]
+  - type: Appearance
   - type: Stack
     stackType: WLDenseCoalFuelStack
+    baseLayer: base
+    layerStates:
+    - dense_coal
+    - dense_coal_2
+    - dense_coal_3
   - type: FrozenFuel
     fuelSeconds: 210
     priority: 50
@@ -162,6 +204,8 @@
   parent: WLDenseCoalFuel
   suffix: 10
   components:
+  - type: Sprite
+    state: dense_coal_2
   - type: Stack
     count: 10
 
@@ -170,5 +214,7 @@
   parent: WLDenseCoalFuel
   suffix: Single
   components:
+  - type: Sprite
+    state: dense_coal
   - type: Stack
     count: 1

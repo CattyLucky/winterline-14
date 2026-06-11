@@ -2,10 +2,10 @@
   id: WLFrostRimDefaultLightCycle
   configureLightCycle: true
   lightCycleEnabled: true
-  lightCycleDuration: 60s
+  lightCycleDuration: 40m
   lightCycleOffset: 0s
   randomizeLightCycleOffset: false
   dayNightTemperatureEnabled: true
-  dayTemperatureOffset: 1
-  nightTemperatureOffset: -20
+  dayTemperatureOffset: 2
+  nightTemperatureOffset: -10
   temperaturePeakPhase: 0.58

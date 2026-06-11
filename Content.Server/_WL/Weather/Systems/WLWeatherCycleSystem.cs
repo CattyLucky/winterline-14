@@ -20,10 +20,10 @@ namespace Content.Server._WL.Weather.Systems;
 /// This system no longer talks to vanilla WeatherSystem. FrozenWorld weather visual quality is controlled by
 /// FrozenWeatherVisualPrototype profile + RSI state on the client.
 /// </summary>
-public sealed class WLWeatherCycleSystem : EntitySystem
+public sealed partial class WLWeatherCycleSystem : EntitySystem
 {
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly IPrototypeManager _proto = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private IPrototypeManager _proto = default!;
 
     private const float DefaultGameplayFadeSeconds = 8f;
 
@@ -84,6 +84,22 @@ public sealed class WLWeatherCycleSystem : EntitySystem
     public void InitializeNow(EntityUid uid, WLWeatherCycleComponent comp, bool applyWeather = true)
     {
         InitializeCycle(uid, comp, applyWeather);
+    }
+
+    public bool TryForceWeather(EntityUid uid, ProtoId<FrozenWeatherPrototype> weatherId)
+    {
+        var mapXform = Transform(uid);
+        var mapUid = mapXform.MapUid ?? uid;
+
+        if (!_proto.TryIndex(weatherId, out FrozenWeatherPrototype? weather))
+        {
+            Log.Error($"Frozen weather prototype '{weatherId}' does not exist.");
+            return false;
+        }
+
+        ApplyGameplayWeather(mapUid, weather);
+        ApplyClientVisualWeather(mapUid, weather);
+        return true;
     }
 
     private void TryApplyWeather(EntityUid uid, WLWeatherCycleComponent comp, int index)

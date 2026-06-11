@@ -12,8 +12,8 @@ namespace Content.Shared._WL.FrozenWorld.Systems;
 /// </summary>
 public sealed partial class FrozenSurfaceProtectionSystem : EntitySystem
 {
-    [Dependency] private readonly InventorySystem _inventory = default!;
-    [Dependency] private readonly FrozenSurfaceTrackerSystem _tracker = default!;
+    [Dependency] private InventorySystem _inventory = default!;
+    [Dependency] private FrozenSurfaceTrackerSystem _tracker = default!;
 
     public override void Initialize()
     {

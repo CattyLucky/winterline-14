@@ -1,0 +1,75 @@
+# /// WL Change
+# Armored variants of FrozenWorld outer coats (inherit non-toggle WL coat sprites/insulation).
+
+- type: entity
+  parent: ClothingOuterWinterCoatWarmWL
+  id: ClothingOuterArmoredWinterCoatWarmWL
+  suffix: WL, T2, Armored
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Armor
+    modifiers:
+      coefficients:
+        Blunt: 0.85
+        Slash: 0.80
+        Piercing: 0.90
+        Heat: 0.90
+  - type: ExplosionResistance
+    damageCoefficient: 0.95
+
+- type: entity
+  parent: ClothingOuterWinterCoatWL
+  id: ClothingOuterArmoredWinterCoatWL
+  suffix: WL, T3, Armored
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Armor
+    modifiers:
+      coefficients:
+        Blunt: 0.75
+        Slash: 0.75
+        Piercing: 0.80
+        Heat: 0.85
+  - type: ExplosionResistance
+    damageCoefficient: 0.90
+  - type: ClothingSpeedModifier
+    walkModifier: 1
+    sprintModifier: 0.98
+
+- type: entity
+  parent: ClothingOuterWinterCoatArcticWL
+  id: ClothingOuterArmoredWinterCoatArcticWL
+  suffix: WL, T4, Armored
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Armor
+    modifiers:
+      coefficients:
+        Blunt: 0.65
+        Slash: 0.65
+        Piercing: 0.70
+        Heat: 0.80
+  - type: ExplosionResistance
+    damageCoefficient: 0.85
+  - type: ClothingSpeedModifier
+    walkModifier: 0.98
+    sprintModifier: 0.95
+
+- type: entity
+  parent: ClothingOuterWinterCoatExtremeWL
+  id: ClothingOuterArmoredWinterCoatExtremeWL
+  suffix: WL, T5, Armored
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Armor
+    modifiers:
+      coefficients:
+        Blunt: 0.55
+        Slash: 0.60
+        Piercing: 0.60
+        Heat: 0.75
+  - type: ExplosionResistance
+    damageCoefficient: 0.80
+  - type: ClothingSpeedModifier
+    walkModifier: 0.96
+    sprintModifier: 0.90

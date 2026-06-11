@@ -1,4 +1,5 @@
 # /// WL Change
+# Round pacing: Resources/Prototypes/_WL/Balance/wl_survival_balance.yml
 - type: gamePreset
   id: WLSettlement
   alias:
@@ -8,4 +9,6 @@
   description: wl-settlement-description
   showInVote: true
   supportedMaps: FrostlandMapPool
-  rules: []
+  rules:
+    - WLFrostEvacuation
+    - WLRaids

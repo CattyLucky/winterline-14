@@ -17,9 +17,9 @@ namespace Content.Shared._WL.FrozenWorld.Systems;
 /// </summary>
 public sealed partial class FrozenSurfaceQuerySystem : EntitySystem
 {
-    [Dependency] private readonly SharedMapSystem _map = default!;
-    [Dependency] private readonly ITileDefinitionManager _tileDefs = default!;
-    [Dependency] private readonly IPrototypeManager _proto = default!;
+    [Dependency] private SharedMapSystem _map = default!;
+    [Dependency] private ITileDefinitionManager _tileDefs = default!;
+    [Dependency] private IPrototypeManager _proto = default!;
     private readonly Dictionary<int, CachedSurfaceData> _tileSurfaceCache = new();
 
     public override void Initialize()

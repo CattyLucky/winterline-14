@@ -1,9 +1,15 @@
+using Content.Server._WL.Skills;
 using Content.Shared._WL.FrozenWorld.Components;
 using Content.Shared._WL.FrozenWorld.Events;
 using Content.Shared._WL.Roles;
 using Content.Shared.DoAfter;
+using Content.Shared.Hands.EntitySystems;
 using Content.Shared.Interaction;
 using Content.Shared.Popups;
+using Content.Shared.Stacks;
+using Content.Shared.Whitelist;
+using Robust.Shared.Map;
+using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
 
 namespace Content.Server._WL.FrozenWorld.Systems;
@@ -14,14 +20,19 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 /// </summary>
 public sealed partial class WLResourceGatheringSystem : EntitySystem
 {
-    [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
-    [Dependency] private readonly SharedPopupSystem _popup = default!;
-    [Dependency] private readonly IRobustRandom _random = default!;
+    [Dependency] private SharedDoAfterSystem _doAfter = default!;
+    [Dependency] private SharedPopupSystem _popup = default!;
+    [Dependency] private IRobustRandom _random = default!;
+    [Dependency] private WLSkillSystem _skills = default!;
+    [Dependency] private EntityWhitelistSystem _whitelist = default!;
+    [Dependency] private SharedHandsSystem _hands = default!;
+    [Dependency] private SharedStackSystem _stacks = default!;
 
     public override void Initialize()
     {
         base.Initialize();
         SubscribeLocalEvent<WLResourcePointComponent, InteractHandEvent>(OnInteractHand);
+        SubscribeLocalEvent<WLResourcePointComponent, InteractUsingEvent>(OnInteractUsing);
         SubscribeLocalEvent<WLResourcePointComponent, WLResourceGatherDoAfterEvent>(OnDoAfter);
     }
 
@@ -30,36 +41,67 @@ public sealed partial class WLResourceGatheringSystem : EntitySystem
         if (args.Handled)
             return;
 
+        if (ent.Comp.ToolWhitelist != null)
+        {
+            args.Handled = true;
+            _popup.PopupEntity(Loc.GetString("wl-resource-point-requires-tool"), ent.Owner, args.User);
+            return;
+        }
+
+        args.Handled = TryStartGather(ent, args.User, null);
+    }
+
+    private void OnInteractUsing(Entity<WLResourcePointComponent> ent, ref InteractUsingEvent args)
+    {
+        if (args.Handled || ent.Comp.ToolWhitelist == null)
+            return;
+
+        if (_whitelist.IsWhitelistFail(ent.Comp.ToolWhitelist, args.Used))
+        {
+            args.Handled = true;
+            _popup.PopupEntity(Loc.GetString("wl-resource-point-requires-tool"), ent.Owner, args.User);
+            return;
+        }
+
+        args.Handled = TryStartGather(ent, args.User, args.Used);
+    }
+
+    private bool TryStartGather(Entity<WLResourcePointComponent> ent, EntityUid user, EntityUid? used)
+    {
         if (ent.Comp.Charges <= 0)
         {
-            _popup.PopupEntity(Loc.GetString("wl-resource-point-depleted"), ent.Owner, args.User);
-            return;
+            _popup.PopupEntity(Loc.GetString("wl-resource-point-depleted"), ent.Owner, user);
+            return true;
         }
 
         if (ent.Comp.ActiveGatherer is { } activeGatherer && Exists(activeGatherer))
         {
-            _popup.PopupEntity(Loc.GetString("wl-resource-point-busy"), ent.Owner, args.User);
-            return;
+            _popup.PopupEntity(Loc.GetString("wl-resource-point-busy"), ent.Owner, user);
+            return true;
         }
 
-        args.Handled = true;
-
-        var gatherTime = MathF.Max(0.25f, ent.Comp.GatherTime * GetGatherTimeMultiplier(args.User));
+        var gatherTime = MathF.Max(0.25f, ent.Comp.GatherTime * GetGatherTimeMultiplier(user));
         var doAfterArgs = new DoAfterArgs(
             EntityManager,
-            args.User,
+            user,
             gatherTime,
             new WLResourceGatherDoAfterEvent(),
             ent.Owner,
-            target: ent.Owner)
+            target: ent.Owner,
+            used: used)
         {
             BreakOnMove = true,
-            BreakOnDamage = true,
+            BreakOnDamage = false,
             NeedHand = true,
         };
 
         if (_doAfter.TryStartDoAfter(doAfterArgs))
-            ent.Comp.ActiveGatherer = args.User;
+        {
+            ent.Comp.ActiveGatherer = user;
+            return true;
+        }
+
+        return false;
     }
 
     private void OnDoAfter(Entity<WLResourcePointComponent> ent, ref WLResourceGatherDoAfterEvent args)
@@ -87,20 +129,23 @@ public sealed partial class WLResourceGatheringSystem : EntitySystem
 
         ent.Comp.Charges--;
 
-        var coords = Transform(ent.Owner).Coordinates;
-
         foreach (var entry in ent.Comp.Loot)
         {
             var count = _random.Next(entry.MinCount, entry.MaxCount + 1);
             count = ApplyGatherYieldMultiplier(count, args.User);
-            for (var i = 0; i < count; i++)
-            {
-                Spawn(entry.Prototype, coords);
-            }
+            SpawnLoot(entry.Prototype, count, args.User, Transform(ent.Owner).Coordinates);
         }
 
         if (args.User is { } user)
+        {
             _popup.PopupEntity(Loc.GetString("wl-resource-point-gathered"), ent.Owner, user);
+            _skills.TryGrantActionPoint(
+                user,
+                "WLSkillGatherer",
+                "resource-gather",
+                cooldownSeconds: 60,
+                showPopup: true);
+        }
 
         if (ent.Comp.Charges <= 0)
             Deplete(ent);
@@ -112,6 +157,43 @@ public sealed partial class WLResourceGatheringSystem : EntitySystem
             Spawn(proto, Transform(ent.Owner).Coordinates);
 
         QueueDel(ent.Owner);
+    }
+
+    private void SpawnLoot(EntProtoId prototype, int count, EntityUid? user, EntityCoordinates fallbackCoordinates)
+    {
+        if (count <= 0)
+            return;
+
+        var spawnCoordinates = user is { } lootUser && Exists(lootUser)
+            ? Transform(lootUser).Coordinates
+            : fallbackCoordinates;
+
+        var remaining = count;
+        while (remaining > 0)
+        {
+            var spawned = Spawn(prototype, spawnCoordinates);
+
+            if (!TryComp(spawned, out StackComponent? stack))
+            {
+                TryPickupOrDrop(user, spawned);
+                remaining--;
+                continue;
+            }
+
+            var stackCount = Math.Min(remaining, _stacks.GetMaxCount(stack));
+            _stacks.SetCount((spawned, stack), stackCount);
+            remaining -= stackCount;
+            if (user is { } validUser && Exists(validUser))
+                _stacks.TryMergeToHands((spawned, stack), validUser);
+        }
+    }
+
+    private void TryPickupOrDrop(EntityUid? user, EntityUid spawned)
+    {
+        if (user is not { } validUser || !Exists(validUser))
+            return;
+
+        _hands.PickupOrDrop(validUser, spawned, checkActionBlocker: false, animate: false, dropNear: true);
     }
 
     private float GetGatherTimeMultiplier(EntityUid user)

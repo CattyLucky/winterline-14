@@ -6,8 +6,15 @@ namespace Content.Shared._WL.PersistentCrafting;
 
 public sealed partial class OpenPersistentCraftMenuActionEvent : InstantActionEvent;
 
+public sealed partial class OpenPersistentCraftPlacementMenuActionEvent : InstantActionEvent;
+
 [Serializable, NetSerializable]
 public sealed class OpenPersistentCraftMenuEvent : EntityEventArgs
+{
+}
+
+[Serializable, NetSerializable]
+public sealed class OpenPersistentCraftPlacementMenuEvent : EntityEventArgs
 {
 }
 

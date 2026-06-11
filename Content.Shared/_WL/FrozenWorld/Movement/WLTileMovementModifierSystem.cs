@@ -18,8 +18,8 @@ namespace Content.Shared._WL.FrozenWorld.Movement;
 /// </summary>
 public sealed partial class WLTileMovementModifierSystem : EntitySystem
 {
-    [Dependency] private readonly MovementSpeedModifierSystem _movement = default!;
-    [Dependency] private readonly FrozenSurfaceProtectionSystem _protection = default!;
+    [Dependency] private MovementSpeedModifierSystem _movement = default!;
+    [Dependency] private FrozenSurfaceProtectionSystem _protection = default!;
 
     private readonly Dictionary<EntityUid, TileMovementState> _states = new();
 

@@ -36,7 +36,7 @@ public abstract partial class SharedImplanterSystem : EntitySystem
     [Dependency] private SharedPopupSystem _popup = default!;
     [Dependency] private SharedUserInterfaceSystem _ui = default!;
 
-    [Dependency] private EntityQuery<SubdermalImplantComponent> _implantCompQuery;
+    [Dependency] private EntityQuery<SubdermalImplantComponent> _implantCompQuery = default!;
 
     public override void Initialize()
     {

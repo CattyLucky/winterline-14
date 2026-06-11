@@ -1,0 +1,600 @@
+# /// WL Change
+# FrozenWorld wildlife and lairs.
+
+- type: entity
+  id: WLAnimalHide
+  parent: BaseItem
+  name: animal hide
+  suffix: Full, WL
+  description: A rough hide taken from frozen-world wildlife. It can be cleaned and worked into insulation, leather or padding.
+  components:
+  - type: Sprite
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: leather_3
+    layers:
+    - state: leather_3
+      map: ["base"]
+  - type: Appearance
+  - type: Item
+    size: Small
+  - type: Stack
+    stackType: WLAnimalHideStack
+    baseLayer: base
+    layerStates:
+    - raw_leather_1
+    - raw_leather_2
+    - leather_3
+  - type: Material
+  - type: PhysicalComposition
+    materialComposition:
+      Cloth: 150
+
+- type: entity
+  id: WLAnimalHide1
+  parent: WLAnimalHide
+  suffix: Single, WL
+  components:
+  - type: Sprite
+    state: raw_leather_1
+  - type: Stack
+    count: 1
+
+- type: entity
+  id: WLButcherStation
+  parent: BaseStructure
+  name: butcher station
+  suffix: WL, Gatherer
+  description: A field dressing table for processing frozen-world wildlife carcasses.
+  components:
+  - type: InteractionOutline
+  - type: Sprite
+    sprite: Structures/Furniture/Tables/wood.rsi
+    state: full
+  - type: Transform
+    noRot: true
+  - type: Anchorable
+  - type: Pullable
+  - type: Damageable
+    damageModifierSet: Wood
+  - type: WLButcherStation
+
+- type: entity
+  id: WLHunterSnare
+  parent: BaseStructure
+  name: hunter snare
+  suffix: WL, FrozenWorld
+  description: A low rope snare set into the snow to catch small frozen-world animals.
+  components:
+  - type: Sprite
+    sprite: Objects/Misc/ensnare.rsi
+    drawdepth: SmallMobs
+    state: icon
+    color: "#c8b88a"
+  - type: Fixtures
+    fixtures:
+      fix1:
+        shape:
+          !type:PhysShapeAabb
+          bounds: "-0.25,-0.25,0.25,0.25"
+        hard: false
+        density: 10
+        mask:
+        - ItemMask
+        layer:
+        - LowImpassable
+  - type: WLSnareTrap
+    catchChance: 0.55
+    triggerDelay: 60
+    catchPrototypes:
+    - WLSnowSheep
+    - WLSnowGoat
+
+- type: entity
+  id: WLHunterSnareReinforced
+  parent: WLHunterSnare
+  name: reinforced hunter snare
+  suffix: WL, FrozenWorld
+  description: A reinforced hide-and-rope snare for more reliable small-game catches and lean predators.
+  components:
+  - type: Sprite
+    color: "#b8975a"
+  - type: WLSnareTrap
+    catchChance: 0.72
+    triggerDelay: 75
+    catchPrototypes:
+    - WLSnowSheep
+    - WLSnowGoat
+    - WLFrostStalker
+
+- type: entity
+  id: WLHunterSnareLarge
+  parent: WLHunterSnare
+  name: large-game hunter snare
+  suffix: WL, FrozenWorld
+  description: A heavy anchored snare for elk-sized prey and dangerous lean predators.
+  components:
+  - type: Sprite
+    color: "#9b6b58"
+  - type: WLSnareTrap
+    catchChance: 0.68
+    triggerDelay: 90
+    catchPrototypes:
+    - WLFrostElk
+    - WLFrostStalker
+
+- type: entity
+  id: WLFrozenWildlifeBase
+  abstract: true
+  components:
+  - type: WLFrozenWildlife
+
+- type: entity
+  id: WLSnowSheep
+  parent: [ MobSheep, WLFrozenWildlifeBase ]
+  name: snow sheep
+  suffix: WL, FrozenWorld
+  description: A hardy sheep adapted to the frozen outskirts. Its wool and meat are valuable early survival resources.
+  components:
+  - type: Reproductive
+    partnerWhitelist:
+      tags:
+      - Sheep
+    offspring:
+    - id: WLSnowSheep
+  - type: Butcherable
+    spawned: []
+  - type: WLCarcassButcherable
+    butcherDelay: 7
+    spawned:
+    - id: FoodMeat
+      amount: 4
+    - id: WLAnimalHide1
+      amount: 1
+    - id: MaterialBones1
+      amount: 2
+
+- type: entity
+  id: WLSnowGoat
+  parent: [ BaseMobRuminant, SimpleMobBase, WLFrozenWildlifeBase ]
+  name: snow goat
+  suffix: WL, FrozenWorld
+  description: A stubborn cold-field goat. It is useful for meat, milk and wool if settlers can keep it alive.
+  components:
+  - type: Sprite
+    drawdepth: Mobs
+    layers:
+    - map: ["enum.DamageStateVisualLayers.Base"]
+      state: goat
+      sprite: Mobs/Animals/goat.rsi
+  - type: Fixtures
+    fixtures:
+      fix1:
+        shape:
+          !type:PhysShapeCircle
+          radius: 0.35
+        density: 150
+        mask:
+        - MobMask
+        layer:
+        - MobLayer
+  - type: Tag
+    tags:
+    - ClothMade
+    - DoorBumpOpener
+    - Goat
+  - type: Reproductive
+    partnerWhitelist:
+      tags:
+      - Goat
+    offspring:
+    - id: WLSnowGoat
+  - type: ReproductivePartner
+  - type: Appearance
+  - type: DamageStateVisuals
+    states:
+      Alive:
+        Base: goat
+      Critical:
+        Base: dead
+      Dead:
+        Base: dead
+  - type: SolutionManager
+    solutions:
+    - SolutionUdderGoat
+    - SolutionWool
+  - type: Udder
+    reagentId: MilkGoat
+    quantityPerUpdate: 25
+    growthDelay: 20
+  - type: ExaminableHunger
+  - type: Wooly
+  - type: Edible
+    destroyOnEmpty: false
+    solution: wool
+    requiresSpecialDigestion: true
+    requireDead: false
+  - type: FlavorProfile
+    flavors:
+    - fiber
+  - type: Grammar
+    attributes:
+      gender: female
+  - type: Speech
+    speechSounds: Goat
+    speechVerb: Goat
+  - type: Vocal
+    sounds:
+      Female: Goat
+      Male: Goat
+      Unsexed: Goat
+  - type: BleatingAccent
+  - type: InteractionPopup
+    successChance: 0.2
+    interactSuccessString: petting-success-goat
+    interactFailureString: petting-failure-goat
+    interactSuccessSpawn: EffectHearts
+    interactSuccessSound:
+      path: /Audio/Animals/goat_bah.ogg
+  - type: NpcFactionMember
+    factions:
+    - Passive
+  - type: NPCRetaliation
+    attackMemoryLength: 5
+  - type: FactionException
+  - type: HTN
+    rootTask:
+      task: RuminantHostileCompound
+  - type: Butcherable
+    spawned: []
+  - type: WLCarcassButcherable
+    butcherDelay: 7
+    spawned:
+    - id: FoodMeat
+      amount: 4
+    - id: WLAnimalHide1
+      amount: 1
+    - id: MaterialBones1
+      amount: 2
+
+- type: entity
+  id: WLFrostStalker
+  parent: [ SimpleMobBase, StripableInventoryBase, WLFrozenWildlifeBase ]
+  name: frost stalker
+  suffix: WL, FrozenWorld
+  description: A lean predator that follows warm tracks through the snow.
+  components:
+  - type: Sprite
+    drawdepth: Mobs
+    sprite: Mobs/Animals/fox.rsi
+    layers:
+    - map: ["enum.DamageStateVisualLayers.Base", "movement"]
+      state: fox
+  - type: SpriteMovement
+    movementLayers:
+      movement:
+        state: fox-moving
+    noMovementLayers:
+      movement:
+        state: fox
+  - type: Physics
+  - type: Fixtures
+    fixtures:
+      fix1:
+        shape:
+          !type:PhysShapeCircle
+          radius: 0.35
+        density: 50
+        mask:
+        - MobMask
+        layer:
+        - MobLayer
+  - type: Inventory
+    speciesId: fox
+    templateId: pet
+  - type: DamageStateVisuals
+    states:
+      Alive:
+        Base: fox
+      Critical:
+        Base: fox_dead
+      Dead:
+        Base: fox_dead
+  - type: InteractionPopup
+    successChance: 0.5
+    interactSuccessString: petting-success-soft-floofy
+    interactFailureString: petting-failure-generic
+    interactSuccessSpawn: EffectHearts
+    interactSuccessSound:
+      collection: Fox
+  - type: Grammar
+    attributes:
+      gender: epicene
+  - type: Bloodstream
+    bloodReferenceSolution:
+      reagents:
+      - ReagentId: Blood
+        Quantity: 100
+  - type: NpcFactionMember
+    factions:
+    - SimpleHostile
+  - type: NPCRetaliation
+    attackMemoryLength: 10
+  - type: HTN
+    rootTask:
+      task: SimpleHostileCompound
+  - type: MovementSpeedModifier
+    baseWalkSpeed: 2.8
+    baseSprintSpeed: 4.6
+  - type: MeleeWeapon
+    angle: 0
+    animation: WeaponArcBite
+    soundHit:
+      path: /Audio/Effects/bite.ogg
+    damage:
+      types:
+        Piercing: 7
+        Slash: 3
+  - type: MobThresholds
+    thresholds:
+      0: Alive
+      35: Critical
+      55: Dead
+  - type: Butcherable
+    spawned: []
+  - type: WLCarcassButcherable
+    butcherDelay: 6
+    spawned:
+    - id: FoodMeat
+      amount: 3
+    - id: WLAnimalHide1
+      amount: 1
+      prob: 0.75
+    - id: MaterialBones1
+      amount: 1
+  - type: MessyDrinker
+  - type: Tag
+    tags:
+    - VimPilot
+
+- type: entity
+  id: WLFrostElk
+  parent: [ SimpleMobBase, MobCombat, WLFrozenWildlifeBase ]
+  name: frost elk
+  suffix: WL, FrozenWorld
+  description: A large territorial grazer. It is not a predator, but it can break bones when cornered.
+  components:
+  - type: Sprite
+    drawdepth: Mobs
+    layers:
+    - map: ["enum.DamageStateVisualLayers.Base"]
+      state: reindeer_buck
+      sprite: Mobs/Animals/reindeer_buck.rsi
+  - type: Physics
+  - type: Fixtures
+    fixtures:
+      fix1:
+        shape:
+          !type:PhysShapeCircle
+          radius: 0.48
+        density: 200
+        mask:
+        - MobMask
+        layer:
+        - MobLayer
+  - type: DamageStateVisuals
+    states:
+      Alive:
+        Base: reindeer_buck
+      Critical:
+        Base: reindeer_buck_dead
+      Dead:
+        Base: reindeer_buck_dead
+  - type: Bloodstream
+    bloodReferenceSolution:
+      reagents:
+      - ReagentId: Blood
+        Quantity: 300
+  - type: MeleeWeapon
+    damage:
+      types:
+        Piercing: 22
+    animation: WeaponArcFist
+  - type: NPCRetaliation
+  - type: FactionException
+  - type: NpcFactionMember
+    factions:
+    - Passive
+  - type: HTN
+    rootTask:
+      task: SimpleHostileCompound
+  - type: Puller
+    needsHands: false
+  - type: MovementSpeedModifier
+    baseWalkSpeed: 2.2
+    baseSprintSpeed: 4.0
+  - type: Butcherable
+    spawned: []
+  - type: WLCarcassButcherable
+    butcherDelay: 9
+    spawned:
+    - id: FoodMeat
+      amount: 5
+    - id: WLAnimalHide1
+      amount: 2
+    - id: MaterialBones1
+      amount: 3
+
+- type: entity
+  id: WLFrostBear
+  parent: [ MobSpaceBasic, WLFrozenWildlifeBase ]
+  name: frost bear
+  suffix: WL, FrozenWorld
+  description: A massive predator from the deep snow. Settlers should avoid its den unless they are armed and prepared.
+  components:
+  - type: Sprite
+    drawdepth: Mobs
+    sprite: Mobs/Animals/bear.rsi
+    layers:
+    - map: [ "enum.DamageStateVisualLayers.Base" ]
+      state: bear
+    - map: [ "enum.DamageStateVisualLayers.BaseUnshaded" ]
+      state: glow
+      shader: unshaded
+  - type: DamageStateVisuals
+    states:
+      Alive:
+        Base: bear
+        BaseUnshaded: glow
+      Critical:
+        Base: bear_dead
+      Dead:
+        Base: bear_dead
+  - type: ReplacementAccent
+    accent: genericAggressive
+  - type: Vocal
+    sounds:
+      Unsexed: Bear
+  - type: InteractionPopup
+    successChance: 0.25
+    interactSuccessString: petting-success-bear
+    interactFailureString: petting-failure-bear
+    interactSuccessSound:
+      path: /Audio/Animals/sloth_squeak.ogg
+  - type: MovementSpeedModifier
+    baseWalkSpeed: 2.1
+    baseSprintSpeed: 3.7
+  - type: Butcherable
+    spawned: []
+  - type: WLCarcassButcherable
+    butcherDelay: 12
+    spawned:
+    - id: FoodMeatBear
+      amount: 5
+    - id: WLAnimalHide1
+      amount: 3
+    - id: MaterialHideBear
+      amount: 1
+      prob: 0.35
+    - id: MaterialBones1
+      amount: 5
+
+- type: entity
+  id: WLWildlifeDenBase
+  parent: BaseStructure
+  abstract: true
+  name: frozen den
+  suffix: WL, FrozenWorld
+  description: Tracks and packed snow mark a shelter used by local wildlife.
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/orebox.rsi
+    state: orebox
+    color: "#756f6a"
+  - type: Damageable
+    damageModifierSet: Wood
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 110
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+      - !type:PlaySoundBehavior
+        sound:
+          collection: WoodDestroyHeavy
+
+- type: entity
+  id: WLSnowSheepDen
+  parent: WLWildlifeDenBase
+  name: snow sheep shelter
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/orebox.rsi
+    state: orebox
+    color: "#c8c3b8"
+  - type: WLWildlifeDen
+    prototypes:
+    - WLSnowSheep
+    chance: 0.75
+    intervalSeconds: 540
+    minimumEntitiesSpawned: 1
+    maximumEntitiesSpawned: 1
+    maxAlivePopulation: 4
+    populationRadius: 12
+
+- type: entity
+  id: WLSnowGoatDen
+  parent: WLWildlifeDenBase
+  name: snow goat shelter
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/orebox.rsi
+    state: orebox
+    color: "#a59b8d"
+  - type: WLWildlifeDen
+    prototypes:
+    - WLSnowGoat
+    chance: 0.75
+    intervalSeconds: 540
+    minimumEntitiesSpawned: 1
+    maximumEntitiesSpawned: 1
+    maxAlivePopulation: 4
+    populationRadius: 12
+
+- type: entity
+  id: WLFrostStalkerDen
+  parent: WLWildlifeDenBase
+  name: frost stalker den
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/orebox.rsi
+    state: orebox
+    color: "#6d7480"
+  - type: WLWildlifeDen
+    prototypes:
+    - WLFrostStalker
+    chance: 0.65
+    intervalSeconds: 660
+    minimumEntitiesSpawned: 1
+    maximumEntitiesSpawned: 2
+    maxAlivePopulation: 3
+    populationRadius: 14
+
+- type: entity
+  id: WLFrostElkDen
+  parent: WLWildlifeDenBase
+  name: frost elk nesting ground
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/orebox.rsi
+    state: orebox
+    color: "#8a8175"
+  - type: WLWildlifeDen
+    prototypes:
+    - WLFrostElk
+    chance: 0.6
+    intervalSeconds: 720
+    minimumEntitiesSpawned: 1
+    maximumEntitiesSpawned: 1
+    maxAlivePopulation: 3
+    populationRadius: 14
+
+- type: entity
+  id: WLFrostBearDen
+  parent: WLWildlifeDenBase
+  name: frost bear den
+  components:
+  - type: Sprite
+    sprite: Structures/Storage/orebox.rsi
+    state: orebox
+    color: "#4f5966"
+  - type: WLWildlifeDen
+    prototypes:
+    - WLFrostBear
+    chance: 0.45
+    intervalSeconds: 900
+    minimumEntitiesSpawned: 1
+    maximumEntitiesSpawned: 1
+    maxAlivePopulation: 2
+    populationRadius: 16

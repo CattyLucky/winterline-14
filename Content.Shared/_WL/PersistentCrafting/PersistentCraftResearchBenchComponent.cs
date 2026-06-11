@@ -8,4 +8,10 @@ public sealed partial class PersistentCraftResearchBenchComponent : Component
 
     [DataField("pointReward")]
     public int PointReward = 1;
+
+    /// <summary>
+    /// Runtime lock that prevents parallel research loops on the same bench.
+    /// </summary>
+    [ViewVariables]
+    public EntityUid? ActiveResearcher;
 }

@@ -1,0 +1,209 @@
+# /// WL Change
+# FrozenWorld medical structures and simple reagent craft.
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryFieldMedicineBeds
+  category: WLCraftCategoryFieldMedicine
+  name: persistent-craft-wl-subcategory-field-medicine-beds
+  order: 5
+
+- type: persistentCraftSubCategory
+  id: WLCraftSubCategoryFieldMedicineChemistry
+  category: WLCraftCategoryFieldMedicine
+  name: persistent-craft-wl-subcategory-field-medicine-chemistry
+  order: 20
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeMedicalBed
+  name: persistent-craft-wl-recipe-medical-bed-name
+  description: persistent-craft-wl-recipe-medical-bed-description
+  displayProto: MedicalBed
+  branch: WLFieldMedicine
+  tier: 2
+  order: 10
+  requiredNode: WLCraftNodeMedicineBedT2
+  category: WLCraftCategoryFieldMedicine
+  subCategory: WLCraftSubCategoryFieldMedicineBeds
+  craftTime: 3.4
+  ingredients:
+  - stackType: WLWoodPlankStack
+    amount: 5
+  - stackType: WLScrapMetalStack
+    amount: 4
+  - stackType: WLPreparedClothStack
+    amount: 5
+  results: []
+  placement:
+    proto: MedicalBed
+    blueprintProto: WLMedicalBedBlueprint
+    placementMode: SnapgridCenter
+    floorRequirement: Furniture
+    requireRoom: true
+    minFloorTier: Wood
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeFieldMedicineBottles
+  name: persistent-craft-wl-recipe-field-medicine-bottles-name
+  description: persistent-craft-wl-recipe-field-medicine-bottles-description
+  displayProto: ChemistryEmptyBottle01
+  branch: WLFieldMedicine
+  tier: 2
+  order: 10
+  requiredNode: WLCraftNodeMedicineHerbalChemistryT2
+  category: WLCraftCategoryFieldMedicine
+  subCategory: WLCraftSubCategoryFieldMedicineChemistry
+  craftTime: 1.8
+  ingredients:
+  - stackType: WLRoughStoneStack
+    amount: 2
+  - stackType: WLCharcoalFuelStack
+    amount: 1
+  results:
+  - proto: ChemistryEmptyBottle01
+    amount: 2
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeFieldInaprovaline
+  name: persistent-craft-wl-recipe-field-inaprovaline-name
+  description: persistent-craft-wl-recipe-field-inaprovaline-description
+  displayProto: ChemistryBottleInaprovaline
+  branch: WLFieldMedicine
+  tier: 2
+  order: 20
+  requiredNode: WLCraftNodeMedicineHerbalChemistryT2
+  category: WLCraftCategoryFieldMedicine
+  subCategory: WLCraftSubCategoryFieldMedicineChemistry
+  craftTime: 2.0
+  ingredients:
+  - proto: ChemistryEmptyBottle01
+    amount: 1
+  - proto: FoodPoppy
+    amount: 1
+  - stackType: WLSnowChunkStack
+    amount: 2
+  results:
+  - proto: ChemistryBottleInaprovaline
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeFieldBicaridine
+  name: persistent-craft-wl-recipe-field-bicaridine-name
+  description: persistent-craft-wl-recipe-field-bicaridine-description
+  displayProto: ChemistryBottleBicaridine
+  branch: WLFieldMedicine
+  tier: 4
+  order: 10
+  requiredNode: WLCraftNodeMedicineAdvancedChemistryT4
+  category: WLCraftCategoryFieldMedicine
+  subCategory: WLCraftSubCategoryFieldMedicineChemistry
+  craftTime: 2.6
+  ingredients:
+  - proto: ChemistryEmptyBottle01
+    amount: 1
+  - proto: FoodAloe
+    amount: 1
+  - proto: FoodPoppy
+    amount: 1
+  - stackType: WLPreparedClothStack
+    amount: 1
+  results:
+  - proto: ChemistryBottleBicaridine
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeFieldKelotane
+  name: persistent-craft-wl-recipe-field-kelotane-name
+  description: persistent-craft-wl-recipe-field-kelotane-description
+  displayProto: ChemistryBottleKelotane
+  branch: WLFieldMedicine
+  tier: 4
+  order: 20
+  requiredNode: WLCraftNodeMedicineAdvancedChemistryT4
+  category: WLCraftCategoryFieldMedicine
+  subCategory: WLCraftSubCategoryFieldMedicineChemistry
+  craftTime: 2.6
+  ingredients:
+  - proto: ChemistryEmptyBottle01
+    amount: 1
+  - proto: FoodAloe
+    amount: 2
+  - stackType: WLSnowChunkStack
+    amount: 2
+  results:
+  - proto: ChemistryBottleKelotane
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeFieldDylovene
+  name: persistent-craft-wl-recipe-field-dylovene-name
+  description: persistent-craft-wl-recipe-field-dylovene-description
+  displayProto: ChemistryBottleDylovene
+  branch: WLFieldMedicine
+  tier: 4
+  order: 30
+  requiredNode: WLCraftNodeMedicineAdvancedChemistryT4
+  category: WLCraftCategoryFieldMedicine
+  subCategory: WLCraftSubCategoryFieldMedicineChemistry
+  craftTime: 2.6
+  ingredients:
+  - proto: ChemistryEmptyBottle01
+    amount: 1
+  - proto: FoodAmbrosiaVulgaris
+    amount: 2
+  - stackType: WLSnowChunkStack
+    amount: 2
+  results:
+  - proto: ChemistryBottleDylovene
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeFieldTricordrazine
+  name: persistent-craft-wl-recipe-field-tricordrazine-name
+  description: persistent-craft-wl-recipe-field-tricordrazine-description
+  displayProto: ChemistryBottleTricordrazine
+  branch: WLFieldMedicine
+  tier: 5
+  order: 10
+  requiredNode: WLCraftNodeMedicineStabilizersT5
+  category: WLCraftCategoryFieldMedicine
+  subCategory: WLCraftSubCategoryFieldMedicineChemistry
+  craftTime: 3.2
+  ingredients:
+  - proto: ChemistryEmptyBottle01
+    amount: 1
+  - proto: FoodAloe
+    amount: 1
+  - proto: FoodPoppy
+    amount: 1
+  - proto: FoodAmbrosiaVulgaris
+    amount: 1
+  - stackType: WLSnowChunkStack
+    amount: 2
+  results:
+  - proto: ChemistryBottleTricordrazine
+    amount: 1
+
+- type: persistentCraftRecipe
+  id: WLCraftRecipeFieldEpinephrine
+  name: persistent-craft-wl-recipe-field-epinephrine-name
+  description: persistent-craft-wl-recipe-field-epinephrine-description
+  displayProto: ChemistryBottleEpinephrine
+  branch: WLFieldMedicine
+  tier: 5
+  order: 20
+  requiredNode: WLCraftNodeMedicineStabilizersT5
+  category: WLCraftCategoryFieldMedicine
+  subCategory: WLCraftSubCategoryFieldMedicineChemistry
+  craftTime: 3.2
+  ingredients:
+  - proto: ChemistryEmptyBottle01
+    amount: 1
+  - proto: FoodPoppy
+    amount: 2
+  - proto: FoodAmbrosiaVulgaris
+    amount: 1
+  - stackType: WLCharcoalFuelStack
+    amount: 1
+  results:
+  - proto: ChemistryBottleEpinephrine
+    amount: 1

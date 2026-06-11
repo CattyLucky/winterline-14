@@ -132,7 +132,11 @@ public static class PersistentCraftRecipeLayoutBuilder
         {
             var subCategoryId = subCategoryIds[i];
             var subCategoryRecipes = bySubCategory[subCategoryId];
-            subCategoryRecipes.Sort(static (left, right) => string.CompareOrdinal(left.ID, right.ID));
+            subCategoryRecipes.Sort(static (left, right) =>
+            {
+                var orderComparison = left.Order.CompareTo(right.Order);
+                return orderComparison != 0 ? orderComparison : string.CompareOrdinal(left.ID, right.ID);
+            });
             result.Add(new PersistentCraftRecipeSubCategoryGroup(subCategoryId, subCategoryRecipes));
         }
 

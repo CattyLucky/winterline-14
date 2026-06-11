@@ -38,8 +38,9 @@
     castShadows: false
     enabled: false
   - type: Damageable
-    damageContainer: StructuralInorganic
     damageModifierSet: Wood
+  - type: Injurable
+    damageContainer: StructuralInorganic
   - type: Destructible
     thresholds:
     - trigger:
@@ -90,8 +91,8 @@
   - type: FrozenShelterDeconstructible
     doAfter: 2
     refunds:
-    - proto: WLFrozenBranch
-      count: 3
+    - proto: WLLog
+      count: 1
 
 # --- Indoor Room Heat --------------------------------------------------------
 
@@ -150,8 +151,9 @@
     castShadows: false
     enabled: false
   - type: Damageable
-    damageContainer: StructuralInorganic
     damageModifierSet: Metallic
+  - type: Injurable
+    damageContainer: StructuralInorganic
   - type: Destructible
     thresholds:
     - trigger:
@@ -166,7 +168,7 @@
       behaviors:
       - !type:SpawnEntitiesBehavior
         spawn:
-          WLLooseScrap:
+          WLScrapMetal:
             min: 1
             max: 2
       - !type:DoActsBehavior
@@ -211,7 +213,7 @@
     refunds:
     - proto: WLRoughStone
       count: 3
-    - proto: WLLooseScrap
+    - proto: WLScrapMetal
       count: 1
 
 # --- Heavy Heat Machinery ----------------------------------------------------
@@ -296,7 +298,7 @@
   - type: FrozenShelterDeconstructible
     doAfter: 5
     refunds:
-    - proto: WLLooseScrap
+    - proto: WLIronIngot1
       count: 7
     - proto: WLRoughStone
       count: 3

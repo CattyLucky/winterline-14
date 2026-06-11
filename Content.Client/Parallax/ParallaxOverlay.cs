@@ -7,6 +7,7 @@ using Robust.Client.Graphics;
 using Robust.Shared.Configuration;
 using Robust.Shared.Enums;
 using Robust.Shared.Map;
+using Robust.Shared.Map.Components;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
 
@@ -19,8 +20,10 @@ public sealed partial class ParallaxOverlay : Overlay
     [Dependency] private IPrototypeManager _prototypeManager = default!;
     [Dependency] private IConfigurationManager _configurationManager = default!;
     [Dependency] private IParallaxManager _manager = default!;
+    [Dependency] private IMapManager _mapManager = default!;
     private readonly SharedMapSystem _mapSystem;
     private readonly ParallaxSystem _parallax;
+    private List<Entity<MapGridComponent>> _grids = new();
 
     public override OverlaySpace Space => OverlaySpace.WorldSpaceBelowWorld;
 
@@ -36,6 +39,15 @@ public sealed partial class ParallaxOverlay : Overlay
     {
         if (args.MapId == MapId.Nullspace || _entManager.HasComponent<BiomeComponent>(_mapSystem.GetMapOrInvalid(args.MapId)))
             return false;
+
+        _grids.Clear();
+        _mapManager.FindGridsIntersecting(args.MapId, args.WorldAABB, ref _grids, approx: true, includeMap: false);
+
+        foreach (var grid in _grids)
+        {
+            if (_entManager.HasComponent<BiomeComponent>(grid.Owner))
+                return false;
+        }
 
         return true;
     }

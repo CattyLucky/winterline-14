@@ -1,34 +1,54 @@
 # WL-specific stack types for frozen-world resources.
 # Keeps balancing isolated from vanilla stack definitions.
+#
+# Final material pipeline:
+# - Raw: logs, scrap metal, iron ore, lead ore, rough stone, torn cloth, snow.
+# - Processed: rough planks, iron ingots, lead ingots, stone blocks, prepared cloth.
+# - Fuel: firewood, charcoal, coal, dense coal.
+# - Wildlife: hide and fat; meat/bones stay on vanilla prototypes.
 
 # --- Raw Craft Materials -----------------------------------------------------
 
 - type: stack
   parent: BaseMediumStack
-  id: WLFrozenBranchStack
-  name: stack-wl-frozen-branches
-  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: scrap_wood }
-  spawn: WLFrozenBranch
+  id: WLScrapMetalStack
+  name: stack-wl-scrap-metal
+  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: scrap_steel_3 }
+  spawn: WLScrapMetal
 
 - type: stack
   parent: BaseMediumStack
   id: WLLooseScrapStack
-  name: stack-wl-loose-scrap
-  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: scrap_steel }
-  spawn: WLLooseScrap
+  name: stack-wl-scrap-metal
+  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: scrap_steel_3 }
+  spawn: WLScrapMetal
+
+- type: stack
+  parent: BaseMediumStack
+  id: WLIronOreStack
+  name: stack-wl-iron-ore
+  icon: { sprite: /Textures/Objects/Materials/ore.rsi, state: iron }
+  spawn: WLIronOre1
+
+- type: stack
+  parent: BaseMediumStack
+  id: WLLeadOreStack
+  name: stack-wl-lead-ore
+  icon: { sprite: /Textures/_WL/Objects/Materials/ore.rsi, state: lead }
+  spawn: WLLeadOre1
 
 - type: stack
   parent: BaseMediumStack
   id: WLRoughStoneStack
   name: stack-wl-rough-stone
-  icon: { sprite: /Textures/Objects/Materials/ore.rsi, state: iron }
+  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: scrap_3 }
   spawn: WLRoughStone
 
 - type: stack
   parent: BaseMediumStack
   id: WLTornClothStack
   name: stack-wl-torn-cloth
-  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: cloth }
+  icon: { sprite: /Textures/Objects/Materials/materials.rsi, state: cloth_3 }
   spawn: WLTornCloth
 
 # --- Processed Craft Materials ----------------------------------------------
@@ -36,50 +56,87 @@
 - type: stack
   parent: BaseMediumStack
   id: WLWoodPlankStack
-  name: stack-wl-wood-planks
+  name: stack-wl-rough-planks
   icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: plank_3 }
   spawn: WLWoodPlank1
 
 - type: stack
   parent: BaseMediumStack
+  id: WLIronIngotStack
+  name: stack-wl-iron-ingots
+  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: ingot_iron }
+  spawn: WLIronIngot1
+
+- type: stack
+  parent: BaseMediumStack
+  id: WLLeadIngotStack
+  name: stack-wl-lead-ingots
+  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: ingot_lead }
+  spawn: WLLeadIngot1
+
+- type: stack
+  parent: BaseMediumStack
   id: WLMetalPartsStack
-  name: stack-wl-metal-parts
-  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: scrap_parts_3 }
-  spawn: WLMetalParts1
+  name: stack-wl-iron-ingots
+  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: ingot_iron }
+  spawn: WLIronIngot1
+
+- type: stack
+  parent: BaseMediumStack
+  id: WLStoneBlockStack
+  name: stack-wl-stone-blocks
+  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: ceramic_3 }
+  spawn: WLStoneBlock1
 
 - type: stack
   parent: BaseMediumStack
   id: WLPreparedClothStack
   name: stack-wl-prepared-cloth
-  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: thread }
+  icon: { sprite: /Textures/Objects/Materials/materials.rsi, state: cloth_3 }
   spawn: WLPreparedCloth1
+
+# --- Animal Processing Materials --------------------------------------------
+
+- type: stack
+  parent: BaseMediumStack
+  id: WLAnimalHideStack
+  name: stack-wl-animal-hide
+  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: leather_3 }
+  spawn: WLAnimalHide1
+
+- type: stack
+  parent: BaseMediumStack
+  id: WLSnowChunkStack
+  name: stack-wl-snow-chunks
+  icon: { sprite: /Textures/_WL/Objects/Misc/snow_chunks.rsi, state: snow_chunk_3 }
+  spawn: WLSnowChunk1
 
 # --- Fuel Materials ----------------------------------------------------------
 
 - type: stack
   parent: BaseMediumStack
   id: WLWoodFuelStack
-  name: stack-wl-frozen-firewood
-  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: firewood_3 }
+  name: stack-wl-dry-firewood
+  icon: { sprite: /Textures/Objects/Materials/materials.rsi, state: wood_3 }
   spawn: WLMaterialWoodFuel1
 
 - type: stack
   parent: BaseMediumStack
   id: WLCharcoalFuelStack
   name: stack-wl-charcoal
-  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: coal }
+  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: coal_3 }
   spawn: WLCharcoalFuel1
 
 - type: stack
   parent: BaseMediumStack
   id: WLCoalFuelStack
   name: stack-wl-frozen-coal
-  icon: { sprite: /Textures/Objects/Materials/ore.rsi, state: coal }
+  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: frozen_coal_3 }
   spawn: WLCoalFuel1
 
 - type: stack
   parent: BaseMediumStack
   id: WLDenseCoalFuelStack
   name: stack-wl-dense-coal
-  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: coal }
+  icon: { sprite: /Textures/_WL/Objects/Misc/materials.rsi, state: dense_coal_3 }
   spawn: WLDenseCoalFuel1

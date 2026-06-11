@@ -9,9 +9,8 @@
     <BoxContainer Orientation="Vertical" Margin="12 12 12 12">
         <BoxContainer Orientation="Horizontal" Margin="0 0 0 8">
             <Control HorizontalExpand="True" />
-            <Button Name="OpenPlacementButton" Access="Public" Text="{Loc 'persistent-craft-station-open-placement'}" />
-            <Control MinSize="8 1" />
-            <Button Name="OpenSkillsButton" Access="Public" Text="{Loc 'persistent-craft-station-open-skills'}" />
+            <Button Name="OpenPlacementButton" Access="Public" Text="{Loc 'persistent-craft-station-open-placement'}" Margin="0 0 8 0" />
+            <Button Name="OpenResearchButton" Access="Public" Text="{Loc 'persistent-craft-station-open-research'}" />
         </BoxContainer>
         <TabContainer Name="Branches" Access="Public" VerticalExpand="True" />
     </BoxContainer>

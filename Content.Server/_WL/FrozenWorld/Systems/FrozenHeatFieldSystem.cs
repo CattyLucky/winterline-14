@@ -19,10 +19,10 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 /// </summary>
 public sealed partial class FrozenHeatFieldSystem : EntitySystem
 {
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly SharedMapSystem _map = default!;
-    [Dependency] private readonly FrozenShelterRoomSystem _rooms = default!;
-    [Dependency] private readonly FrozenRoomHeatSystem _roomHeat = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private SharedMapSystem _map = default!;
+    [Dependency] private FrozenShelterRoomSystem _rooms = default!;
+    [Dependency] private FrozenRoomHeatSystem _roomHeat = default!;
 
     private static readonly TimeSpan StaticHeatFieldReconcileInterval = TimeSpan.FromSeconds(1);
 

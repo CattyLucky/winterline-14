@@ -7,51 +7,27 @@
 # --- Tier 1: Raw Survival Materials -----------------------------------------
 
 - type: entity
-  id: WLFrozenBranch
+  id: WLScrapMetal
   parent: BaseItem
-  name: frozen branch
-  description: A dead branch glazed with ice. It burns poorly until dried, but it is still wood.
+  name: scrap metal
+  description: Bent metal scraps salvaged from frozen ruins. Useful for crude tools, repairs and early shelter work.
   components:
   - type: Sprite
     sprite: _WL/Objects/Misc/materials.rsi
-    state: scrap_wood
+    state: scrap_steel_3
+    layers:
+    - state: scrap_steel_3
+      map: ["base"]
+  - type: Appearance
   - type: Item
     size: Small
   - type: Stack
-    stackType: WLFrozenBranchStack
-    count: 1
-  - type: Material
-  - type: PhysicalComposition
-    materialComposition:
-      Wood: 100
-  - type: FrozenFuel
-    fuelSeconds: 35
-    priority: 10
-    heatBonusMultiplier: 0.85
-    transferEfficiencyMultiplier: 0.9
-    burnRateMultiplier: 1.35
-
-- type: entity
-  id: WLFrozenBranch30
-  parent: WLFrozenBranch
-  suffix: 30
-  components:
-  - type: Stack
-    count: 30
-
-- type: entity
-  id: WLLooseScrap
-  parent: BaseItem
-  name: loose scrap
-  description: Bent metal scraps salvaged from frozen ruins. Useful for crude tools, repairs and shelter work.
-  components:
-  - type: Sprite
-    sprite: _WL/Objects/Misc/materials.rsi
-    state: scrap_steel
-  - type: Item
-    size: Small
-  - type: Stack
-    stackType: WLLooseScrapStack
+    stackType: WLScrapMetalStack
+    baseLayer: base
+    layerStates:
+    - scrap_steel
+    - scrap_steel_2
+    - scrap_steel_3
     count: 1
   - type: Material
   - type: PhysicalComposition
@@ -59,12 +35,24 @@
       Steel: 100
 
 - type: entity
-  id: WLLooseScrap30
-  parent: WLLooseScrap
+  id: WLScrapMetal30
+  parent: WLScrapMetal
   suffix: 30
   components:
+  - type: Sprite
+    state: scrap_steel_3
   - type: Stack
     count: 30
+
+- type: entity
+  id: WLLooseScrap
+  parent: WLScrapMetal
+  categories: [ HideSpawnMenu ]
+
+- type: entity
+  id: WLLooseScrap30
+  parent: WLScrapMetal30
+  categories: [ HideSpawnMenu ]
 
 - type: entity
   id: WLRoughStone
@@ -73,13 +61,22 @@
   description: Broken stone from frozen ground and old masonry. Useful for heavy floors, fireplaces, and rugged outdoor paving.
   components:
   - type: Sprite
-    sprite: Objects/Materials/ore.rsi
-    state: iron
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: scrap_3
     color: "#77716a"
+    layers:
+    - state: scrap_3
+      map: ["base"]
+  - type: Appearance
   - type: Item
     size: Small
   - type: Stack
     stackType: WLRoughStoneStack
+    baseLayer: base
+    layerStates:
+    - scrap
+    - scrap_2
+    - scrap_3
     count: 1
 
 - type: entity
@@ -87,6 +84,8 @@
   parent: WLRoughStone
   suffix: 30
   components:
+  - type: Sprite
+    state: scrap_3
   - type: Stack
     count: 30
 
@@ -97,12 +96,21 @@
   description: A weathered strip of fabric. Weak as gear, useful as padding, wrapping or desperate tinder.
   components:
   - type: Sprite
-    sprite: _WL/Objects/Misc/materials.rsi
+    sprite: Objects/Materials/materials.rsi
     state: cloth
+    layers:
+    - state: cloth
+      map: ["base"]
+  - type: Appearance
   - type: Item
     size: Small
   - type: Stack
     stackType: WLTornClothStack
+    baseLayer: base
+    layerStates:
+    - cloth
+    - cloth_2
+    - cloth_3
     count: 1
   - type: Material
   - type: PhysicalComposition
@@ -120,6 +128,8 @@
   parent: WLTornCloth
   suffix: 30
   components:
+  - type: Sprite
+    state: cloth_3
   - type: Stack
     count: 30
 
@@ -128,17 +138,26 @@
 - type: entity
   id: WLWoodPlank
   parent: BaseItem
-  name: prepared planks
-  description: Frozen timber cut into usable boards for shelter work and sturdy tools.
+  name: rough planks
+  description: Poorly worked boards cut from frozen logs. Good enough for first shelter work and crude tools.
   suffix: Full
   components:
   - type: Sprite
     sprite: _WL/Objects/Misc/materials.rsi
     state: plank_3
+    layers:
+    - state: plank_3
+      map: ["base"]
+  - type: Appearance
   - type: Item
     size: Small
   - type: Stack
     stackType: WLWoodPlankStack
+    baseLayer: base
+    layerStates:
+    - plank
+    - plank_2
+    - plank_3
   - type: Material
   - type: PhysicalComposition
     materialComposition:
@@ -149,6 +168,8 @@
   parent: WLWoodPlank
   suffix: 10
   components:
+  - type: Sprite
+    state: plank_2
   - type: Stack
     count: 10
 
@@ -157,41 +178,231 @@
   parent: WLWoodPlank
   suffix: Single
   components:
+  - type: Sprite
+    state: plank
   - type: Stack
     count: 1
 
 - type: entity
-  id: WLMetalParts
+  id: WLIronOre
   parent: BaseItem
-  name: sorted metal parts
-  description: Cleaned fittings, plates and fasteners sorted from loose scrap.
+  name: iron ore
+  description: Frozen iron-bearing stone broken from an exposed vein. It needs smelting before serious crafting.
+  suffix: Full
+  components:
+  - type: Sprite
+    sprite: Objects/Materials/ore.rsi
+    state: iron
+    layers:
+    - state: iron
+      map: ["base"]
+  - type: Appearance
+  - type: Item
+    size: Small
+  - type: Stack
+    stackType: WLIronOreStack
+    baseLayer: base
+    layerStates:
+    - iron
+  - type: Material
+  - type: PhysicalComposition
+    materialComposition:
+      RawIron: 100
+
+- type: entity
+  id: WLIronOre30
+  parent: WLIronOre
+  suffix: 30
+  components:
+  - type: Stack
+    count: 30
+
+- type: entity
+  id: WLIronOre1
+  parent: WLIronOre
+  suffix: Single
+  components:
+  - type: Stack
+    count: 1
+
+- type: entity
+  id: WLLeadOre
+  parent: BaseItem
+  name: lead ore
+  description: Dark lead-rich ore from cold distant veins. It is useful for ammunition and heavy fittings after smelting.
+  suffix: Full
+  components:
+  - type: Sprite
+    sprite: _WL/Objects/Materials/ore.rsi
+    state: lead
+    layers:
+    - state: lead
+      map: ["base"]
+  - type: Appearance
+  - type: Item
+    size: Small
+  - type: Stack
+    stackType: WLLeadOreStack
+    baseLayer: base
+    layerStates:
+    - lead
+  - type: Material
+
+- type: entity
+  id: WLLeadOre30
+  parent: WLLeadOre
+  suffix: 30
+  components:
+  - type: Stack
+    count: 30
+
+- type: entity
+  id: WLLeadOre1
+  parent: WLLeadOre
+  suffix: Single
+  components:
+  - type: Stack
+    count: 1
+
+- type: entity
+  id: WLIronIngot
+  parent: BaseItem
+  name: iron ingots
+  description: Rough iron ingots smelted from ore or scrap, ready for tools, machines and durable fittings.
   suffix: Full
   components:
   - type: Sprite
     sprite: _WL/Objects/Misc/materials.rsi
-    state: scrap_parts_3
+    state: ingot_iron
+    layers:
+    - state: ingot_iron
+      map: ["base"]
+  - type: Appearance
   - type: Item
     size: Small
   - type: Stack
-    stackType: WLMetalPartsStack
+    stackType: WLIronIngotStack
+    baseLayer: base
+    layerStates:
+    - ingot_iron
   - type: Material
   - type: PhysicalComposition
     materialComposition:
       Steel: 100
 
 - type: entity
-  id: WLMetalParts10
-  parent: WLMetalParts
+  id: WLIronIngot10
+  parent: WLIronIngot
   suffix: 10
   components:
   - type: Stack
     count: 10
 
 - type: entity
-  id: WLMetalParts1
-  parent: WLMetalParts
+  id: WLIronIngot1
+  parent: WLIronIngot
   suffix: Single
   components:
+  - type: Stack
+    count: 1
+
+- type: entity
+  id: WLLeadIngot
+  parent: BaseItem
+  name: lead ingots
+  description: Soft lead ingots for ammunition, weights and heavy protective fittings.
+  suffix: Full
+  components:
+  - type: Sprite
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: ingot_lead
+    layers:
+    - state: ingot_lead
+      map: ["base"]
+  - type: Appearance
+  - type: Item
+    size: Small
+  - type: Stack
+    stackType: WLLeadIngotStack
+    baseLayer: base
+    layerStates:
+    - ingot_lead
+  - type: Material
+
+- type: entity
+  id: WLLeadIngot10
+  parent: WLLeadIngot
+  suffix: 10
+  components:
+  - type: Stack
+    count: 10
+
+- type: entity
+  id: WLLeadIngot1
+  parent: WLLeadIngot
+  suffix: Single
+  components:
+  - type: Stack
+    count: 1
+
+- type: entity
+  id: WLMetalParts
+  parent: WLIronIngot
+  name: iron ingots
+  categories: [ HideSpawnMenu ]
+
+- type: entity
+  id: WLMetalParts10
+  parent: WLIronIngot10
+  categories: [ HideSpawnMenu ]
+
+- type: entity
+  id: WLMetalParts1
+  parent: WLIronIngot1
+  categories: [ HideSpawnMenu ]
+
+- type: entity
+  id: WLStoneBlock
+  parent: BaseItem
+  name: fitted stone blocks
+  description: Cut masonry blocks shaped from rough frozen stone. Heavy, stable, and suited for real shelter walls.
+  suffix: Full
+  components:
+  - type: Sprite
+    sprite: _WL/Objects/Misc/materials.rsi
+    state: ceramic_3
+    color: "#7b7770"
+    layers:
+    - state: ceramic_3
+      map: ["base"]
+  - type: Appearance
+  - type: Item
+    size: Small
+  - type: Stack
+    stackType: WLStoneBlockStack
+    baseLayer: base
+    layerStates:
+    - ceramic
+    - ceramic_2
+    - ceramic_3
+
+- type: entity
+  id: WLStoneBlock10
+  parent: WLStoneBlock
+  suffix: 10
+  components:
+  - type: Sprite
+    state: ceramic_2
+  - type: Stack
+    count: 10
+
+- type: entity
+  id: WLStoneBlock1
+  parent: WLStoneBlock
+  suffix: Single
+  components:
+  - type: Sprite
+    state: ceramic
   - type: Stack
     count: 1
 
@@ -203,12 +414,21 @@
   suffix: Full
   components:
   - type: Sprite
-    sprite: _WL/Objects/Misc/materials.rsi
-    state: thread
+    sprite: Objects/Materials/materials.rsi
+    state: cloth_3
+    layers:
+    - state: cloth_3
+      map: ["base"]
+  - type: Appearance
   - type: Item
     size: Small
   - type: Stack
     stackType: WLPreparedClothStack
+    baseLayer: base
+    layerStates:
+    - cloth
+    - cloth_2
+    - cloth_3
   - type: Material
   - type: PhysicalComposition
     materialComposition:
@@ -219,6 +439,8 @@
   parent: WLPreparedCloth
   suffix: 10
   components:
+  - type: Sprite
+    state: cloth_2
   - type: Stack
     count: 10
 
@@ -227,5 +449,7 @@
   parent: WLPreparedCloth
   suffix: Single
   components:
+  - type: Sprite
+    state: cloth
   - type: Stack
     count: 1

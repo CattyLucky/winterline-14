@@ -13,9 +13,9 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 /// </summary>
 public sealed partial class FrozenThermometerSystem : EntitySystem
 {
-    [Dependency] private readonly FrozenThermalQuerySystem _thermal = default!;
-    [Dependency] private readonly UserInterfaceSystem _ui = default!;
-    [Dependency] private readonly SharedTransformSystem _xform = default!;
+    [Dependency] private FrozenThermalQuerySystem _thermal = default!;
+    [Dependency] private UserInterfaceSystem _ui = default!;
+    [Dependency] private SharedTransformSystem _xform = default!;
 
     private static readonly FrozenBodyPart[] BodyParts =
     {

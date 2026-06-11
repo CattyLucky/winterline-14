@@ -20,10 +20,10 @@ namespace Content.Client._WL.PersistentCrafting.UI;
 [GenerateTypedNameReferences]
 public sealed partial class PersistentCraftingWindow : DefaultWindow
 {
-    [Dependency] private readonly IEntityManager _entityManager = default!;
-    [Dependency] private readonly IPrototypeManager _prototype = default!;
-    [Dependency] private readonly IUserInterfaceManager _uiManager = default!;
-    [Dependency] private readonly IClyde _clyde = default!;
+    [Dependency] private IEntityManager _entityManager = default!;
+    [Dependency] private IPrototypeManager _prototype = default!;
+    [Dependency] private IUserInterfaceManager _uiManager = default!;
+    [Dependency] private IClyde _clyde = default!;
 
     private static readonly Color PanelBackground = PersistentCraftUiTheme.SurfaceWindow;
     private static readonly Color CardUnlockedBackground = PersistentCraftUiTheme.SurfacePanelAlt;

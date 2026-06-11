@@ -24,12 +24,12 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 /// </summary>
 public sealed partial class FrozenWorldPoiStampSystem : EntitySystem
 {
-    [Dependency] private readonly AtmosphereSystem _atmos = default!;
-    [Dependency] private readonly DecalSystem _decals = default!;
-    [Dependency] private readonly MapLoaderSystem _loader = default!;
-    [Dependency] private readonly SharedMapSystem _maps = default!;
-    [Dependency] private readonly IPrototypeManager _proto = default!;
-    [Dependency] private readonly SharedTransformSystem _xform = default!;
+    [Dependency] private AtmosphereSystem _atmos = default!;
+    [Dependency] private DecalSystem _decals = default!;
+    [Dependency] private MapLoaderSystem _loader = default!;
+    [Dependency] private SharedMapSystem _maps = default!;
+    [Dependency] private IPrototypeManager _proto = default!;
+    [Dependency] private SharedTransformSystem _xform = default!;
 
     public PoiStampPassResult StampPlacedPois(EntityUid worldGridUid, FrozenWorldComponent world, int maxNewPlacements = 0)
     {

@@ -82,61 +82,81 @@
 - type: frozenWeather
   id: WLLightSnow
   displayName: Light snow
-  temperatureOffset: -44
-  exposureGainMultiplier: 1.10
+  temperatureOffset: -4
+  exposureGainMultiplier: 1.05
   recoveryMultiplier: 0.95
   coldDamageMultiplier: 1
-  shelterPenetration: 0.03
+  shelterPenetration: 0.01
   visual: WLWeatherVisualLightSnow
 
 - type: frozenWeather
   id: WLSnow
   displayName: Snow
-  temperatureOffset: -55
-  exposureGainMultiplier: 1.25
-  recoveryMultiplier: 0.85
+  temperatureOffset: -8
+  exposureGainMultiplier: 1.15
+  recoveryMultiplier: 0.90
   coldDamageMultiplier: 1.05
-  shelterPenetration: 0.06
+  shelterPenetration: 0.03
   visual: WLWeatherVisualSnow
 
 - type: frozenWeather
   id: WLHeavySnow
   displayName: Heavy snow
-  temperatureOffset: -66
-  exposureGainMultiplier: 1.45
-  recoveryMultiplier: 0.70
-  coldDamageMultiplier: 1.15
-  shelterPenetration: 0.10
+  temperatureOffset: -12
+  exposureGainMultiplier: 1.35
+  recoveryMultiplier: 0.80
+  coldDamageMultiplier: 1.10
+  shelterPenetration: 0.06
   visual: WLWeatherVisualHeavySnow
 
 - type: frozenWeather
   id: WLBlizzard
   displayName: Blizzard
-  temperatureOffset: -66
-  exposureGainMultiplier: 1.75
-  recoveryMultiplier: 0.55
-  coldDamageMultiplier: 1.35
-  shelterPenetration: 0.15
+  temperatureOffset: -18
+  exposureGainMultiplier: 1.65
+  recoveryMultiplier: 0.65
+  coldDamageMultiplier: 1.25
+  shelterPenetration: 0.10
   visual: WLWeatherVisualBlizzard
 
 - type: frozenWeather
   id: WLWhiteout
   displayName: Whiteout
-  temperatureOffset: -77
-  exposureGainMultiplier: 2.05
-  recoveryMultiplier: 0.40
-  coldDamageMultiplier: 1.60
-  shelterPenetration: 0.22
+  temperatureOffset: -24
+  exposureGainMultiplier: 2.00
+  recoveryMultiplier: 0.45
+  coldDamageMultiplier: 1.50
+  shelterPenetration: 0.16
   visual: WLWeatherVisualWhiteout
 
 - type: wlWeatherCyclePreset
   id: WLFrostRimDefaultWeatherCycle
-  stepDelay: 10s
+  stepDelay: 8m
   cycle:
   - WLClear
   - WLLightSnow
   - WLSnow
+  - WLLightSnow
+  - WLClear
+  - WLSnow
+  - WLHeavySnow
+  - WLSnow
+  - WLBlizzard
   - WLHeavySnow
   - WLBlizzard
+  - WLWhiteout
+  stepDelays:
+  - 10m
+  - 8m
+  - 8m
+  - 6m
+  - 8m
+  - 8m
+  - 7m
+  - 6m
+  - 6m
+  - 5m
+  - 5m
+  - 4m
   startIndex: 0
   applyOnMapInit: true

@@ -1,0 +1,71 @@
+# /// WL Change
+# Survival round pacing for preset WLSettlement (FrostRimDefault profile).
+# All times are seconds from round start unless noted.
+#
+# Timeline (target ~60 min round):
+#   0:00  — spawn, T1 resources in SpawnField
+#  20:00  — raid wave 1 (firstRaidDelay)
+#  40:00  — raid wave 2 (+ raidInterval)
+#  55:00  — final storm warning (landingDelay - finalStormWarning)
+#  60:00  — evac shuttle lands (landingDelay); 15 min boarding window
+#  60:00  — raid wave 3 (coincides with landing; last pressure spike)
+#  75:00  — evac window closes; shuttle departs; round ends after FTL
+#
+# Related prototypes:
+#   Zones / resource density — frozen_world_zone_presets.yml
+#   Resource gather stats    — wl_frozen_world_resources.yml
+#   Map profile              — frozen_world_profiles.yml (FrostRimDefault)
+
+- type: entity
+  parent: BaseGameRule
+  id: WLFrostEvacuation
+  components:
+  - type: WLFrostEvacuationRule
+    landingDelay: 3600
+    evacuationWindow: 900
+    roundEndDelay: 30
+    finalStormWarning: 300
+    finalMinuteWarning: 60
+    landingMinDistance: 220
+    landingMaxDistance: 280
+    landingSideSpread: 55
+    landingClearPadding: 3
+    evacuationBeaconPrototype: WLFrostlandEvacBeacon
+    shuttleGridPath: /Maps/Shuttles/emergency.yml
+    shuttleApproachDistance: 340
+    shuttleDepartureDistance: 460
+    arrivalStartupTime: 0
+    arrivalTravelTime: 12
+    departureRoundEndDelay: 60
+    shuttleInteriorTemperature: 293.15
+    shuttleColdRecoveryMultiplier: 1.5
+    shuttleShelterName: Evacuation shuttle
+    landingWeather: WLBlizzard
+    finalWeather: WLWhiteout
+
+- type: entity
+  parent: BaseGameRule
+  id: WLRaids
+  components:
+  - type: WLRaidRule
+    firstRaidDelay: 1200
+    raidInterval: 1200
+    raidIntervalVariance: 120
+    raidWarningLeadTime: 60
+    maxRaids: 3
+    baseRaiders: 3
+    raidersPerWave: 1
+    raidersPerActivePlayer: 0.12
+    maxRaidersPerWave: 14
+    spawnMinDistance: 135
+    spawnMaxDistance: 210
+    spawnSideSpread: 45
+    spawnJitter: 3
+    followCloseRange: 2
+    followRange: 8
+    raidPathPreloadWidth: 32
+    raiderWakeDelay: 2
+    raiderPrototypes:
+    - WLFrostRaider
+    - WLFrostRaider
+    - WLFrostRaiderShooter

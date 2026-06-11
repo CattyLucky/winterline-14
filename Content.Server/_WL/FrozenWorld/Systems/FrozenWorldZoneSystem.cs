@@ -21,9 +21,9 @@ namespace Content.Server._WL.FrozenWorld.Systems;
 /// </summary>
 public sealed partial class FrozenWorldZoneSystem : EntitySystem
 {
-    [Dependency] private readonly EntityLookupSystem _lookup = default!;
-    [Dependency] private readonly IPrototypeManager _proto = default!;
-    [Dependency] private readonly BiomeSystem _biome = default!;
+    [Dependency] private EntityLookupSystem _lookup = default!;
+    [Dependency] private IPrototypeManager _proto = default!;
+    [Dependency] private BiomeSystem _biome = default!;
 
     public void GenerateZones(EntityUid worldGridUid, Entity<FrozenWorldComponent> world, FrozenWorldProfilePrototype profile)
     {
@@ -389,14 +389,13 @@ public sealed partial class FrozenWorldZoneSystem : EntitySystem
         if (bounds.Width <= 0f || bounds.Height <= 0f)
             return 0;
 
-        // This is the current safe ReserveBiomePatch implementation.
-        // It materializes the biome chunk area before clearance checks / stamping so lazy biome generation
-        // cannot later add trees, rocks or other decor over an already accepted zone object.
-        // It does not delete existing biome decor; if generated decor blocks the placement, IsPlacementClear rejects it.
+        // This pins the biome chunk area so the normal biome update keeps it loaded.
+        // FrozenWorldSystem waits for the profile-wide terrain preload before zone generation; this call is a
+        // local safety net for future profiles with smaller preload distances.
         var pinnedChunks = _biome.PinPreloadArea(worldGridUid, biome, worldGrid, bounds);
 
         if (pinnedChunks > 0)
-            Log.Debug($"Frozen world reserved/materialized biome patch for {reason}: bounds={bounds}, pinnedChunks={pinnedChunks}.");
+            Log.Debug($"Frozen world pinned biome patch for {reason}: bounds={bounds}, pinnedChunks={pinnedChunks}.");
 
         return pinnedChunks;
     }

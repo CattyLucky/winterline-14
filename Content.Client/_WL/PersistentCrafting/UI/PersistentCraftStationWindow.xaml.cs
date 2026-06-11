@@ -27,11 +27,11 @@ public sealed partial class PersistentCraftStationWindow : DefaultWindow
 {
     private sealed record RecipeEntryControls(ContainerButton Button, PanelContainer IconPanel);
 
-    [Dependency] private readonly IEntityManager _entityManager = default!;
-    [Dependency] private readonly ISharedPlayerManager _player = default!;
-    [Dependency] private readonly IPrototypeManager _prototype = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly IUserInterfaceManager _uiManager = default!;
+    [Dependency] private IEntityManager _entityManager = default!;
+    [Dependency] private ISharedPlayerManager _player = default!;
+    [Dependency] private IPrototypeManager _prototype = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private IUserInterfaceManager _uiManager = default!;
     private readonly TagSystem _tag;
 
     private static readonly Color WindowBackground = PersistentCraftUiTheme.SurfaceWindow;
@@ -56,7 +56,6 @@ public sealed partial class PersistentCraftStationWindow : DefaultWindow
     private readonly Dictionary<string, LineEdit> _activeSearchInputsByBranch = new();
     private readonly Dictionary<string, Dictionary<string, RecipeEntryControls>> _recipeEntryControlsByBranch = new();
     private readonly Dictionary<string, BoxContainer> _detailContentHostsByBranch = new();
-    private readonly Dictionary<string, PersistentCraftBranchState> _visibleBranchStatesByBranch = new();
     private readonly Dictionary<string, bool> _recipeCraftabilityById = new();
     private readonly HashSet<string> _pendingScrollRestoreBranches = new();
     private readonly HashSet<string> _reusablePath = new();
@@ -83,8 +82,8 @@ public sealed partial class PersistentCraftStationWindow : DefaultWindow
     private TimeSpan _activeCraftResultAt;
 
     public event Action<string>? OnCraftPressed;
-    public event Action? OnOpenSkillsPressed;
     public event Action? OnOpenPlacementPressed;
+    public event Action? OnOpenResearchPressed;
 
     public PersistentCraftStationWindow()
     {
@@ -100,9 +99,9 @@ public sealed partial class PersistentCraftStationWindow : DefaultWindow
         InitializeBranchContainers();
         PersistentCraftUiTheme.ApplyTabTheme(Branches, "persistent-craft-menu-tabs", PersistentCraftUiTheme.Selection, _uiManager);
 
-        OpenSkillsButton.Visible = false;
         OpenPlacementButton.OnPressed += _ => OnOpenPlacementPressed?.Invoke();
-        OpenSkillsButton.OnPressed += _ => OnOpenSkillsPressed?.Invoke();
+        OpenResearchButton.Visible = false;
+        OpenResearchButton.OnPressed += _ => OnOpenResearchPressed?.Invoke();
 
         Branches.OnTabChanged += _ =>
         {
@@ -158,7 +157,7 @@ public sealed partial class PersistentCraftStationWindow : DefaultWindow
         }
 
         _state = state;
-        OpenSkillsButton.Visible = state.CanResearch;
+        OpenResearchButton.Visible = state.CanResearch;
         if (!VisibleBranchesMatch(state.AccessibleBranches))
             InitializeBranchContainers(state.AccessibleBranches);
 
@@ -305,13 +304,11 @@ public sealed partial class PersistentCraftStationWindow : DefaultWindow
             return;
         }
 
-        var branchState = GetBranchState(branch);
-        _visibleBranchStatesByBranch[branch] = branchState;
         _recipeEntryControlsByBranch[branch] = new Dictionary<string, RecipeEntryControls>();
 
         if (!_state.Loaded)
         {
-            container.AddChild(CreateBranchHeader(branch, branchState, 0, branchRecipes.Count));
+            container.AddChild(CreateBranchHeader(branch, 0, branchRecipes.Count));
             container.AddChild(new Control { MinSize = new Vector2(1, 12) });
             container.AddChild(new Label
             {
@@ -330,7 +327,7 @@ public sealed partial class PersistentCraftStationWindow : DefaultWindow
             recipe => recipe.Placement != null || HasLocalMaterials(recipe),
             (recipe, query) => _textResolver.MatchesRecipeSearch(recipe, query));
 
-        container.AddChild(CreateBranchHeader(branch, branchState, branchData.UnlockedRecipes.Count, branchRecipes.Count));
+        container.AddChild(CreateBranchHeader(branch, branchData.UnlockedRecipes.Count, branchRecipes.Count));
         container.AddChild(new Control { MinSize = new Vector2(1, 12) });
 
         if (branchData.UnlockedRecipes.Count == 0)
@@ -359,7 +356,7 @@ public sealed partial class PersistentCraftStationWindow : DefaultWindow
         if (branchData.VisibleRecipes.Count > 0 && branchData.SelectedRecipe != null)
         {
             workspace.ListContainer.AddChild(CreateRecipeList(branch, branchData.VisibleRecipes, branchData.SelectedRecipe, GetAccent(branch)));
-            workspace.DetailContainer.AddChild(CreateRecipeDetailsPanel(branchData.SelectedRecipe, branchState));
+            workspace.DetailContainer.AddChild(CreateRecipeDetailsPanel(branchData.SelectedRecipe));
             _detailContentHostsByBranch[branch] = workspace.DetailContainer;
         }
         else
@@ -567,15 +564,6 @@ public sealed partial class PersistentCraftStationWindow : DefaultWindow
         };
     }
 
-    private string BuildRecipeMasteryBadge(PersistentCraftRecipePrototype recipe)
-    {
-        if (_state == null)
-            return Loc.GetString("persistent-craft-node-branch-points", ("points", 0));
-
-        var branchState = GetBranchState(recipe.Branch);
-        return Loc.GetString("persistent-craft-node-branch-points", ("points", branchState.AvailablePoints));
-    }
-
     private string BuildHeaderInfoMarkup(PersistentCraftRecipePrototype recipe)
     {
         var resultText = recipe.Placement != null
@@ -590,17 +578,24 @@ public sealed partial class PersistentCraftStationWindow : DefaultWindow
 
     private string BuildRequirementMarkup(PersistentCraftRecipePrototype recipe)
     {
+        var lines = new List<string>();
+
         if (TryResolveRequirementNode(recipe, out var node))
         {
-            var lines = new List<string>
-            {
-                $"[color={DescriptionText.ToHex()}]- {FormattedMessage.EscapeText(_textResolver.ResolveNodeName(node))}[/color]"
-            };
-
-            return string.Join("\n", lines);
+            lines.Add($"[color={DescriptionText.ToHex()}]- {FormattedMessage.EscapeText(_textResolver.ResolveNodeName(node))}[/color]");
+        }
+        else
+        {
+            lines.Add($"[color={DescriptionText.ToHex()}]- {FormattedMessage.EscapeText(GetRequirementText(recipe))}[/color]");
         }
 
-        return $"[color={DescriptionText.ToHex()}]- {FormattedMessage.EscapeText(GetRequirementText(recipe))}[/color]";
+        if (recipe.NearbyRequirement?.Description is { } nearbyDescription &&
+            !string.IsNullOrWhiteSpace(nearbyDescription))
+        {
+            lines.Add($"[color={DescriptionText.ToHex()}]- {FormattedMessage.EscapeText(Loc.GetString(nearbyDescription))}[/color]");
+        }
+
+        return string.Join("\n", lines);
     }
 
 

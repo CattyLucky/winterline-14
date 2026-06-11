@@ -5,7 +5,7 @@ using Robust.Client.UserInterface.Controls;
 
 namespace Content.Client._WL.PersistentCrafting.UI;
 
-internal static class PersistentCraftUiTheme
+public static class PersistentCraftUiTheme
 {
     public static readonly Color SurfaceWindow = Color.FromHex("#141a22");
     public static readonly Color SurfacePanel = Color.FromHex("#1b212b");

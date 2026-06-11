@@ -12,3 +12,13 @@
     weatherExposureMultiplier: 0.15
     temperatureBonus: 6
     recoveryMultiplier: 1.25
+
+- type: entity
+  id: WLFrostlandWarpPoint
+  name: frostland warp point
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Transform
+    anchored: true
+  - type: WarpPoint
+    location: Frostland

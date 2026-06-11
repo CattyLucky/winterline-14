@@ -14,8 +14,8 @@ namespace Content.Shared._WL.FrozenWorld.Systems;
 /// </summary>
 public sealed partial class FrozenSurfaceTrackerSystem : EntitySystem
 {
-    [Dependency] private readonly FrozenSurfaceQuerySystem _surface = default!;
-    [Dependency] private readonly SharedMapSystem _map = default!;
+    [Dependency] private FrozenSurfaceQuerySystem _surface = default!;
+    [Dependency] private SharedMapSystem _map = default!;
 
     public override void Initialize()
     {

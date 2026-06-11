@@ -1,0 +1,116 @@
+# /// WL Change
+# Tiered survival hoods — separate head slot items (not coat toggles).
+# Craft: persistent_craft_wl_clothing.yml
+
+- type: entity
+  abstract: true
+  parent: ClothingHeadHatHoodWinterBase
+  id: WLClothingHeadHatHoodFrozenBase
+  categories: [ HideSpawnMenu ]
+  description: A padded hood for FrozenWorld survival. Equip separately from the coat.
+
+- type: entity
+  parent: WLClothingHeadHatHoodFrozenBase
+  id: ClothingHeadHatHoodWinterLightWL
+  name: light survival hood
+  suffix: WL, T1, Hood
+  components:
+  - type: Sprite
+    sprite: Clothing/Head/Hoods/Coat/hoodpara.rsi
+  - type: Clothing
+    sprite: Clothing/Head/Hoods/Coat/hoodpara.rsi
+  - type: FrozenInsulation
+    tier: Light
+    coverage: [ Head, Face ]
+
+- type: entity
+  parent: WLClothingHeadHatHoodFrozenBase
+  id: ClothingHeadHatHoodWinterWarmWL
+  name: warm survival hood
+  suffix: WL, T2, Hood
+  components:
+  - type: Sprite
+    sprite: Clothing/Head/Hoods/Coat/hoodcargo.rsi
+  - type: Clothing
+    sprite: Clothing/Head/Hoods/Coat/hoodcargo.rsi
+  - type: FrozenInsulation
+    tier: Warm
+    coverage: [ Head, Face ]
+
+- type: entity
+  parent: WLClothingHeadHatHoodFrozenBase
+  id: ClothingHeadHatHoodWinterHeavyWL
+  name: heavy survival hood
+  suffix: WL, T3, Hood
+  components:
+  - type: Sprite
+    sprite: Clothing/Head/Hoods/Coat/hoodminer.rsi
+  - type: Clothing
+    sprite: Clothing/Head/Hoods/Coat/hoodminer.rsi
+  - type: FrozenInsulation
+    tier: Winter
+    coverage: [ Head, Face ]
+
+- type: entity
+  parent: WLClothingHeadHatHoodFrozenBase
+  id: ClothingHeadHatHoodWinterArcticWL
+  name: arctic survival hood
+  suffix: WL, T4, Hood
+  components:
+  - type: Sprite
+    sprite: Clothing/Head/Hoods/Coat/hoodce.rsi
+  - type: Clothing
+    sprite: Clothing/Head/Hoods/Coat/hoodce.rsi
+  - type: FrozenInsulation
+    tier: Arctic
+    coverage: [ Head, Face ]
+
+- type: entity
+  parent: WLClothingHeadHatHoodFrozenBase
+  id: ClothingHeadHatHoodWinterExtremeWL
+  name: extreme survival hood
+  suffix: WL, T5, Hood
+  components:
+  - type: Sprite
+    sprite: Clothing/Head/Hoods/Coat/hoodweb.rsi
+  - type: Clothing
+    sprite: Clothing/Head/Hoods/Coat/hoodweb.rsi
+  - type: FrozenInsulation
+    tier: Extreme
+    coverage: [ Head, Face ]
+
+# Craft / legacy ids (same items, no coat toggle link)
+- type: entity
+  parent: ClothingHeadHatHoodWinterLightWL
+  id: ClothingHeadHatWinterLightWL
+  suffix: WL, T1, Head
+
+- type: entity
+  parent: ClothingHeadHatHoodWinterWarmWL
+  id: ClothingHeadHatWinterWarmWL
+  suffix: WL, T2, Head
+
+- type: entity
+  parent: ClothingHeadHatHoodWinterHeavyWL
+  id: ClothingHeadHatWinterWL
+  suffix: WL, T3, Head
+
+- type: entity
+  parent: ClothingHeadHatWinterWL
+  id: ClothingHeadHelmetWinterWL
+  suffix: WL, T3, Head, Legacy
+
+- type: entity
+  parent: ClothingHeadHatWinterWL
+  id: ClothingHeadHatHoodWinterWL
+  suffix: WL, T3, Head, Legacy
+
+- type: entity
+  parent: ClothingHeadHatHoodWinterArcticWL
+  id: ClothingHeadHatWinterArcticWL
+  suffix: WL, T4, Head
+
+- type: entity
+  parent: ClothingHeadHatHoodWinterExtremeWL
+  id: ClothingHeadHatWinterExtremeWL
+  suffix: WL, T5, Head

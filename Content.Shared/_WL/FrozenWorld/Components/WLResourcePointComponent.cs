@@ -1,5 +1,6 @@
 using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization;
+using Content.Shared.Whitelist;
 
 namespace Content.Shared._WL.FrozenWorld.Components;
 
@@ -25,6 +26,13 @@ public sealed partial class WLResourcePointComponent : Component
     /// </summary>
     [DataField]
     public float GatherTime = 4f;
+
+    /// <summary>
+    /// If set, the resource can only be gathered by using an item that matches this whitelist.
+    /// Empty-hand gathering is blocked for those resource points.
+    /// </summary>
+    [DataField]
+    public EntityWhitelist? ToolWhitelist;
 
     /// <summary>
     /// What to spawn when gathering succeeds. Each entry is rolled independently.

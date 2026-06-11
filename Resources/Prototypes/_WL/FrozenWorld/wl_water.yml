@@ -1,0 +1,130 @@
+# /// WL Change
+# FrozenWorld field water chain: dug snow and primitive drink containers.
+
+- type: entity
+  id: WLSnowChunk
+  parent: BaseItem
+  name: snow chunk
+  suffix: Full, WL
+  description: Packed snow dug from frozen ground. Melt it near a fire before drinking.
+  components:
+  - type: Sprite
+    sprite: _WL/Objects/Misc/snow_chunks.rsi
+    state: snow_chunk_3
+    layers:
+    - state: snow_chunk_3
+      map: ["base"]
+  - type: Appearance
+  - type: Item
+    size: Tiny
+  - type: Stack
+    stackType: WLSnowChunkStack
+    baseLayer: base
+    layerStates:
+    - snow_chunk
+    - snow_chunk_2
+    - snow_chunk_3
+
+- type: entity
+  id: WLSnowChunk1
+  parent: WLSnowChunk
+  suffix: Single, WL
+  components:
+  - type: Sprite
+    state: snow_chunk
+  - type: Stack
+    count: 1
+
+- type: entity
+  id: WLWoodenCup
+  parent: [DrinkBaseCup, DrinkVisualsFill]
+  name: wooden cup
+  suffix: WL
+  description: A rough carved cup for hot drinks and melted snow water.
+  components:
+  - type: Sprite
+    sprite: Objects/Consumable/Drinks/mug.rsi
+    color: "#8a5a32"
+  - type: Solution
+    solution:
+      maxVol: 20
+  - type: PhysicalComposition
+    materialComposition:
+      Wood: 80
+
+- type: entity
+  id: WLWoodenCupWater
+  parent: WLWoodenCup
+  name: wooden cup of water
+  suffix: WL
+  components:
+  - type: Solution
+    solution:
+      maxVol: 20
+      reagents:
+      - ReagentId: Water
+        Quantity: 20
+
+- type: entity
+  id: WLWoodenBowl
+  parent: FoodBowlBig
+  name: wooden bowl
+  suffix: WL
+  description: A simple wooden bowl for broth, meals, and melted snow water.
+  components:
+  - type: Sprite
+    sprite: Objects/Consumable/Food/bowl.rsi
+    color: "#8a5a32"
+    layers:
+    - state: bowl
+    - map: ["enum.SolutionContainerLayers.Fill"]
+      state: fill-1
+      visible: false
+  - type: PhysicalComposition
+    materialComposition:
+      Wood: 120
+
+- type: entity
+  id: WLWoodenBowlWater
+  parent: WLWoodenBowl
+  name: wooden bowl of water
+  suffix: WL
+  components:
+  - type: Solution
+    solution:
+      maxVol: 50
+      reagents:
+      - ReagentId: Water
+        Quantity: 50
+
+- type: entity
+  id: WLLeatherWaterskin
+  parent: [SolutionNormal, DrinkBase, DrinkBaseOpenableOpen, DrinkVisualsAll]
+  name: leather waterskin
+  suffix: WL
+  description: A stitched hide bladder for carrying melted water.
+  components:
+  - type: Item
+    size: Small
+  - type: Sprite
+    sprite: Objects/Consumable/Drinks/waterbottle.rsi
+    color: "#6e4a32"
+  - type: Solution
+    solution:
+      maxVol: 100
+  - type: PhysicalComposition
+    materialComposition:
+      Cloth: 160
+
+- type: entity
+  id: WLLeatherWaterskinWater
+  parent: WLLeatherWaterskin
+  name: leather waterskin of water
+  suffix: WL
+  components:
+  - type: Solution
+    solution:
+      maxVol: 100
+      reagents:
+      - ReagentId: Water
+        Quantity: 100
