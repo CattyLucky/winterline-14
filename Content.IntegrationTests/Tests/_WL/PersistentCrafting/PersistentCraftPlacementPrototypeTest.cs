@@ -3,6 +3,7 @@ using System.Linq;
 using Content.IntegrationTests.Fixtures;
 using Content.Shared._WL.FrozenWorld;
 using Content.Shared._WL.FrozenWorld.Components;
+using Content.Shared._WL.FrozenWorld.Prototypes;
 using Content.Shared._WL.PersistentCrafting;
 using Content.Shared.Actions;
 using Content.Shared.Actions.Components;
@@ -14,6 +15,8 @@ using Content.Shared.Tiles;
 using Robust.Shared.GameObjects;
 using Robust.Shared.Map;
 using Robust.Shared.Prototypes;
+using Robust.Shared.Serialization.Markdown.Sequence;
+using Robust.Shared.Serialization.Markdown.Value;
 
 namespace Content.IntegrationTests.Tests._WL.PersistentCrafting;
 
@@ -54,8 +57,6 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
         ["WLPreparedCloth10"] = "WLPreparedClothStack",
         ["WLAnimalHide"] = "WLAnimalHideStack",
         ["WLAnimalHide1"] = "WLAnimalHideStack",
-        ["WLAnimalFat"] = "WLAnimalFatStack",
-        ["WLAnimalFat1"] = "WLAnimalFatStack",
         ["WLSnowChunk"] = "WLSnowChunkStack",
         ["WLSnowChunk1"] = "WLSnowChunkStack",
         ["WLMaterialWoodFuel"] = "WLWoodFuelStack",
@@ -86,7 +87,6 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
         ["WLStoneBlock"] = "WLStoneBlockStack",
         ["WLPreparedCloth"] = "WLPreparedClothStack",
         ["WLAnimalHide"] = "WLAnimalHideStack",
-        ["WLAnimalFat"] = "WLAnimalFatStack",
         ["WLSnowChunk"] = "WLSnowChunkStack",
         ["WLMaterialWoodFuel"] = "WLWoodFuelStack",
         ["WLCharcoalFuel"] = "WLCharcoalFuelStack",
@@ -154,6 +154,53 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
     }
 
     [Test]
+    public async Task WlFirstStageFoodAndButcheryLoopIsAvailable()
+    {
+        var server = Pair.Server;
+        var proto = server.ResolveDependency<IPrototypeManager>();
+
+        await server.WaitAssertion(() =>
+        {
+            Assert.Multiple(() =>
+            {
+                AssertAutoUnlockedNode(proto, "WLCraftNodeGathererProcessingT1");
+                AssertAutoUnlockedNode(proto, "WLCraftNodeCookingStarter");
+                AssertAutoUnlockedNode(proto, "WLCraftNodeHunterSnareT1");
+                AssertAutoUnlockedNode(proto, "WLCraftNodeHunterMeleeT1");
+
+                AssertRecipeUsesNode(proto, "WLCraftRecipeFieldRoast", "WLCraftNodeCookingStarter", tier: 1);
+                AssertRecipeUsesNode(proto, "WLCraftRecipeButcherStation", "WLCraftNodeCookingStarter", tier: 1);
+                AssertRecipeUsesNode(proto, "WLCraftRecipePreparedWoodFuel", "WLCraftNodeGathererProcessingT1", tier: 1);
+                AssertRecipeUsesNode(proto, "WLCraftRecipeHunterSnare", "WLCraftNodeHunterSnareT1", tier: 1);
+                AssertRecipeUsesNode(proto, "WLCraftRecipeHunterSpear", "WLCraftNodeHunterMeleeT1", tier: 1);
+                AssertRecipeUsesNode(proto, "WLCraftRecipeHunterMachete", "WLCraftNodeHunterMeleeT1", tier: 1);
+
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipePreparedWoodFuel", "WLFrozenBranchStack", 3);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeHunterSpear", "WLScrapMetalStack", 1);
+                AssertRecipeHasStackIngredient(proto, "WLCraftRecipeHunterMachete", "WLScrapMetalStack", 4);
+                AssertRecipeDoesNotUseStackIngredients(
+                    proto,
+                    "WLCraftRecipeHunterSpear",
+                    "WLIronIngotStack",
+                    "WLLeadIngotStack");
+                AssertRecipeDoesNotUseStackIngredients(
+                    proto,
+                    "WLCraftRecipeHunterMachete",
+                    "WLIronIngotStack",
+                    "WLLeadIngotStack");
+                AssertEntityHasToolQuality(proto, "Spear", "Slicing");
+                AssertEntityHasToolQuality(proto, "Machete", "Slicing");
+
+                AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "SpawnField", "WLResourceFrozenBranchPileT1", minCount: 6);
+                AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "SpawnField", "WLResourceLooseScrapPileT1", minCount: 5);
+                AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "SpawnField", "WLResourceTornSupplyBagT1", minCount: 3);
+                AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "NearField", "WLSnowSheepDen", minCount: 1);
+                AssertZoneContainsGuaranteedSpawn(proto, "FrostRimDefaultZones", "NearField", "WLSnowGoatDen", minCount: 1);
+            });
+        });
+    }
+
+    [Test]
     public async Task WlFloorRecipesCraftFloorTileItems()
     {
         var server = Pair.Server;
@@ -189,9 +236,11 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
                 AssertPlacementRecipe(proto, "WLCraftRecipePrimitiveWoodDoor", FrozenBuildableFloorRequirement.Door, requireRoom: false);
                 AssertPlacementRecipe(proto, "WLCraftRecipePrimitiveWorkbench", FrozenBuildableFloorRequirement.Furniture, requireRoom: true, FrozenRoomFloorTier.Wood);
                 AssertPlacementRecipe(proto, "WLCraftRecipeCampfire", FrozenBuildableFloorRequirement.OutdoorHeatSource, requireRoom: false, forbidRoom: true);
+                AssertPlacementRecipe(proto, "WLCraftRecipeButcherStation", FrozenBuildableFloorRequirement.OutdoorHeatSource, requireRoom: false);
                 AssertPlacementRecipe(proto, "WLCraftRecipeFireplace", FrozenBuildableFloorRequirement.Furniture, requireRoom: true, FrozenRoomFloorTier.Wood);
                 AssertPlacementRecipe(proto, "WLCraftRecipeFiretubeGenerator", FrozenBuildableFloorRequirement.Furniture, requireRoom: false, FrozenRoomFloorTier.Stone);
                 AssertEntityHasComponent<FrozenShelterForbiddenInRoomComponent>(proto, componentFactory, "WLCampfireHeatSource");
+                AssertButcherStationAllowsFirstStageRoles(proto, componentFactory);
             });
         });
     }
@@ -485,6 +534,19 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
         Assert.That(job.WlSkillBranches, Is.EquivalentTo(skillBranches));
     }
 
+    private static void AssertAutoUnlockedNode(IPrototypeManager proto, string nodeId)
+    {
+        Assert.That(proto.TryIndex<PersistentCraftNodePrototype>(nodeId, out var node), Is.True);
+        Assert.That(node!.Cost, Is.LessThanOrEqualTo(0), $"{nodeId} must be auto-unlocked for the first-stage survival loop.");
+    }
+
+    private static void AssertRecipeUsesNode(IPrototypeManager proto, string recipeId, string nodeId, int tier)
+    {
+        Assert.That(proto.TryIndex<PersistentCraftRecipePrototype>(recipeId, out var recipe), Is.True);
+        Assert.That(recipe!.RequiredNode, Is.EqualTo(nodeId));
+        Assert.That(recipe.Tier, Is.EqualTo(tier));
+    }
+
     private static void AssertPlacementRecipe(
         IPrototypeManager proto,
         string recipeId,
@@ -502,6 +564,30 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
         Assert.That(recipe.Placement.MinFloorTier, Is.EqualTo(minFloorTier));
         Assert.That(proto.HasIndex<EntityPrototype>(recipe.Placement.Proto), Is.True);
         Assert.That(proto.HasIndex<EntityPrototype>(recipe.Placement.BlueprintProto), Is.True);
+    }
+
+    private static void AssertButcherStationAllowsFirstStageRoles(IPrototypeManager proto, IComponentFactory componentFactory)
+    {
+        var stationId = "WLButcherStation";
+        Assert.That(proto.TryIndex<EntityPrototype>(stationId, out var entity), Is.True);
+        Assert.That(entity!.TryGetComponent<WLButcherStationComponent>(out var station, componentFactory), Is.True);
+        Assert.That(station!.AllowedJobIds, Does.Contain("WLSettlementHead"));
+        Assert.That(station.AllowedJobIds, Does.Contain("WLGathererProcessor"));
+        Assert.That(station.AllowedJobIds, Does.Contain("WLHunter"));
+    }
+
+    private static void AssertEntityHasToolQuality(
+        IPrototypeManager proto,
+        string entityId,
+        string quality)
+    {
+        Assert.That(proto.TryIndex<EntityPrototype>(entityId, out var entity), Is.True);
+        Assert.That(entity!.Components.TryGetValue("Tool", out var entry), Is.True);
+        Assert.That(entry!.Mapping.TryGet<SequenceDataNode>("qualities", out var qualities), Is.True);
+        Assert.That(
+            qualities!.Sequence.OfType<ValueDataNode>().Any(node => node.Value == quality),
+            Is.True,
+            $"{entityId} must provide {quality} for first-stage butchery.");
     }
 
     private static void AssertNoConstructionTile(ContentTileDefinition tile)
@@ -522,6 +608,35 @@ public sealed class PersistentCraftPlacementPrototypeTest : GameTest
         Assert.That(recipe!.Ingredients, Has.Some.Matches<PersistentCraftIngredient>(ingredient =>
             ingredient.StackType == stackType &&
             ingredient.Amount == amount));
+    }
+
+    private static void AssertRecipeDoesNotUseStackIngredients(
+        IPrototypeManager proto,
+        string recipeId,
+        params string[] stackTypes)
+    {
+        Assert.That(proto.TryIndex<PersistentCraftRecipePrototype>(recipeId, out var recipe), Is.True);
+        var forbidden = new HashSet<string>(stackTypes);
+        Assert.That(recipe!.Ingredients, Has.None.Matches<PersistentCraftIngredient>(ingredient =>
+            ingredient.StackType != null &&
+            forbidden.Contains(ingredient.StackType)));
+    }
+
+    private static void AssertZoneContainsGuaranteedSpawn(
+        IPrototypeManager proto,
+        string presetId,
+        string zoneId,
+        string entityId,
+        int minCount)
+    {
+        Assert.That(proto.TryIndex<FrozenWorldZonePresetPrototype>(presetId, out var preset), Is.True);
+        var zone = preset!.Zones.FirstOrDefault(entry => entry.Id == zoneId);
+        Assert.That(zone, Is.Not.Null, $"{presetId} must contain zone '{zoneId}'.");
+
+        var spawn = zone!.Spawns.FirstOrDefault(entry => entry.Prototype.ToString() == entityId);
+        Assert.That(spawn, Is.Not.Null, $"{presetId}/{zoneId} must spawn '{entityId}'.");
+        Assert.That(spawn!.MinCount, Is.GreaterThanOrEqualTo(minCount), $"{presetId}/{zoneId} must guarantee enough '{entityId}'.");
+        Assert.That(spawn.MaxCount, Is.GreaterThanOrEqualTo(spawn.MinCount));
     }
 
     private static void AssertStackEntity(

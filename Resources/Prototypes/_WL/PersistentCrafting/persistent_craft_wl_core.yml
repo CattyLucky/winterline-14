@@ -435,7 +435,7 @@
   name: persistent-craft-wl-node-hunter-snare-t1
   description: persistent-craft-wl-node-description-hunting-traps
   branch: WLHunter
-  cost: 1
+  cost: 0
   displayProto: WLHunterSnare
   treeColumn: 1
   treeRow: 0
@@ -447,7 +447,7 @@
   name: persistent-craft-wl-node-hunter-melee-t1
   description: persistent-craft-wl-node-description-hunter-weapons
   branch: WLHunter
-  cost: 1
+  cost: 0
   displayProto: Spear
   treeColumn: 1
   treeRow: 1
@@ -742,7 +742,7 @@
   description: persistent-craft-wl-node-description-cooking
   branch: WLCooking
   cost: 2
-  displayProto: WLAnimalFat1
+  displayProto: WLAnimalHide1
   treeColumn: 1
   treeRow: 0
   prerequisites:

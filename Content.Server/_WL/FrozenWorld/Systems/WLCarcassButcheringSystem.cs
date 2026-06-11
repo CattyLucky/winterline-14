@@ -143,7 +143,7 @@ public sealed partial class WLCarcassButcheringSystem : EntitySystem
 
         _skills.TryGrantActionPoint(
             user,
-            "WLSkillGatherer",
+            GetButcheringSkillBranch(user),
             "carcass-butcher",
             cooldownSeconds: 90,
             showPopup: true);
@@ -186,5 +186,13 @@ public sealed partial class WLCarcassButcheringSystem : EntitySystem
         return TryComp(user, out WLRoleSkillsComponent? roleSkills) &&
                !string.IsNullOrWhiteSpace(roleSkills.JobId) &&
                station.AllowedJobIds.Contains(roleSkills.JobId);
+    }
+
+    private string GetButcheringSkillBranch(EntityUid user)
+    {
+        return TryComp(user, out WLRoleSkillsComponent? roleSkills) &&
+               roleSkills.JobId == "WLHunter"
+            ? "WLSkillHunter"
+            : "WLSkillGatherer";
     }
 }

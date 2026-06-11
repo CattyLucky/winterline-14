@@ -497,8 +497,8 @@
   craftTime: 1.4
   allowResourceProcessingBonus: true
   ingredients:
-  - stackType: WLWoodPlankStack
-    amount: 4
+  - stackType: WLFrozenBranchStack
+    amount: 3
   results:
   - proto: WLMaterialWoodFuel1
     amount: 2

@@ -49,44 +49,13 @@
     amount: 1
 
 - type: persistentCraftRecipe
-  id: WLCraftRecipeFatRoast
-  name: persistent-craft-wl-recipe-fat-roast-name
-  description: persistent-craft-wl-recipe-fat-roast-description
-  displayProto: FoodMeatCooked
-  branch: WLCooking
-  tier: 2
-  order: 20
-  requiredNode: WLCraftNodeCookingButcheryT2
-  category: WLCraftCategoryCooking
-  subCategory: WLCraftSubCategoryCookingButchery
-  craftTime: 2.0
-  nearbyRequirement:
-    prototypes:
-    - WLCampfireHeatSource
-    - WLFireplaceHeatSource
-    range: 2.8
-    requireEnabledHeat: true
-    description: persistent-craft-wl-requirement-burning-heat
-    failurePopup: persistent-craft-station-popup-requires-burning-heat
-  ingredients:
-  - proto: FoodMeat
-    amount: 2
-  - stackType: WLAnimalFatStack
-    amount: 1
-  - stackType: WLCharcoalFuelStack
-    amount: 1
-  results:
-  - proto: FoodMeatCooked
-    amount: 3
-
-- type: persistentCraftRecipe
   id: WLCraftRecipeBearRoast
   name: persistent-craft-wl-recipe-bear-roast-name
   description: persistent-craft-wl-recipe-bear-roast-description
   displayProto: FoodMeatBearCooked
   branch: WLCooking
   tier: 2
-  order: 30
+  order: 20
   requiredNode: WLCraftNodeCookingButcheryT2
   category: WLCraftCategoryCooking
   subCategory: WLCraftSubCategoryCookingButchery
@@ -101,8 +70,6 @@
     failurePopup: persistent-craft-station-popup-requires-burning-heat
   ingredients:
   - proto: FoodMeatBear
-    amount: 1
-  - stackType: WLAnimalFatStack
     amount: 1
   - stackType: WLCharcoalFuelStack
     amount: 1
@@ -134,8 +101,6 @@
   - stackType: Bones
     amount: 2
   - proto: FoodMeatCooked
-    amount: 1
-  - stackType: WLAnimalFatStack
     amount: 1
   results:
   - proto: FoodSoupStew
@@ -234,8 +199,6 @@
     amount: 1
   - proto: FoodCarrot
     amount: 1
-  - stackType: WLAnimalFatStack
-    amount: 1
   results:
   - proto: FoodSoupStew
     amount: 1
@@ -277,21 +240,21 @@
   description: persistent-craft-wl-recipe-butcher-station-description
   displayProto: WLButcherStation
   branch: WLCooking
-  tier: 2
+  tier: 1
   order: 10
-  requiredNode: WLCraftNodeCookingButcheryT2
+  requiredNode: WLCraftNodeCookingStarter
   category: WLCraftCategoryCooking
   subCategory: WLCraftSubCategoryCookingButchery
-  craftTime: 2.4
+  craftTime: 1.8
   ingredients:
   - stackType: WLWoodPlankStack
-    amount: 3
-  - stackType: WLScrapMetalStack
     amount: 2
+  - stackType: WLScrapMetalStack
+    amount: 1
   results: []
   placement:
     proto: WLButcherStation
-    floorRequirement: Furniture
+    floorRequirement: OutdoorHeatSource
 
 - type: persistentCraftRecipe
   id: WLCraftRecipeWoodenCup

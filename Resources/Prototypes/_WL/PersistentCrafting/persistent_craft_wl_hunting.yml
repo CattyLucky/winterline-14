@@ -77,7 +77,7 @@
   ingredients:
   - stackType: WLWoodPlankStack
     amount: 2
-  - stackType: WLIronIngotStack
+  - stackType: WLScrapMetalStack
     amount: 1
   - stackType: WLPreparedClothStack
     amount: 1
@@ -121,7 +121,7 @@
   subCategory: WLCraftSubCategoryHunterMelee
   craftTime: 2
   ingredients:
-  - stackType: WLIronIngotStack
+  - stackType: WLScrapMetalStack
     amount: 4
   - stackType: WLPreparedClothStack
     amount: 1

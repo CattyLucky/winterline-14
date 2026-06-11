@@ -20,7 +20,7 @@ public sealed partial class WLButcherStationComponent : Component
     public float DelayMultiplier = 1f;
 
     [DataField]
-    public List<string> AllowedJobIds = new() { "WLSettlementHead", "WLGathererProcessor" };
+    public List<string> AllowedJobIds = new() { "WLSettlementHead", "WLGathererProcessor", "WLHunter" };
 
     [DataField]
     public string RoleBlockPopup = "wl-butcher-station-role-blocked";

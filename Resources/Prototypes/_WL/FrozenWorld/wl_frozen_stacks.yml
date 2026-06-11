@@ -113,13 +113,6 @@
 
 - type: stack
   parent: BaseMediumStack
-  id: WLAnimalFatStack
-  name: stack-wl-animal-fat
-  icon: { sprite: /Textures/_WL/Objects/Misc/animal_fat.rsi, state: fat_3 }
-  spawn: WLAnimalFat1
-
-- type: stack
-  parent: BaseMediumStack
   id: WLSnowChunkStack
   name: stack-wl-snow-chunks
   icon: { sprite: /Textures/_WL/Objects/Misc/snow_chunks.rsi, state: snow_chunk_3 }

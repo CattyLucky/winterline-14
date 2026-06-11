@@ -40,49 +40,6 @@
     count: 1
 
 - type: entity
-  id: WLAnimalFat
-  parent: FoodMeatBase
-  name: animal fat
-  suffix: Full, WL
-  description: Dense cold-preserved fat. Useful for field cooking, soap, bait and emergency fuel recipes.
-  components:
-  - type: Sprite
-    sprite: _WL/Objects/Misc/animal_fat.rsi
-    state: fat_3
-    layers:
-    - state: fat_3
-      map: ["base"]
-  - type: Appearance
-  - type: Stack
-    stackType: WLAnimalFatStack
-    baseLayer: base
-    layerStates:
-    - fat
-    - fat_2
-    - fat_3
-  - type: Solution
-    solution:
-      reagents:
-      - ReagentId: Fat
-        Quantity: 12
-      - ReagentId: Nutriment
-        Quantity: 2
-  - type: FlavorProfile
-    flavors:
-    - oily
-    - meaty
-
-- type: entity
-  id: WLAnimalFat1
-  parent: WLAnimalFat
-  suffix: Single, WL
-  components:
-  - type: Sprite
-    state: fat
-  - type: Stack
-    count: 1
-
-- type: entity
   id: WLButcherStation
   parent: BaseStructure
   name: butcher station
@@ -158,8 +115,6 @@
     - id: FoodMeat
       amount: 4
     - id: WLAnimalHide1
-      amount: 1
-    - id: WLAnimalFat1
       amount: 1
     - id: MaterialBones1
       amount: 2
@@ -264,8 +219,6 @@
       amount: 4
     - id: WLAnimalHide1
       amount: 1
-    - id: WLAnimalFat1
-      amount: 1
     - id: MaterialBones1
       amount: 2
 
@@ -362,9 +315,6 @@
     - id: WLAnimalHide1
       amount: 1
       prob: 0.75
-    - id: WLAnimalFat1
-      amount: 1
-      prob: 0.5
     - id: MaterialBones1
       amount: 1
   - type: MessyDrinker
@@ -437,8 +387,6 @@
       amount: 5
     - id: WLAnimalHide1
       amount: 2
-    - id: WLAnimalFat1
-      amount: 2
     - id: MaterialBones1
       amount: 3
 
@@ -493,8 +441,6 @@
     - id: MaterialHideBear
       amount: 1
       prob: 0.35
-    - id: WLAnimalFat1
-      amount: 4
     - id: MaterialBones1
       amount: 5
 

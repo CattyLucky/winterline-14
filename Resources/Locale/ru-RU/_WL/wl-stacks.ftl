@@ -16,5 +16,4 @@ stack-wl-wood-planks = подготовленные доски
 stack-wl-metal-parts = железные слитки
 stack-wl-prepared-cloth = подготовленная ткань
 stack-wl-animal-hide = шкуры животных
-stack-wl-animal-fat = животный жир
 stack-wl-snow-chunks = выкопанный снег

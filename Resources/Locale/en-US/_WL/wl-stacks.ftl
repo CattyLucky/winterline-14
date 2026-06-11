@@ -16,5 +16,4 @@ stack-wl-wood-planks = stack of prepared planks
 stack-wl-metal-parts = stack of iron ingots
 stack-wl-prepared-cloth = stack of prepared cloth
 stack-wl-animal-hide = stack of animal hides
-stack-wl-animal-fat = stack of animal fat
 stack-wl-snow-chunks = stack of dug snow
